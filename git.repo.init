@@ -1,0 +1,11 @@
+#!/bin/bash
+repo_url="$1"
+git init
+git remote add origin "$repo_url"
+git.up
+echo "initial files" > .c
+git.up
+exit
+cd $pd/monr
+repo_url=https://github.com/sproul/monr.git
+bx $pd/bin/git.repo.init $repo_url

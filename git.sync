@@ -1,0 +1,28 @@
+. proxy_configure.sh
+if [ -r $HOME/.gh22 ]; then
+        export GH22=`cat $HOME/.gh22`
+else
+        export GH22=''
+fi
+if [ -r $HOME/.gh ]; then
+        export ghpat2=sproul:`cat $HOME/.gh`
+else
+        export ghpat2=''
+fi
+while [ -n "$1" ]; do
+        case "$1" in
+                -all)
+                        shift
+                        for d in bin doc emacs; do
+                                echo.clean "cd $dp/$d"
+                                cd       $dp/$d
+                                echo.clean "$0 $*"
+                                $0       $*
+                        done
+                        exit
+                ;;
+                *)
+                        break
+                ;;
+        esac
+done

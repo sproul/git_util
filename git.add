@@ -1,0 +1,31 @@
+#!/bin/bash
+
+Add()
+{
+        git add "$1"
+}
+
+
+while [ -n "$1" ]; do
+        case "$1" in
+                */MANIFEST.git.sh)
+                        bash "$1"  |
+                        while read fn; do
+                                Add "$fn"
+                        done
+                ;;
+                */MANIFEST.git)
+                        cat "$1"  |
+                        while read fn; do
+                                Add "$fn"
+                        done
+                ;;
+                *)
+                        Add "$1"
+                ;; 
+        esac
+        shift
+done
+
+exit
+bx $DROP/bin/git.add $DROP/teacher/MANIFEST.git.sh

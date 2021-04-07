@@ -1,0 +1,348 @@
+#!/bin/bash
+new_branch_mode=''
+
+case `whoami` in
+        nelson|nsproul|x)
+        ;;
+        *)
+                echo "$0: error: logged in as wrong user: `whoami`" 1>&2
+                exit 1
+        ;;
+esac
+
+src_chi_fns=''
+dp_mode=''
+force_mode=''
+to_branch=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -chi)
+                        shift
+                        if [ ! -f "$1" ]; then
+                                echo "$0: error: could not find \"$1\"" 1>&2
+                                exit 1
+                        fi
+                        src_chi_fns="$src_chi_fns $1"
+                ;;
+                -dp)
+                        dp_mode=yes
+                ;;
+                -f|-force)
+                        force_mode=-force
+                ;;
+                -new_branch)
+                        new_branch_mode=yes
+                ;;
+                -to|-to_branch)
+                        shift
+                        to_branch="$1"
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+remote_repo="$1"
+branch="$2"
+
+project_name=`basename "$remote_repo" | sed -e 's/.git$//'`
+
+save_old_as_backup()
+{
+        old_branch_marker=`ls $git_dir/$project_name.BRANCH=* 2> /dev/null`
+        if [ -z "$old_branch_marker" ]; then
+                return
+        fi
+        if [ ! -f "$old_branch_marker" ]; then
+                echo "$0: error: did not understand old branch marker(s?) \"$old_branch_marker\"; please clean up" 1>&2
+                exit 1
+        fi
+        old_branch_name=`sed -e 's/.*=//' <<< $old_branch_marker`
+        rm $old_branch_marker
+        echo.clean "mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name"
+        mv       $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name
+}
+
+if [ -n "$to_branch" ]; then
+        cd $HOME/git
+        #project_name=carson
+        current_branch_marker=`ls $project_name.BRANCH=* 2> /dev/null`
+        if [ -f "$current_branch_marker" ]; then
+                current_branch=`sed -e 's/.*=//' <<< $current_branch_marker`
+                echo.clean "mv $project_name $project_name.backup.$current_branch"
+                mv       $project_name $project_name.backup.$current_branch
+                echo.clean "rm \"$current_branch_marker\""
+                rm       "$current_branch_marker"
+        fi
+        saved_branch="$project_name.backup.$to_branch"
+        if [ ! -d "$saved_branch" ]; then
+                echo "$0: error: could not find directory \"$saved_branch\"" 1>&2
+                exit 1
+        fi
+        echo.clean "mv \"$saved_branch\" $project_name"
+        mv       "$saved_branch" $project_name
+        echo.clean "touch \"$project_name.BRANCH=$to_branch\""
+        touch       "$project_name.BRANCH=$to_branch"
+        exit
+fi
+
+case "$remote_repo" in
+        http*orahub*)
+                # http doesn't work on orahub w/out some kind of setup
+                # convert from
+                #       https://orahub.oraclecorp.com/paas-innovationhub-central/carson.git
+                # to
+                #       git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git
+                # 
+                remote_repo=`sed -e 's;https://orahub.oraclecorp.com/;git@orahub.oraclecorp.com:;' <<< $remote_repo`
+        ;;
+        http*)
+                # ignore, this should work everywhere
+        ;;
+        *github.com*)
+                # ssh won't work through orcl firewall
+                remote_repo=`git.get_remote_repo $remote_repo`
+                if orcl.on_vpn; then
+                        remote_repo=`git.ssh_to_http $remote_repo`
+                fi
+        ;;
+esac
+
+if [ -n "$dp_mode" ]; then
+        git_dir=$dp/git
+else
+        git_dir=$HOME/git
+fi
+if [ ! -d $git_dir ]; then
+        echo.clean "mkdir $git_dir"
+        mkdir       $git_dir
+fi
+if [ ! -d $git_dir ]; then
+        echo "$0: error: could not create directory \"$git_dir\"" 1>&2
+        exit 1
+fi
+cd $git_dir
+
+save_old_as_backup
+
+if [ -n "$branch" ]; then
+        branch_marker="$git_dir/$project_name.BRANCH=$branch"
+else
+        branch_marker=''
+fi
+if [ -d $project_name ]; then
+        if [ -z "$force_mode" ]; then
+                echo "$0: error: $git_dir/$project_name already exists (use -f to replace)" 1>&2
+                exit 1
+        fi
+        if [ -d /tmp/$project_name ]; then
+                echo.clean "rm -rf /tmp/$project_name"
+                rm       -rf /tmp/$project_name
+        fi
+        echo.clean "mv $project_name /tmp"
+        mv       $project_name /tmp
+        if [ -f "$branch_marker" ]; then
+                echo.clean "rm -f $branch_marker"
+                rm       -f $branch_marker
+        fi
+fi
+if [ -n "$branch" ]; then
+        if [ -z "$new_branch_mode" ]; then
+                branch_args="-b $branch"
+        fi
+        touch $branch > "$branch_marker"
+else
+        branch_args=''
+fi
+if ! git clone $branch_args $remote_repo; then
+        echo "$0: git clone $branch_args $remote_repo failed, exiting..." 1>&2
+        exit 1
+fi
+
+if [ -n "$new_branch_mode" ]; then
+        echo "cd \"$project_name\""
+        cd       "$project_name"
+        if ! git checkout -b "$branch"; then
+                echo "$0: git checkout -b $branch failed, exiting..." 1>&2
+                exit 1
+        fi
+fi
+
+Bring_over_and_check_in_some_files()
+{
+        for src_chi_fn in $src_chi_fns; do
+                dest_chi_fn=`sed -e "s;.*/$project_name/;$git_dir/$project_name/;" <<< $src_chi_fn`
+                if [ ! -f "$dest_chi_fn" ]; then
+                        echo "$0: warning: did not see \"$dest_chi_fn\", so apparently $src_chi_fn is a new file" 1>&2
+                        d=`dirname "$dest_chi_fn"`
+                        if [ ! -d "$d" ]; then
+                                echo "$0: warning: did not see dir \"$d\", so apparently $d is a new dir" 1>&2
+                                echo.clean "mkdir -p \"$d\""
+                                mkdir       -p "$d"
+                        fi
+                fi
+                echo.clean "cp -p \"$src_chi_fn\" \"$dest_chi_fn\""
+                cp       -p "$src_chi_fn" "$dest_chi_fn"
+        done
+        echo Add a comment and send the following to check in:
+        printf "cd $git_dir/$project_name; git.up"
+}
+
+
+if [ -n "$src_chi_fns" ]; then
+        Bring_over_and_check_in_some_files
+fi
+
+echo $remote_repo | f.append.uniquely $dp/data/git.known_projects
+
+exit
+git clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
+git clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
+#
+#ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=1 -T 'nelson.sproul@oracle.com@alm.oraclecorp.com' -p 2222
+# got 'shell request failed on channel 0', proving that ssh setup is ok
+#
+git clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/syseng_config-service-data_5003/config-service-data.git
+
+BRANCH=custom_command
+cd $HOME/git
+mkdir $BRANCH
+cd $BRANCH
+git init
+git remote add -t $BRANCH -f
+git fetch remote add -t $BRANCH -f origin $REMOTE_REPO
+git checkout $BRANCH
+
+exit
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
+exit
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
+exit
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git Bug_24816336
+cd $HOME/git/promotion-config
+git checkout $BRANCH
+git rebase master
+git rebase origin/master
+exit
+bx $dp/git_util/git.clone https://github.com/sproul/weblog_2_tests
+exit
+bx $dp/git_util/git.clone https://github.com/sproul/sgrep
+exit
+bx $dp/git_util/git.clone https://github.com/sproul/calculator
+exit
+bx $dp/git_util/git.clone https://github.com/sproul/change_tracker
+bx $dp/git_util/git.clone https://github.com/sproul/mutivcs_query
+exit
+bx $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/syseng_sensu-monitoring-infrastructure_5319/sensu-monitoring-infrastructure.git
+exit
+bx $dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_sensu-monitoring-infrastructure_5319/scm/sensu-monitoring-infrastructure.git
+exit
+bx $dp/git_util/git.clone ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
+exit
+bx $dp/git_util/git.clone https://surabhi.pathak%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_cicd-dashboard_5996/scm/cicd-dashboard.git
+exit
+remote_repo="git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git"
+branch=docker_layers
+bx $dp/git_util/git.clone -new_branch $remote_repo $branch
+exit
+remote_repo="git@orahub.oraclecorp.com:viraj.purang/patchartifactdefbuilder.git"
+bx $dp/git_util/git.clone $remote_repo
+exit
+remote_repo="git@git.osn.oraclecorp.com:osn/cec.git"
+bx $dp/git_util/git.clone $remote_repo
+exit
+git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/mcs_change-tracker_15881/change_tracker.git
+exit
+# this works, that http bs above did NOT work.
+git.clone git@github.com:sproul/multivcs_query.git
+git.clone git@github.com:sproul/fin_doc_parser.git
+git.clone git@github.com:sproul/rabbit_mq_cli_test.git
+git.clone git@github.com:SeleniumHQ/selenium.git
+exit
+git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/mcs/s/mcs_change-tracker_15881/scm/change_tracker.git
+exit
+$dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_oci-reports_17338/scm/oci_reports.git
+exit
+$dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_oci-reports_17338/oci_reports.git
+$dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_paas-platform/oci-capacity-tools.git
+$dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_paas-platform/scm/oci-capacity-tools.git
+#ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_paas-platform/oci-capacity-tools.git
+# https://alm.oraclecorp.com/paasops/#projects/paas-platform/scm/oci-capacity-tools.git
+exit
+$dp/git_util/git.clone -new_branch ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_oci-reports_17338/oci_reports.git dev_tenancy_reporting
+exit
+cd ~/git
+git clone ssh://git@alm.oraclecorp.com:2222/odocs_desktop/desktop.git
+yes
+exit
+$dp/git_util/git.clone ssh://git@alm.oraclecorp.com:2222;odocs_desktop/desktop.git
+exit
+$dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/syseng_cloud-resource-view_18455/cloud-resource-view.git
+exit
+bx $dp/git_util/git.clone  git@orahub.oraclecorp.com:rohit.ro.kumar/sys-eng.git
+exit
+bx $dp/git_util/git.clone -dp git@github.com:sproul/div_calendar_crawler.git
+exit
+bx $dp/git_util/git.clone https://github.com/bracesproul/bart_scheduler.git
+exit
+bx $dp/git_util/git.clone git@github.com:sproul/fin_doc_parser.git
+exit
+
+bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:james.x.clark/carson.git fix_docker_du
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:james.x.clark/carson.git fix_docker_du
+diff /cygdrive/e/Users/nelsons/Sync/git/carson/src/clj/mm/artifactoryrest.clj /cygdrive/e/Users/nelsons/git/carson/src/clj/mm/artifactoryrest.clj
+cp -p /cygdrive/e/Users/nelsons/Sync/git/carson/src/clj/mm/artifactoryrest.clj /cygdrive/e/Users/nelsons/git/carson/src/clj/mm/artifactoryrest.clj
+cd /cygdrive/c/Users/nelsons/git/carson
+git.up correct docker du
+bx git.up remove trailing hyphens from routine names
+bx $dp/git_util/git.clone https://github.com/sproul/fin_doc_parser_docs.git
+bx $dp/git_util/git.clone git@github.com:sproul/fin_doc_parser.git
+bx $dp/git_util/git.clone git@github.com:sproul/plastic_profile.git
+bx $dp/git_util/git.clone git@github.com:sproul/web_buffer.git
+bx $dp/git_util/git.clone https://github.com/swannodette/mies.git
+$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:james.x.clark/carson.git 'use_oci_proxy'
+bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'oci'
+$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'support_new_SSO'
+exit
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/login.clj -f -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'fix_new_SSO'
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/hudsonrest.clj -f -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'cookie_regeneration_fix'
+bx $dp/git_util/git.clone -chi $cr/src/clj/mm/vault.clj -chi $cr/clj-vault/src/clj_vault/core.clj -f -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'portable_vault'
+bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'use_carson_users_email_instead_of_rohit'
+exit
+bx $dp/git_util/git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/provisioning-ui.git
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/cljs/mm/console/views.cljs -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_using_hudson_3.3.2_when_provisioning_new_masters'
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/adminops/provision.clj -chi  /scratch/carson/workspace/carson/src/clj/orch/messaging/rabbitmq.clj -chi  /scratch/carson/workspace/carson/src/clj/mm/adminops/orgs.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'add_minor_comments_and_logging'
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/adminops/provision.clj -chi  /scratch/carson/workspace/carson/src/clj/orch/messaging/rabbitmq.clj -chi  /scratch/carson/workspace/carson/src/clj/mm/adminops/orgs.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'add_minor_comments_and_logging'
+bx $dp/git_util/git.clone -to portable_vault git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/orch/actions.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'fix_register-farm-job_vulnerability_to_bad_jobid_parm'
+bx $dp/git_util/git.clone -chi /home/nsproul/workspace/carson/src/clj/mm/hudsonrest.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'show_target_URL_when_fetching_JSON'
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/orch/actions.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'remove_invalid_corrid_test'
+bx $dp/git_util/git.clone                                                               -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'show_target_URL_when_fetching_JSON_II'
+bx $dp/git_util/git.clone                                                               -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'wire_in_Jenkins_latest,_latest_plugins'
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/model.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'allow_create_plugin_with_only_URL_different'
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git hub-8049
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/patches/0000_patch.txt -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'remove_invalid_corrid_test'
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/model_schemas.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'remove_outdated_jenkins_version_for_provisioning'
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git fix_token_generation
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 
+bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'fix_typo'
+bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'patches_correspond_1-to-1_with_merge_reqs'
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
+bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'get-orgid-from-url_with_patch'
+bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'v2_get-org-from-url_and_patches'
+$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'proxy_settings_and_4_minute_db_query_to_maintain_connection'
+$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'no_config_reload_with_each_get'
+$dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'dev2oci'
+$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git 'add docker setup code'
+$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_DTE_event_ordering_dependency'
+$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
+$dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
+bx $dp/git_util/git.clone git@github.com:sproul/bin.git
+bx $dp/git_util/git.clone git@github.com/clj-commons/aleph.git
+git.clone https://github.com/clj-commons/aleph.git
+git.clone https://github.com/clj-commons/aleph.git
+git.clone https://nsproul97@bitbucket.org/qwickrate/monroe.biz.git
+git.clone git@github.com:sproul/git_util.git

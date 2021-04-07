@@ -1,0 +1,45 @@
+#!/bin/sh
+mode=$1
+
+if [ -z "$mode" ]; then
+        mode=raw
+fi
+
+git ls-files . --exclude-standard --others |
+case "$mode" in
+        raw)
+                cat
+        ;;
+        really_should_be_tracked)
+                sed -n -e '/\.py$/p' -e '/\.js$/p' -e '/\.sh$/p' -e '/\.java$/p' -e '/\.rb$/p' -e '/\/canon\//p' -e '/scripts\//p'
+        ;;
+        should_be_tracked|should_be_tracked_marked_with_A)
+                t=$TMP/git.ls.untracked.$$
+                trap "rm -f $t" 0
+
+                cat > $t
+                cat $t | sed -n -e '/\.py$/p' -e '/\.js$/p' -e '/\.sh$/p' -e '/\.java$/p' -e '/\.rb$/p' -e '/\/canon\//p' -e '/scripts\//p' -e '/\.@@$/p' -e '/\.@@$/p' -e '/\.@@$/p' -e '/\.@@$/p' > $t.should
+                trap "rm -f $t.should" 0
+                case $mode in
+                        should_be_tracked)
+                                cat $t.should
+                        ;;
+                        should_be_tracked_marked_with_A)
+                                minus $t $t.should > $t.rest
+                                trap "rm -f $t.rest" 0
+                                cat $t.should | sed -e 's/^/A /'
+                                cat $t.rest
+                        ;;
+                esac
+        ;;
+        *)
+                echo "error: unrecognized mode $mode" 1>&2
+                exit 1
+        ;;
+esac
+exit
+cd $DROP/python/site_cp
+sh -x $DROP/bin/git.ls.untracked should_be_tracked_marked_with_A
+exit
+cd $DROP/python/site_cp
+sh -x $DROP/bin/git.ls.untracked really_should_be_tracked

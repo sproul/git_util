@@ -1,0 +1,19 @@
+#!/bin/bash
+repo_local_dir=$1
+repo_name=$2
+if [ ! -d "$repo_local_dir" ]; then
+        echo "$0: error: could not find directory \"$repo_local_dir\"" 1>&2
+        exit 1
+fi
+echo "cd $repo_local_dir"
+cd       $repo_local_dir
+git init
+git add .
+git commit -m "first commit"
+git remote add origin git@github.com:sproul/$repo_name.git
+git push -u origin master
+
+exit
+repo_local_dir=$dp/emacs
+repo_name=ns_emacs_customizations
+bx $dp/bin/git.repo.create $dp/emacs

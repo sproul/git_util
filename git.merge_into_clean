@@ -1,0 +1,113 @@
+:
+# - mv current tree to *.merge_problem
+# - make a new, clean tree
+# - difr in order to merge to the clean tree
+
+Test()
+{
+        t2=$HOME/git/t2
+        t2a=$HOME/git/t2.a
+        t2b=$HOME/git/t2.b
+        if [ -d "$t2" ]; then
+                echo "$0: tmp test directory t2 already exists at \"$t2\", cannot continue" 1>&2
+                exit 1
+        fi                
+        rm -rf $t2a
+        rm -rf $t2b
+        
+        echo "git.clone git@github.com:sproul/t2.git"
+        if !  git.clone git@github.com:sproul/t2.git; then
+                echo "$0: git.clone git@github.com:sproul/t2.git failed, exiting..." 1>&2
+                exit 1
+        fi
+        echo.clean "mv $t2 $t2a"
+        if !        mv $t2 $t2a; then
+                echo "$0: mv $t2 $t2a failed, exiting..." 1>&2
+                exit 1
+        fi
+        echo "git.clone git@github.com:sproul/t2.git"
+        if !  git.clone git@github.com:sproul/t2.git; then
+                echo "$0: git.clone git@github.com:sproul/t2.git failed, exiting..." 1>&2
+                exit 1
+        fi
+        echo.clean "mv $t2 $t2b"
+        if !        mv $t2 $t2b; then
+                echo "$0: mv $t2 $t2b failed, exiting..." 1>&2
+                exit 1
+        fi
+        cd $t2b
+        echo t2b > newer
+        git commit -m "t2b"
+        git pull --rebase
+        git push origin master
+        cd $t2a
+        echo t2a > newer
+        git commit -m "t2a"
+        git pull --rebase
+        git push origin master
+        echo.clean "mv $t2a $t2"
+        if !        mv $t2a $t2; then
+                echo "$0: mv $t2a $t2 failed, exiting..." 1>&2
+                exit 1
+        fi
+        cd $t2
+        bash -x $0
+}
+
+dry_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                -test)
+                        echo Will provoke a merge conflict in test repo t2, and then resolve it
+                        Test
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+gc=.git/config
+if [ ! -f "$gc" ]; then
+        echo "$0: expected file at \"$gc\"" 1>&2
+        exit 1
+fi
+
+gurl=`grep 'url = ' $gc | sed -e 's/	url = //'`
+
+if [ -z "$gurl" ]; then
+        echo "$0: expected a value for \"gurl\" but saw nothing" 1>&2
+        exit 1
+fi
+
+original_pwd=`pwd`
+cd ..
+if [ -d "$original_pwd.merge_problem" ]; then
+        echo "$0: error: found directory \"$original_pwd.merge_problem\" already in place, but I need that spot for saving away the old tree" 1>&2
+        echo "rm -rf \"$original_pwd.merge_problem\""
+        exit 1
+fi
+if ! mv "$original_pwd" "$original_pwd.merge_problem"; then
+        echo "$0: mv $original_pwd $original_pwd.merge_problem failed, exiting..." 1>&2
+        exit 1
+fi
+echo "git.clone \"$gurl\""
+if !  git.clone $dry_mode $verbose_mode "$gurl"; then
+        echo "$0: git.clone $gurl failed, exiting..." 1>&2
+   exit 1
+fi
+difr "$original_pwd" "$original_pwd.merge_problem"
+
+exit
+bx $dp/git_util/git.merge_into_clean

@@ -1,0 +1,29 @@
+#!/bin/sh
+G()
+{
+        dir=$1
+        shift
+        comments="$@"
+        if [ -z "$comments" ]; then
+                comments="autocommit at `date`"
+        fi
+        cd "$dir"
+        untracked=`git.ls.untracked really_should_be_tracked`
+        if [ -n "$untracked" ]; then
+                echo $0 found untracked files, and will add them now:
+                aloud git add $untracked
+        fi
+        #
+        # too slow, too verbose (esp. for teacher):
+        #git status .
+        
+        cmd="git commit -a -m '$comments'"
+        eval $cmd
+        echo finished commit at `date`
+}
+
+G `pwd` "$@"
+exit
+cd $DROP/python/site_cp
+$DROP/python/site_cp/scripts/rm_test_debris
+sh $DROP/bin/git.commit_auto autorestart for devserver, and label server type in control.htm

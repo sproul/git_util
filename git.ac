@@ -1,0 +1,60 @@
+#!/bin/bash -x
+dry_mode=''
+rm_cmd='echo rm'
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                        rm_cmd='rm'
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+# add and commit
+work_was_done_marker=$TMP/git.ac.$$
+
+comment="$*"
+if [ -z "$comment" ]; then
+        for comment_file in `find . -name '.c'`; do
+                (
+                echo "cd `dirname \"$comment_file\"`"
+                cd       `dirname "$comment_file"`
+                comment=`cat .c | head -1`
+                echo.clean "rm .c"
+                if [ -z "$dry_mode" ]; then
+                        rm .c
+                fi
+                git.ac $dry_mode "$comment"
+                touch $work_was_done_marker
+                )
+        done
+        if [ -f $work_was_done_marker ]; then
+                rm $work_was_done_marker
+        else
+                echo "$0: warning: no .c comment file was found, and no comment passed in.  Using generic 'fixes' comment..." 1>&2
+                git.ac $dry_mode "fixes"
+                exit $?
+        fi
+        exit
+fi
+
+echo git.ac removing emacs temp files...
+find . -name "#*" -print0 | xargs -0 $rm_cmd
+
+echo "git add --all ."
+if [ -z "$dry_mode" ]; then
+        git       add --all .
+fi
+echo "git commit -m \"$comment\""
+if [ -z "$dry_mode" ]; then
+        git       commit -m "$comment"
+        exit $?
+fi
+exit
+cd ~/Dropbox/qr/calculator/
+echo bondOAS support > .c
+$dp/bin/git.ac

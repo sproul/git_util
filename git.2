@@ -1,0 +1,10 @@
+#!/bin/bash
+if [ -d '/cygdrive/c/Program Files (x86)/Git/bin' ]; then
+        export PATH='/cygdrive/c/Program Files (x86)/Git/bin':$PATH
+        git "$@"
+elif [ /usr/bin/git ]; then
+        /usr/bin/git "$@"
+else
+        /bin/git "$@"
+fi
+exit

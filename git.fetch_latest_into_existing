@@ -1,0 +1,4 @@
+#!/bin/bash
+git fetch origin
+exit
+bx $dp/bin/git.fetch_latest_into_existing 

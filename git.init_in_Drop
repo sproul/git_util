@@ -1,0 +1,31 @@
+#!/bin/sh
+echo see $0 for notes
+exit 0
+Dropbox is a free file synchronization/backup service where you can backup, save and share files. One of the best things is, that you can use it as git remote server.
+
+Here is an example on how to do it. To start, open a shell/terminal window and go to your project directory:
+
+cd ~/Projects/MyNewProject
+Then enter the following lines:
+
+git init
+echo > README
+git add .
+git commit -m "first commit"
+Go to your local Dropbox directory and create a new directory:
+
+cd ~/Dropbox
+mkdir Repositories
+cd Repositories
+After that create a git directory on Dropbox:
+
+mkdir myNewProject.git
+cd myNewProject.git
+Then initialize a new git repository, go back to your local project and and link it to your Dropbox repository:
+
+git init --bare
+cd ~/Projects/MyNewProject
+git remote add origin ~/Dropbox/Repositories/myNewProject.git
+git push origin master
+Thats it. From there, you can just clone ~/Dropbox/Repositories/myNewProject.git that you have associated with your Dropbox account. Of course, you can also share this repository with other Dropbox users.
+

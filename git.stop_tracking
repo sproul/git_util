@@ -1,0 +1,6 @@
+#!/bin/sh
+fn="$1"
+cd `dirname "$fn"`
+git rm --cached `basename "$fn"`
+exit
+sh -x $DROP/bin/git.stop_tracking $dp/python/site_cp/Roadmap.txt

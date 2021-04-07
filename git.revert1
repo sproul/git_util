@@ -1,0 +1,17 @@
+#!/bin/bash
+fn="$1"
+cd `dirname "$fn"`
+cp -p "$fn"  "$fn.new"
+echo Saved $fn in $fn.new, now syncing $fn to latest...
+git checkout "$fn"
+echo doing git pull from `pwd`, am I in the right place
+git pull
+diff "$fn"  "$fn.new"
+put "$fn"
+exit
+fn=$DISCOVERY/rest-test/src/oracle/social/discovery/recommendations/rest/test/GraphSearchTest.java
+fn=$DISCOVERY/rest/src/oracle/social/discovery/rest/graphsearch/GraphSearchResultsResource.java
+fn=$DISCOVERY/deps.xml
+fn=$DISCOVERY/ivy.xml
+diff -b $fn $fn.new
+bx $DROP/bin/git.revert1 $fn

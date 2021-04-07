@@ -1,0 +1,14 @@
+#!/bin/bash
+cd $HOME/git
+rm -rf promotion-config
+ls promotion-config
+bx $dp/bin/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git Bug_24816336
+ls promotion-config
+cd $HOME/git/promotion-config/src/main/java/com/oracle/syseng/configuration/data/transformation/
+diff $HOME/git/promotion-config/src/main/java/com/oracle/syseng/configuration/data/transformation/OrchestrationMapper.java $HOME/git/promotion-config.me/src/main/java/com/oracle/syseng/configuration/data/transformation/OrchestrationMapper.java
+cp -p $HOME/git/promotion-config.me/src/main/java/com/oracle/syseng/configuration/data/transformation/OrchestrationMapper.java $HOME/git/promotion-config/src/main/java/com/oracle/syseng/configuration/data/transformation/OrchestrationMapper.java
+git add OrchestrationMapper.java
+git commit -m 'protect against NPE when no initial tests' OrchestrationMapper.java
+git pull origin master
+git push origin master
+exit

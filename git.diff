@@ -1,0 +1,53 @@
+#!/bin/sh
+git config core.autocrlf false
+# how to make this permanent? ....
+git config --global --unset diff.external
+# http://ulf.zeitform.de/en/documents/git-ediff.html
+# http://emacswiki.org/emacs/Git
+# http://alexott.net/en/writings/emacs-vcs/EmacsGit.html
+# http://stackoverflow.com/questions/8205174/emacs-based-git-diff-tool
+# http://magit.github.com/magit/
+x="$1"
+if [ -z "$x" ]; then
+        x=`pwd`
+elif [ ! -f "$x" ]; then
+        if [ ! -d "$x" ]; then
+                echo "$0: error: could not find file or directory \"$x\"" 1>&2
+                exit 1
+        fi
+fi
+if [ ! -f "$x/.git/config" ]; then
+        case "$x" in
+                $dp/git/*)
+                        dev=$x
+                        src=`sed -e "s;$dp/;$HOME/;" <<< $dev`
+                        if [ ! -d "$src" ]; then
+                                echo "$0: error: could not find directory \"$src\", not sure what to compare to" 1>&2
+                                exit 1
+                        fi
+                        diff -rb "$src" "$dev"
+                ;;
+                *)
+                        echo "$0: error: not in a git tree, and not in dp/git.  What is $x?" 1>&2
+                        exit 1
+                ;;
+        esac
+        exit
+else
+        date
+        out=$TMP/gd
+        rm -f $out
+        #echo q | git diff --ignore-space-change --ext-diff $x
+        git diff --ignore-space-change $x > $out
+        if [ -f $out ]; then
+                cat $out
+        fi
+fi
+exit
+sh -x $DROP/bin/git.diff $DROP/python/site_cp
+sh -x $DROP/bin/git.diff $DROP/teacher
+sh -x $DROP/bin/git.diff $DROP/adyn/httpdocs/teacher
+exit
+bx $dp/bin/git.diff /home/nsproul/git/public-maven-repo/staging.process/settings.xml
+exit
+bx $dp/bin/git.diff $dp/git/change_tracker

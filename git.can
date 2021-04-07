@@ -1,0 +1,27 @@
+# https://git.wiki.kernel.org/index.php/QuickStart
+# http://www.cs.cmu.edu/~410/doc/git-intro.html
+# https://github.com/easysoa/EasySOA/wiki/Git-Quickstart
+# https://wiki.duraspace.org/display/FCREPO/Git+Quick+Start+Guide
+# http://niczsoft.com/2010/03/git-quick-start/
+# http://apice.unibo.it/xwiki/bin/view/TuCSoN/Git
+git config --global user.email "nelson.sproul@gmail.com"
+git config --global user.name "Nelson Sproul"
+echo done on o10
+cd $DROP
+git init
+git add site_cp
+git add python/site_cp
+git commit -m 'init'
+git commit -a -m'init'
+
+# http://superuser.com/questions/436347/git-process-could-anyone-please-explain-the-check-in-check-out-process
+
+g=$HOME/git
+mkdir -p $g
+cd $g
+git clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
+cp -pr $g $TMP
+git.significant_files_in_copy.ls -cp $HOME/git/public-maven-repo $mrc
+diff -r $mrc $g/public-maven-repo
+git commit -m 'support FolderFramework API, partial uploads, multiple Oracle product versions, prod/stage mode, complete caching, server inspection'
+git push origin master

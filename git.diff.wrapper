@@ -1,0 +1,35 @@
+#!/bin/sh
+t=$TMP/gd
+
+path=$1
+fn_old=$2
+hex_old=$3
+mode_old=$4
+fn_new=$5
+hex_new=$6
+mode_new=$7
+
+case "$path" in
+        */jquery-*)
+                exit 0
+        ;;
+esac
+
+case "$fn_old" in
+        midnight.*)
+                exit 0
+        ;;
+        *)
+                diff -b "$fn_old" "$fn_new" > $t.dif
+                rc=$?
+                if [ $rc != 0 ]; then
+                        echo "diff -b $fn_old $fn_new"
+                        (
+                        echo "diff -b $fn_old $fn_new"
+                        cat $t.dif
+                        ) >> $t
+                fi
+                rm -f $t.dif
+                exit $rc
+        ;;
+esac

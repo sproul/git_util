@@ -1,0 +1,35 @@
+#!/bin/bash
+repo=${1-change_tracker}
+repo_local_dir=$dp/git/$repo
+
+if orcl.on_vpn; then
+        orcl_on_vpn=yes
+fi
+
+case "$repo" in
+        change_tracker)
+                if [ -z "$orcl_on_vpn" ]; then
+                        repo=multivcs_query
+                fi
+        ;;
+        fin_doc_parser)
+                if [ -n "$orcl_on_vpn" ]; then
+                        exit
+                fi
+        ;;
+esac
+
+echo.clean "cd $dp/git"
+cd       $dp/git
+echo.clean "$dp/bin/github.update.repo $repo $repo_local_dir"
+bx          $dp/bin/github.update.repo $repo $repo_local_dir
+case "$repo" in
+        change_tracker)
+                cp.via_rsync $repo_local_dir $dp/$repo.last_clean &
+        ;;
+esac
+
+exit
+bx $dp/bin/git.ur1 fin_doc_parser
+bx $dp/bin/git.ur1 rabbit_mq_cli_test
+bx $dp/bin/git.ur1 oci_reports

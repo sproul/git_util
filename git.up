@@ -1,0 +1,188 @@
+#!/bin/bash
+
+. git.sync
+
+t=`mktemp`
+
+repo_name=''
+dry_mode=''
+
+force_mode=''
+new_branch=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -all)
+                        bx git.up -in_dir $dp/bin
+                        bx git.up -in_dir $dp/emacs
+                        bx git.up -in_dir $dp/data
+                        difr $dp/bin $dx/bin
+                        difr $dp/emacs $dx/emacs
+                        difr $dp/data $dx/data
+                ;;
+                diff)
+                        if [ "$2" != "-rb" ]; then
+                                echo "$0: error: hm, expected that we were looking at diff output, but I am not sure what we are looking at: $*" 1>&2
+                                exit 1
+                        fi
+                        shift
+                        shift
+                        unmodified_fn=$1
+                        modified_fn=$2
+                        if [ ! -f "$modified_fn" ]; then
+                                echo "$0: error: could not find \"$modified_fn\"" 1>&2
+                                exit 1
+                        fi
+                        echo "cp -p $modified_fn $unmodified_fn"
+                        cp       -p $modified_fn $unmodified_fn
+                        shift
+                        shift
+                        updated_fn=$unmodified_fn
+                        echo "git commit -m \"$*\" $updated_fn"
+                        git       commit -m "$*" $updated_fn
+                        exit
+                ;;
+                -in_dir)
+                        shift
+                        cd "$1"
+                ;;
+                -dry|-dry_run)
+                        dry_mode=-dry
+                ;;
+                -f|-force)
+                        force_mode=-force
+                ;;
+                -from_cron)
+                        if orcl.on_vpn; then
+                                echo git.up does not automatic checkin when connected to orcl
+                                exit 1
+                        fi 
+                ;;
+                -m)
+                        echo "$0: error: no more -m, just pass in comment, unquoted" 1>&2
+                        exit 1
+                ;;
+                -new_branch)
+                        new_branch_flag="$1"
+                        shift
+                        new_branch="$1"
+                ;;
+                -repo)
+                        shift
+                        repo_name=$1
+                        # if we use this option, we can run from any directory, and the appropriate repo dir will be found (and we will cd there)
+                        found=''
+                        if [ -d $HOME/git/$repo_name ]; then
+                                echo "cd $HOME/git/$repo_name"
+                                cd       $HOME/git/$repo_name
+                                found=yes
+                        else
+                                for f in `ls -d $dp/*/$repo_name $dx/*/$repo_name 2> /dev/null`; do
+                                        if [ -d "$f" ]; then
+                                                echo "cd $f"
+                                                cd       $f
+                                                found=yes
+                                                break
+                                        fi
+                                done
+                        fi
+                        if [ -z "$found" ]; then
+                                echo "$0: error: could not find repo named $repo_name" 1>&2
+                                exit 1
+                        fi
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+Find_comment()
+{
+        dotc_list=`find . -name '.c'`
+        if [ -n "$dotc_list" ]; then
+                comment=`cat $dotc_list`
+                rm $dotc_list
+        fi
+}
+
+comment_from_parms="$*"
+comment_from_c=`Find_comment`
+if [ -n "$comment_from_c" ]; then
+        if [ -n "$comment_from_parms" ]; then
+                echo "$0: error: did not expect a .c comment and also a command line comment -- which should I use?" 1>&2
+                exit 1
+        fi
+        comment="$comment_from_c"
+else
+        comment="$comment_from_parms"
+fi
+
+git.ac $dry_mode $comment
+
+z=`pwd`
+current_dir=`basename "$z"`
+branch=`ls ../$current_dir.BRANCH=* 2> /dev/null | sed -e 's/.*=//'`
+if [ -z "$branch" ]; then
+        branch=master
+fi
+
+echo "git push origin $branch"
+if [ -z "$dry_mode" ]; then
+        # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
+        #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
+        #       hint: Updates were rejected because the remote contains work that you do
+        #       hint: not have locally. This is usually caused by another repository pushing
+        #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
+        #       hint: 'git pull') before pushing again.
+        #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+        if ! git push origin $branch > $t 2>&1; then
+                if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
+                        if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
+                                cat $t
+                                exit 1
+                        fi
+                fi
+                echo $0 saw merge problem...
+                echo ===========================================================================
+                cat $t
+                echo ===========================================================================
+                echo will try to rectify by rebasing, which will auto-merge if practical:
+                # before pushing, do this, will auto-merge:
+                echo "git pull --rebase"
+                if [ -z "$dry_mode" ]; then
+                        if ! git pull --rebase; then
+                                echo "$0: git pull --rebase failed......................" 1>&2
+                                echo "git status"
+                                git status
+                                echo EOD
+                                echo a way to resolve this: git.merge_into_clean
+                                exit 1
+                        fi
+                fi
+                if ! git push origin $branch; then
+                        echo "$0: error: git push origin failed" 1>&2
+                        exit 1
+                fi
+        fi
+fi
+if [ -f $gc.$$ ]; then
+        mv $gc.$$ $gc
+fi
+exit
+bx $dp/bin/git.up -repo weblog_2_tests
+exit
+comment='add documentation comments to the head of each script'
+bx $dp/bin/git.up -m "$comment"
+exit
+bx $dp/bin/git.up diff -rb /home/nsproul/git/public-maven-repo/staging.process/src/main/java/oracle/fmw/platform/mavenfactory/StagingController.java /home/nsproul/dp/public-maven-repo-master/staging.process/src/main/java/oracle/fmw/platform/mavenfactory/StagingController.java use 12.2.1.1 system.properties as the default
+exit
+cd $dp/qr/calculator/
+(
+echo 'segregate test from prod code'
+echo 'doc ytm code'
+) > .comment
+bx $dp/bin/git.up
+exit
+cd $dp/git/change_tracker/
+bx $dp/bin/git.up -dry_run

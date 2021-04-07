@@ -1,0 +1,15 @@
+#!/bin/bash
+# from https://confluence.atlassian.com/bitbucket/reduce-repository-size-321848262.html
+change_count=$1
+
+if [ -z "$change_count" ]; then
+        echo "$0: expected a value for \"change_count\" but saw nothing" 1>&2
+        exit 1
+fi
+
+git reset --hard HEAD~$change_count
+git push --force
+exit
+change_count=50
+cd $pd/git/fin_doc_parser/
+bx $pd/bin/git.compress 50

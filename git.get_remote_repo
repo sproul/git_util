@@ -1,0 +1,25 @@
+#!/bin/bash
+remote_repo="$1"
+case "$remote_repo" in
+        http*orahub*)
+                # http doesn't work on orahub w/out some kind of setup
+                # convert from
+                #       https://orahub.oraclecorp.com/paas-innovationhub-central/carson.git
+                # to
+                #       git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git
+                # 
+                remote_repo=`sed -e 's;https://orahub.oraclecorp.com/;git@orahub.oraclecorp.com:;' <<< $remote_repo`
+        ;;
+        http*)
+                # ignore, this should work everywhere
+        ;;
+        *github.com*)
+                # ssh won't work through orcl firewall
+                if orcl.on_vpn; then
+                        remote_repo=`git.ssh_to_http $remote_repo`
+                fi
+        ;;
+esac
+echo $remote_repo
+exit
+$dp/bin/git.get_remote_repo git@github.com:sproul/fin_doc_parser.git

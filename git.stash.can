@@ -1,0 +1,6 @@
+git stash list
+git stash drop
+# list files involved
+git stash show
+# list w/ diffs
+git stash show -p

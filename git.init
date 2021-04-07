@@ -1,0 +1,35 @@
+#!/bin/sh
+case $OS in
+        win*)
+                g=/cygdrive/c/git
+                mkdir $g
+                cd    $g
+                git init --bare
+                ls $g
+
+                mkdir $HOME.git
+                rmdir $HOME.git
+                git clone $g $HOME.git
+                mv $HOME.git/.git $HOME
+                cd $HOME
+                git add .
+
+                if orcl.on_vpn; then
+                        git config --global user.email "nelson.sproul@oracle.com"
+                else
+                        git config --global user.email "nelson.sproul@gmail.com"
+                fi
+                git config --global user.name "Nelson Sproul"
+                git config --global core.filemode false
+                git config --global core.autocrlf false
+        ;;
+        *)
+                root.required
+                if which yum > /dev/null 2>&1; then
+                        yum -y install git
+                else
+                        apt-get -y install git
+                fi
+                
+        ;;
+esac

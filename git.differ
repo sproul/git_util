@@ -1,0 +1,19 @@
+#!/bin/bash
+new="$1"
+old="$2"
+persistent_old=$TMP/`basename "$new"`
+cp -p "$old" "$persistent_old"
+if grep ' ' <<< $old; then
+        persistent_old__for_display="\"\$TMP/`basename $new`\""
+else
+        persistent_old__for_display="\$TMP/`basename $new`"
+fi
+if grep ' ' <<< $new; then
+        new__for_display="\"`basename $new`\""
+else
+        new__for_display="`basename $new`"
+fi
+echo "diff -b $persistent_old__for_display $new__for_display"
+diff       -b "$persistent_old" "$new"
+
+exit 0

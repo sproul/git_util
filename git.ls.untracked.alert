@@ -1,0 +1,10 @@
+#!/bin/sh
+if [ -d "$1" ]; then
+        cd "$1"
+fi
+t=$TMP/git.ls.untracked.alert.$$
+trap "rm -f $t" 0
+git.ls.untracked really_should_be_tracked > $t
+if [ -n "`head -1 $t`" ]; then
+        cat $t | tell_nelson $0 shows untracked files which probably should be tracked
+fi

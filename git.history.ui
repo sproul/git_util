@@ -1,0 +1,5 @@
+#!/bin/sh
+export DISPLAY=127.0.0.1:0.0
+gitk "$1"
+exit
+bx $DROP/bin/git.history.ui /cygdrive/c/Users/nelsons/Dropbox/adyn/httpdocs/teacher/html/new2.js

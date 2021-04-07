@@ -1,0 +1,24 @@
+#!/bin/bash
+alert_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -alert)
+                        alert_mode=yes
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+cd /scratch/change_tracker/git/git.osn.oraclecorp.com/osn/cec-server-integration 
+if ! git log ""--pretty=format:%H" "%s"" 6b5ed0226109d443732540fee698d5d794618b64..06c85af5cfa00b0e8244d723517f8c3777d7b77e   > $k 2>&1; then
+        z="$0: git log --pretty=format:%H %s 6b5ed0226109d443732540fee698d5d794618b64..06c85af5cfa00b0e8244d723517f8c3777d7b77e   > $k 2>&1 failed, exiting..." 
+        echo $z 1>&2
+        cat $k
+        cat $k | tell_nelson $z
+        exit 1
+fi
+echo OK git osn
+exit

@@ -1,0 +1,7 @@
+#!/bin/sh
+user=$1
+cd $HOME/.ssh
+cp -p id_rsa.$user id_rsa
+cp -p id_rsa.$user.pub id_rsa.pub
+exit
+sh -x /cygdrive/c/users/nsproul/Dropbox/bin/git.pick lsproul

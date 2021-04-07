@@ -1,0 +1,27 @@
+#!/bin/bash
+cd /tmp
+if ! mkdir t; then
+        echo "$0: mkdir t failed, exiting..." 1>&2
+        exit 1
+fi
+cd t
+if ! git clone -b Bug_24816336 git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git; then
+        echo "$0: git clone -b Bug_24816336 git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git failed, exiting..." 1>&2
+        exit 1
+fi
+cd promotion-config
+if ! echo '# test comment' >> README.md; then
+        echo "$0: echo '# test comment' >> README.md failed, exiting..." 1>&2
+        exit 1
+fi
+git status
+if ! git add README.md; then
+        echo "$0: git add README.md failed, exiting..." 1>&2
+        exit 1
+fi
+if ! git commit -m 'testing my git access'; then
+        echo "$0: git commit -m 'testing my git access' failed, exiting..." 1>&2
+        exit 1
+fi
+git pull origin Bug_24816336
+git push origin Bug_24816336

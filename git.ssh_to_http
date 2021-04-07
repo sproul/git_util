@@ -1,0 +1,38 @@
+#!/bin/bash
+# switch from ssh to http, or the other way around, to make things work.
+#
+# orahub requires ssh
+# github requires http (if we are on orcl network)
+# 
+while [ -n "$1" ]; do
+        case "$1" in
+                -test)
+                        actual=`$0 git@github.com:sproul/fin_doc_parser.git`
+                        if [ -z "$GH22" ]; then
+                                GH22=`.n.host sproul hub.docker/github`
+                        fi
+                        expected="https://sproul:$GH22@github.com/sproul/fin_doc_parser.git"
+                        if [ "$actual" != "$expected" ]; then
+                                echo expected $expected, but saw $actual
+                                exit 1
+                        fi
+                        echo OK $expected
+                        exit
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+ssh_git_ptr="$1"
+if [ -z "$GH22" ]; then
+        GH22=`.n.host sproul hub.docker/github`
+fi
+z=sproul:$GH22
+http_git_ptr=`sed -e "s;git@github.com:;https://$z\\@github.com/;" <<< $ssh_git_ptr`
+echo $http_git_ptr
+exit
+$pd/bin/git.ssh_to_http git@github.com:sproul/fin_doc_parser.git
+exit
+$pd/bin/git.ssh_to_http -test
