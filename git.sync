@@ -1,9 +1,5 @@
 . proxy_configure.sh
-if [ -r $HOME/.gh22 ]; then
-        export GH22=`cat $HOME/.gh22`
-else
-        export GH22=''
-fi
+export GH22=''
 if [ -r $HOME/.gh ]; then
         export ghpat2=sproul:`cat $HOME/.gh`
 else

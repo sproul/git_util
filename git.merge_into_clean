@@ -93,21 +93,47 @@ fi
 
 original_pwd=`pwd`
 cd ..
-if [ -d "$original_pwd.merge_problem" ]; then
-        echo "$0: error: found directory \"$original_pwd.merge_problem\" already in place, but I need that spot for saving away the old tree" 1>&2
-        echo "rm -rf \"$original_pwd.merge_problem\""
-        exit 1
-fi
-if ! mv "$original_pwd" "$original_pwd.merge_problem"; then
-        echo "$0: mv $original_pwd $original_pwd.merge_problem failed, exiting..." 1>&2
+proj_basename=`basename "$original_pwd"`
+git_clone_dest_dir=$HOME/git/$proj_basename
+if [ -d "$git_clone_dest_dir" ]; then
+        echo "$0: error: found directory \"$git_clone_dest_dir\", but I need to create a new folder by this name into which to git.clone the current repo contents" 1>&2
         exit 1
 fi
 echo "git.clone \"$gurl\""
 if !  git.clone $dry_mode $verbose_mode "$gurl"; then
         echo "$0: git.clone $gurl failed, exiting..." 1>&2
-   exit 1
+        exit 1
 fi
-difr "$original_pwd" "$original_pwd.merge_problem"
+if [ ! -d "$git_clone_dest_dir" ]; then
+        echo "$0: error: expected to find a newly created \"$git_clone_dest_dir\" with the current repo contents" 1>&2
+        exit 1
+fi
+tmp_git_backup=/tmp/$proj_basename.git
+if [ -d "$original_pwd/.git" ]; then
+        if [ -d "$tmp_git_backup" ]; then
+                echo "rm -rf $tmp_git_backup"
+                rm       -rf $tmp_git_backup
+        fi
+        echo.clean "mv \"$original_pwd/.git\" \"$tmp_git_backup\""
+        mv              "$original_pwd/.git"   "$tmp_git_backup"
+fi
+if ! cp -pr "$git_clone_dest_dir/.git" "$original_pwd/.git"; then
+        echo "$0: cp -pr $git_clone_dest_dir/.git $original_pwd/.git failed, exiting..." 1>&2
+        exit 1
+fi
+echo difr "$git_clone_dest_dir" "$original_pwd"
+difr "$git_clone_dest_dir" "$original_pwd" > $k
+wc -l $k
+line_count=`wc -l $k | sed -e 's/ .*//'`
+if [ $line_count -gt 2000 ]; then
+        echo Long output, $line_count lines, in $k, so showing just first 500 lines
+        head -500 $k
+        echo ...
+        echo MORE IN $k
+        echo ...
+else
+        cat $k
+fi
 
 exit
 bx $dp/git_util/git.merge_into_clean

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PATH=`dirname $0`:$PATH
+
 . git.sync
 
 t=`mktemp`
@@ -11,13 +13,17 @@ force_mode=''
 new_branch=''
 while [ -n "$1" ]; do
         case "$1" in
-                -all)
+                a|-all)
                         bx git.up -in_dir $dp/bin
                         bx git.up -in_dir $dp/emacs
                         bx git.up -in_dir $dp/data
-                        difr $dp/bin $dx/bin
-                        difr $dp/emacs $dx/emacs
-                        difr $dp/data $dx/data
+                        case "$HOSTNAME" in
+                                lt5)
+                                        difr $dp/bin $dx/bin
+                                        difr $dp/emacs/lisp $dx/emacs/lisp
+                                        difr $dp/data $dx/data
+                                ;;
+                        esac
                 ;;
                 diff)
                         if [ "$2" != "-rb" ]; then
@@ -55,7 +61,7 @@ while [ -n "$1" ]; do
                         if orcl.on_vpn; then
                                 echo git.up does not automatic checkin when connected to orcl
                                 exit 1
-                        fi 
+                        fi
                 ;;
                 -m)
                         echo "$0: error: no more -m, just pass in comment, unquoted" 1>&2
@@ -118,10 +124,18 @@ else
         comment="$comment_from_parms"
 fi
 
-git.ac $dry_mode $comment
-
 z=`pwd`
 current_dir=`basename "$z"`
+case "$current_dir" in
+        fin_doc_parser)
+                # frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
+                cp ui/src/public/MCBI_Q2_2018_Report.textract0.json.bak ui/src/public/MCBI_Q2_2018_Report.textract0.json
+                cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
+        ;;
+esac
+
+git.ac $dry_mode $comment
+
 branch=`ls ../$current_dir.BRANCH=* 2> /dev/null | sed -e 's/.*=//'`
 if [ -z "$branch" ]; then
         branch=master
@@ -186,3 +200,5 @@ bx $dp/bin/git.up
 exit
 cd $dp/git/change_tracker/
 bx $dp/bin/git.up -dry_run
+ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git_util/git.up -in_dir dp/git/fin_doc_parser
+ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $aip git.up -in_dir dp/git/fin_doc_parser
