@@ -341,8 +341,11 @@ $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
 bx $dp/git_util/git.clone git@github.com:sproul/bin.git
+bx $dp/git_util/git.clone git@github.com:sproul/emacs.git
 bx $dp/git_util/git.clone git@github.com/clj-commons/aleph.git
 git.clone https://github.com/clj-commons/aleph.git
 git.clone https://github.com/clj-commons/aleph.git
 git.clone https://nsproul97@bitbucket.org/qwickrate/monroe.biz.git
 git.clone git@github.com:sproul/git_util.git
+git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git
+git.clone git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git

@@ -11,10 +11,10 @@ Test()
         if [ -d "$t2" ]; then
                 echo "$0: tmp test directory t2 already exists at \"$t2\", cannot continue" 1>&2
                 exit 1
-        fi                
+        fi
         rm -rf $t2a
         rm -rf $t2b
-        
+
         echo "git.clone git@github.com:sproul/t2.git"
         if !  git.clone git@github.com:sproul/t2.git; then
                 echo "$0: git.clone git@github.com:sproul/t2.git failed, exiting..." 1>&2
@@ -69,7 +69,8 @@ while [ -n "$1" ]; do
                 ;;
                 -test)
                         echo Will provoke a merge conflict in test repo t2, and then resolve it
-                        Test
+                        echo NOt sure if still valid... Test
+                        exit
                 ;;
                 *)
                         break
@@ -77,63 +78,46 @@ while [ -n "$1" ]; do
         esac
         shift
 done
-
-gc=.git/config
-if [ ! -f "$gc" ]; then
-        echo "$0: expected file at \"$gc\"" 1>&2
-        exit 1
-fi
-
-gurl=`grep 'url = ' $gc | sed -e 's/	url = //'`
-
-if [ -z "$gurl" ]; then
-        echo "$0: expected a value for \"gurl\" but saw nothing" 1>&2
-        exit 1
-fi
-
-original_pwd=`pwd`
-cd ..
-proj_basename=`basename "$original_pwd"`
-git_clone_dest_dir=$HOME/git/$proj_basename
-if [ -d "$git_clone_dest_dir" ]; then
-        echo "$0: error: found directory \"$git_clone_dest_dir\", but I need to create a new folder by this name into which to git.clone the current repo contents" 1>&2
-        exit 1
-fi
-echo "git.clone \"$gurl\""
-if !  git.clone $dry_mode $verbose_mode "$gurl"; then
-        echo "$0: git.clone $gurl failed, exiting..." 1>&2
-        exit 1
-fi
-if [ ! -d "$git_clone_dest_dir" ]; then
-        echo "$0: error: expected to find a newly created \"$git_clone_dest_dir\" with the current repo contents" 1>&2
-        exit 1
-fi
-tmp_git_backup=/tmp/$proj_basename.git
-if [ -d "$original_pwd/.git" ]; then
-        if [ -d "$tmp_git_backup" ]; then
-                echo "rm -rf $tmp_git_backup"
-                rm       -rf $tmp_git_backup
+if [ -n "$1" ]; then
+        dir=`full_path $1`
+        if [ ! -d "$dir" ]; then
+                echo "$0: error: could not find directory \"$dir\"" 1>&2
+                exit 1
         fi
-        echo.clean "mv \"$original_pwd/.git\" \"$tmp_git_backup\""
-        mv              "$original_pwd/.git"   "$tmp_git_backup"
+else
+        dir=`pwd`
 fi
-if ! cp -pr "$git_clone_dest_dir/.git" "$original_pwd/.git"; then
-        echo "$0: cp -pr $git_clone_dest_dir/.git $original_pwd/.git failed, exiting..." 1>&2
+project=`basename "$dir"`
+clean_git_dir=$HOME/git/$project
+if [ ! -d "$clean_git_dir" ]; then
+        url=`grep 'url =' $dir/.git/config | sed -e 's/.*url = //'`
+        echo I think we need to run:
+        echo git.clone $url
+        echo "$0: IMPL git.clone to set up initial clean dir in \"$clean_git_dir\"" 1>&2
         exit 1
 fi
-echo difr "$git_clone_dest_dir" "$original_pwd"
-difr "$git_clone_dest_dir" "$original_pwd" > $k
-wc -l $k
-line_count=`wc -l $k | sed -e 's/ .*//'`
-if [ $line_count -gt 2000 ]; then
-        echo Long output, $line_count lines, in $k, so showing just first 500 lines
-        head -500 $k
-        echo ...
-        echo MORE IN $k
-        echo ...
-else
-        cat $k
+echo "cd $clean_git_dir"
+cd       $clean_git_dir
+echo.clean "git.up      # sync to latest"
+if ! git.up; then
+        echo "$0: git.up failed, exiting..." 1>&2
+        exit 1
 fi
-
+if ! rm -rf /tmp/.git; then
+        echo "$0: rm -rf /tmp/.git failed, exiting..." 1>&2
+        exit 1
+fi
+if ! mv $dir/.git /tmp; then
+        echo "$0: mv $dir/.git /tmp failed, exiting..." 1>&2
+        exit 1
+fi
+if ! cp -pr $clean_git_dir/.git $dir; then
+        echo "$0: cp -pr $clean_git_dir/.git $dir failed, exiting..." 1>&2
+        exit 1
+fi
+echo.clean "cd $dir"
+cd       $dir
+echo "git.d"
+git.d
 exit
-bx $dp/git_util/git.merge_into_clean
+cd $dp/git/diagnostic-tool/; bx $dp/git_util/git.merge_into_clean

@@ -1,0 +1,44 @@
+:
+dry_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -0|-from_zero)
+                        #       rm old .git, start over
+                        cwd=`pwd`
+                        if [ ! -d .git ]; then
+                                echo "$0: error: could not find directory \".git\" in `pwd`" 1>&2
+                                exit 1
+                        fi
+                        rm -rf /tmp/.git
+                        echo.clean "mv $cwd/.git /tmp"
+                        mv             $cwd/.git /tmp
+                ;;
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+project_name=$( basename $( pwd ) )
+echo Creating a new project $project_name
+git init
+git remote add origin git@github.com:sproul/$project_name.git
+#git branch --set-upstream-to=origin/master master
+git pull
+git branch -u origin/master master
+git.ac
+git.up
+exit
+cd $dp/git_util
+bx $dp/git_util/git.new
