@@ -1,24 +1,44 @@
 :
+cwd=`pwd`
 dry_mode=''
+public_or_private='--private'
+skip_create_repo_mode=''
 verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
                 -0|-from_zero)
-                        #       rm old .git, start over
-                        cwd=`pwd`
+                        #       remove old .git, start over
                         if [ ! -d .git ]; then
                                 echo "$0: error: could not find directory \".git\" in `pwd`" 1>&2
                                 exit 1
                         fi
                         rm -rf /tmp/.git
                         echo.clean "mv $cwd/.git /tmp"
-                        mv             $cwd/.git /tmp
+                        if ! mv             $cwd/.git /tmp; then
+                                echo "$0: mv             $cwd/.git /tmp failed, exiting..." 1>&2
+                                exit 1
+                        fi
+                ;;
+                -dir)
+                        shift
+                        dir="$1"
+                        if [ ! -d "$dir" ]; then
+                                echo "$0: error: could not find directory \"$dir\"" 1>&2
+                                exit 1
+                        fi
+                        cd "$dir"
                 ;;
                 -dry)
                         dry_mode=-dry
                 ;;
+                --public)
+                        public_or_private='--public'
+                ;;
                 -q|-quiet)
                         verbose_mode=''
+                ;;
+                -scr|-skip_create_repo)
+                        skip_create_repo_mode=-skip_create_repo
                 ;;
                 -v|-verbose)
                         verbose_mode=-v
@@ -30,15 +50,55 @@ while [ -n "$1" ]; do
         shift
 done
 
+Make_gitignore()
+{
+        cat <<EOF > .gitignore
+*.bak
+*.new
+*.old
+*exe.stackdump
+*.log.txt
+*-CONFLICT-*
+LS
+midnight.*
+*.log
+ui.htm
+midnight
+.#*
+.unison.*
+*.original
+EOF
+}
+
 project_name=$( basename $( pwd ) )
 echo Creating a new project $project_name
-git init
-git remote add origin git@github.com:sproul/$project_name.git
-#git branch --set-upstream-to=origin/master master
-git pull
-git branch -u origin/master master
-git.ac
-git.up
+#                       g='/cygdrive/c/Program Files/Git/bin/git.exe'
+#                       "$g" init -b main
+if [ -d .git ]; then
+        echo "$0: error: $cwd/.git exists already" 1>&2
+        exit 1
+fi
+if [ ! -f .gitignore ]; then
+        Make_gitignore
+fi
+if [ -z "$skip_create_repo_mode" ]; then
+        export GH_TOKEN=`cat /cygdrive/c/Users/nelsons/.gh`
+        (
+        td=/tmp/git.new.$$
+        mkdir $td
+        cd $td
+        gh repo create $project_name -y $public_or_private < /dev/null
+        cd
+        rm -rf $td
+        )
+fi
+git.clone git@github.com:sproul/$project_name.git
+cp -pr $HOME/git/$project_name/.git .
+#                       "$g" pull --set-upstream origin main < /dev/null
+#                       git pull --set-upstream origin main
+#                       git add . && git commit -m "initial commit" && git push
+git.up version 0
+
 exit
-cd $dp/git_util
+cd /cygdrive/c/Users/nelsons/Sync/init
 bx $dp/git_util/git.new

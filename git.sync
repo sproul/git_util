@@ -9,7 +9,15 @@ while [ -n "$1" ]; do
         case "$1" in
                 -all)
                         shift
-                        for d in bin doc emacs; do
+                        gd="`dirname $0`"/github.dat
+                        if [ ! -f "$gd" ]; then
+                                gd=$dp/git_util/github.dat
+                                if [ ! -f $gd ]; then
+                                        echo "$0: error: could not find \"$gd\"" 1>&2
+                                        exit 1
+                                fi
+                        fi
+                        for d in `cat "$gd"`; do
                                 echo.clean "cd $dp/$d"
                                 cd       $dp/$d
                                 echo.clean "$0 $*"
