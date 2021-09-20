@@ -1,0 +1,55 @@
+:
+
+dry_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+List_projects()
+{
+        if [ -f $HOME/git_projects.list ]; then
+                cat $HOME/git_projects.list
+        elif [ -f $dp/git_util/projects.list ]; then
+                cat $dp/git_util/projects.list
+        else
+                cat <<EOF
+$dp/bin
+$dp/data
+$dp/emacs
+EOF
+        fi | sed -e "s;\$dp;$dp;" -e "s;\$dx;$dx;"
+}
+
+for pdir in `List_projects`; do
+        if [ ! -d  $pdir ]; then
+                if [ -n "$verbose_mode" ]; then
+                        echo warning: did not see $pdir 1>&2
+                fi
+        else
+                cd $pdir
+                echo =======================================================================
+                echo cd $pdir
+                echo "$*"
+                if [ -z "$dry_mode" ]; then
+                        $*
+                fi
+        fi
+done
+
+exit
+$dp/git_util/git.all -dry git.d

@@ -14,16 +14,8 @@ new_branch=''
 while [ -n "$1" ]; do
         case "$1" in
                 a|-all)
-                        bx git.up -in_dir $dp/bin
-                        bx git.up -in_dir $dp/emacs
-                        bx git.up -in_dir $dp/data
-                        case "$HOSTNAME" in
-                                lt5)
-                                        difr $dp/bin $dx/bin
-                                        difr $dp/emacs/lisp $dx/emacs/lisp
-                                        difr $dp/data $dx/data
-                                ;;
-                        esac
+                        git.all $dry_mode git.up
+                        exit
                 ;;
                 diff)
                         if [ "$2" != "-rb" ]; then
