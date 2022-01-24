@@ -1,5 +1,4 @@
 :
-
 t=/tmp/git.d.latest.`pwd | sed -e 's/[^a-zA-Z0-9]/_/g'`
 
 all_mode=''
@@ -29,5 +28,6 @@ done
 
 git diff . > $t
 strait $t
+git status --short
 exit
 bx $dp/git_util/git.d a

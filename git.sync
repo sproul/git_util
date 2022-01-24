@@ -5,6 +5,11 @@ if [ -r $HOME/.gh ]; then
 else
         export ghpat2=''
 fi
+if [ -r $HOME/.bb ]; then
+        export bbpat2=sproul:`cat $HOME/.bb`
+else
+        export bbpat2=''
+fi
 while [ -n "$1" ]; do
         case "$1" in
                 -all)

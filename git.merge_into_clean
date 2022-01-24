@@ -11,10 +11,10 @@ Test()
         if [ -d "$t2" ]; then
                 echo "$0: tmp test directory t2 already exists at \"$t2\", cannot continue" 1>&2
                 exit 1
-        fi
+        fi                
         rm -rf $t2a
         rm -rf $t2b
-
+        
         echo "git.clone git@github.com:sproul/t2.git"
         if !  git.clone git@github.com:sproul/t2.git; then
                 echo "$0: git.clone git@github.com:sproul/t2.git failed, exiting..." 1>&2
@@ -69,8 +69,7 @@ while [ -n "$1" ]; do
                 ;;
                 -test)
                         echo Will provoke a merge conflict in test repo t2, and then resolve it
-                        echo NOt sure if still valid... Test
-                        exit
+                        Test
                 ;;
                 *)
                         break
@@ -79,45 +78,56 @@ while [ -n "$1" ]; do
         shift
 done
 if [ -n "$1" ]; then
-        dir=`full_path $1`
-        if [ ! -d "$dir" ]; then
-                echo "$0: error: could not find directory \"$dir\"" 1>&2
+        if [ ! -d "$1" ]; then
+                echo "$0: error: could not find directory \"$1\"" 1>&2
                 exit 1
         fi
-else
-        dir=`pwd`
+        echo "cd \"$1\""
+        cd       "$1"
 fi
-project=`basename "$dir"`
-clean_git_dir=$HOME/git/$project
-if [ ! -d "$clean_git_dir" ]; then
-        url=`grep 'url =' $dir/.git/config | sed -e 's/.*url = //'`
-        echo I think we need to run:
-        echo git.clone $url
-        echo "$0: IMPL git.clone to set up initial clean dir in \"$clean_git_dir\"" 1>&2
+gc=.git/config
+if [ ! -f "$gc" ]; then
+        echo "$0: expected file at \"$gc\"" 1>&2
         exit 1
 fi
-echo "cd $clean_git_dir"
-cd       $clean_git_dir
-echo.clean "git.up      # sync to latest"
-if ! git.up; then
-        echo "$0: git.up failed, exiting..." 1>&2
+original_pwd=`pwd`
+bdir=`basename "$original_pwd"`
+if ! rm -rf "/tmp/$bdir"; then
+        echo "$0: rm -rf /tmp/$bdir failed, exiting..." 1>&2
         exit 1
 fi
-if ! rm -rf /tmp/.git; then
-        echo "$0: rm -rf /tmp/.git failed, exiting..." 1>&2
+
+gurl=`grep 'url = ' $gc | sed -e 's/	url = //'`
+
+if [ -z "$gurl" ]; then
+        echo "$0: expected a value for \"gurl\" but saw nothing" 1>&2
         exit 1
 fi
-if ! mv $dir/.git /tmp; then
-        echo "$0: mv $dir/.git /tmp failed, exiting..." 1>&2
+cd ..
+if [ -d "$original_pwd.merge_problem" ]; then
+        echo "$0: error: found directory \"$original_pwd.merge_problem\" already in place, but I need that spot for saving away the old tree; proposing:" 1>&2
+        echo "rm -rf \"$original_pwd.merge_problem\""
         exit 1
 fi
-if ! cp -pr $clean_git_dir/.git $dir; then
-        echo "$0: cp -pr $clean_git_dir/.git $dir failed, exiting..." 1>&2
+if ! mv "$original_pwd" "$original_pwd.merge_problem"; then
+        echo "$0: mv $original_pwd $original_pwd.merge_problem failed, exiting..." 1>&2
         exit 1
 fi
-echo.clean "cd $dir"
-cd       $dir
-echo "git.d"
+echo "git clone \"$gurl\""
+if !  git clone $dry_mode $verbose_mode "$gurl"; then
+        echo "$0: git.clone $gurl failed, exiting..." 1>&2
+        exit 1
+fi
+newly_cloned_dir="$original_pwd"
+echo.clean "rm -rf \"$original_pwd.merge_problem/.git\""
+rm             -rf "$original_pwd.merge_problem/.git"
+echo.clean "mv \"$newly_cloned_dir/.git\" \"$original_pwd.merge_problem/.git\""
+mv              "$newly_cloned_dir/.git" "$original_pwd.merge_problem/.git"
+mv "$newly_cloned_dir" "/tmp/$bdir"
+echo.clean "mv \"$original_pwd.merge_problem\" \"$original_pwd\""
+mv              "$original_pwd.merge_problem" "$original_pwd"
+cd "$original_pwd"
 git.d
+
 exit
-cd $dp/git/diagnostic-tool/; bx $dp/git_util/git.merge_into_clean
+bx $dp/git_util/git.merge_into_clean

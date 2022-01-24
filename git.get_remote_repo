@@ -22,4 +22,4 @@ case "$remote_repo" in
 esac
 echo $remote_repo
 exit
-$dp/bin/git.get_remote_repo git@github.com:sproul/fin_doc_parser.git
+bx $dp/git_util/git.get_remote_repo  git@github.com:sproul/fin_doc_parser.git

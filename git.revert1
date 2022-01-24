@@ -1,4 +1,6 @@
 #!/bin/bash
+echo UNTESTED, weird execution to be debugged; exit
+
 fn="$1"
 cd `dirname "$fn"`
 cp -p "$fn"  "$fn.new"
@@ -14,4 +16,4 @@ fn=$DISCOVERY/rest/src/oracle/social/discovery/rest/graphsearch/GraphSearchResul
 fn=$DISCOVERY/deps.xml
 fn=$DISCOVERY/ivy.xml
 diff -b $fn $fn.new
-bx $DROP/bin/git.revert1 $fn
+bx $DROP/git_util/git.revert1 $fn
