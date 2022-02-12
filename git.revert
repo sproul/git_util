@@ -1,14 +1,4 @@
 #!/bin/sh
-# throw away the current changes.  
-#
-echo UNTESTED, and watch out for cd DROP. What is the scope here?
-echo "Note this is not the standard meaning for git revert: as discussed at http://stackoverflow.com/questions/4114095/git-revert-to-previous-commit-how, With git, revert has a very specific meaning: create a commit with the reverse patch to cancel it out. This way you don't rewrite any history."
-echo "Note this is not the standard meaning for git revert: as discussed at http://stackoverflow.com/questions/4114096/git-revert-to-previous-commit-how, With git, revert has a very specific meaning: create a commit with the reverse patch to cancel it out. This way you don't rewrite any history."
-echo "Note this is not the standard meaning for git revert: as discussed at http://stackoverflow.com/questions/4114097/git-revert-to-previous-commit-how, With git, revert has a very specific meaning: create a commit with the reverse patch to cancel it out. This way you don't rewrite any history."
-echo "Note this is not the standard meaning for git revert: as discussed at http://stackoverflow.com/questions/4114098/git-revert-to-previous-commit-how, With git, revert has a very specific meaning: create a commit with the reverse patch to cancel it out. This way you don't rewrite any history."
-echo "Note this is not the standard meaning for git revert: as discussed at http://stackoverflow.com/questions/4114099/git-revert-to-previous-commit-how, With git, revert has a very specific meaning: create a commit with the reverse patch to cancel it out. This way you don't rewrite any history."
-
-cd $DROP
-git reset --hard HEAD
+echo use git.rm_local_changes instead
 exit
 sh -x $DROP/bin/git.revert 

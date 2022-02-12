@@ -1,0 +1,28 @@
+:
+# to use when we have a somehow damaged version of a git branch, which may contain valuable changes
+#
+# This script acquires a newly cloned copy in its place and then diffs w/ the old version (which the user then merges from the shell)
+proj_dir=$1
+proj=`basename $proj_dir`
+if [ -d $proj_dir.old ]; then
+        echo "$0: error: $proj_dir.old already exists, what is it?" 1>&2
+        exit 1
+fi
+if orcl.on_vpn; then
+        export HTTPS_PROXY=http://www-proxy-brmdc.us.oracle.com:80
+        export HTTP_PROXY=http://www-proxy-brmdc.us.oracle.com:80
+fi
+cd $proj_dir/..
+damaged_dir=$proj_dir.old
+if ! mv $proj_dir $damaged_dir; then
+        echo "$0: mv $proj_dir $damaged_dir failed, exiting..." 1>&2
+        exit 1
+fi
+if ! git clone https://sproul:`cat $HOME/.gh`@github.com/sproul/$proj.git; then
+        echo "$0: git clone https://sproul:`cat $HOME/.gh`@github.com/sproul/$proj.git failed, exiting..." 1>&2
+        exit 1
+fi
+difr $proj_dir $damaged_dir
+exit
+proj_dir=$dp/emacs
+bx $dp/git_util/git.repair $dp/emacs
