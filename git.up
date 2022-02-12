@@ -128,8 +128,10 @@ Prep_for_github_thru_the_firewall()
                         cat $safe_gc | sed -e "s;^\turl =.*;\turl = https://sproul:`cat $HOME/.gh`@github.com/sproul/$repo_name.git;" > $gc
                 fi
         fi
-        echo diff $safe_gc $gc
-        diff $safe_gc $gc
+        if [ -n "$verbose_mode" ]; then
+                echo diff $safe_gc $gc
+                diff $safe_gc $gc
+        fi
 }
 
 comment_from_parms="$*"
