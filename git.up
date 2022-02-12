@@ -117,6 +117,12 @@ else
 fi
 
 z=`pwd`
+if [ -f git.pre_checkin_test.sh ]; then
+        if ! bash git.pre_checkin_test.sh; then
+                echo "$0: bash git.pre_checkin_test.sh failed, exiting..." 1>&2
+                exit 1
+        fi
+fi
 current_dir=`basename "$z"`
 case "$current_dir" in
         fin_doc_parser)
