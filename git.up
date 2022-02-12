@@ -11,6 +11,7 @@ dry_mode=''
 
 force_mode=''
 new_branch=''
+verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
                 a|-all)
@@ -88,6 +89,9 @@ while [ -n "$1" ]; do
                                 exit 1
                         fi
                 ;;
+                -v|-verbose)
+                        verbose_mode=-verbose
+                ;;
                 *)
                         break
                 ;;
@@ -102,6 +106,29 @@ Find_comment()
                 comment=`cat $dotc_list`
                 rm $dotc_list
         fi
+}
+
+Prep_for_github_thru_the_firewall()
+{
+        if [ -z "$repo_name" ]; then
+                echo "$0: error: expected a value for \"repo_name\" by the time we got to Prep_for_github_thru_the_firewall, but saw nothing" 1>&2
+                return 1
+        fi
+        gc=.git/config
+        safe_gc=$gc.$$
+        trap "mv $safe_gc $gc" EXIT
+        if grep "url = https://sproul:" $gc > /dev/null 2>&1; then
+                # left over from a previous run, but we don't want the gc value to sit here indefinitely
+                cat $gc | sed -e "s;^\turl = https://sproul:.*;\turl = git@github.com:sproul/$repo_name.git;" > $safe_gc
+        else
+                if [ -f $HOME/.gh ]; then
+                        # the normal case: temporarily insert gc value for this transaction
+                        mv $gc $safe_gc
+                        cat $safe_gc | sed -e "s;^\turl =.*;\turl = https://sproul:`cat $HOME/.gh`@github.com/sproul/$repo_name.git;" > $gc
+                fi
+        fi
+        echo diff $safe_gc $gc
+        diff $safe_gc $gc
 }
 
 comment_from_parms="$*"
@@ -141,6 +168,9 @@ fi
 
 echo "git push origin $branch"
 if [ -z "$dry_mode" ]; then
+        if orcl.on_vpn; then
+                Prep_for_github_thru_the_firewall
+        fi
         # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
         #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
         #       hint: Updates were rejected because the remote contains work that you do
@@ -177,9 +207,6 @@ if [ -z "$dry_mode" ]; then
                         exit 1
                 fi
         fi
-fi
-if [ -f $gc.$$ ]; then
-        mv $gc.$$ $gc
 fi
 exit
 bx $dp/bin/git.up -repo weblog_2_tests
