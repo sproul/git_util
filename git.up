@@ -6,7 +6,7 @@ export PATH=`dirname $0`:$PATH
 
 t=`mktemp`
 
-repo_name=''
+export repo_name=''
 dry_mode=''
 
 force_mode=''
@@ -112,7 +112,8 @@ Prep_for_github_thru_the_firewall()
 {
         if [ -z "$repo_name" ]; then
                 echo "$0: error: expected a value for \"repo_name\" by the time we got to Prep_for_github_thru_the_firewall, but saw nothing" 1>&2
-                return 1
+                exit 1
+                #return 1
         fi
         gc=.git/config
         safe_gc=$gc.$$
