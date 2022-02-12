@@ -6,7 +6,7 @@ export PATH=`dirname $0`:$PATH
 
 t=`mktemp`
 
-export repo_name=''
+repo_name=''
 dry_mode=''
 
 force_mode=''
@@ -152,7 +152,8 @@ if [ -f git.pre_checkin_test.sh ]; then
         fi
 fi
 current_dir=`basename "$z"`
-case "$current_dir" in
+repo_name=$current_dir
+case "$repo_name" in
         fin_doc_parser)
                 # frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
                 cp ui/src/public/MCBI_Q2_2018_Report.textract0.json.bak ui/src/public/MCBI_Q2_2018_Report.textract0.json
