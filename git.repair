@@ -3,6 +3,9 @@
 #
 # This script acquires a newly cloned copy in its place and then diffs w/ the old version (which the user then merges from the shell)
 proj_dir=$1
+if [ -z "$proj_dir" ]; then
+        proj_dir=$(pwd)
+fi
 proj=`basename $proj_dir`
 if [ -d $proj_dir.old ]; then
         echo "$0: error: $proj_dir.old already exists, what is it?" 1>&2
