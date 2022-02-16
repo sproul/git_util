@@ -1,31 +1,46 @@
 :
 # to use when we have a somehow damaged version of a git branch, which may contain valuable changes
 #
-# This script acquires a newly cloned copy in its place and then diffs w/ the old version (which the user then merges from the shell)
+# This script operates on the assumption that if we just have a fresh and current .git dir, then we can resolve all other difficulties.
+# Also it is nice to have the latest versions of stuff handy and ready to be merged in.
 proj_dir=$1
 if [ -z "$proj_dir" ]; then
         proj_dir=$(pwd)
+else
+        cd "$proj_dir"
 fi
 proj=`basename $proj_dir`
-if [ -d $proj_dir.old ]; then
-        echo "$0: error: $proj_dir.old already exists, what is it?" 1>&2
+new_dir=/tmp/$proj
+if [ -d $new_dir ]; then
+        echo "$0: error: $new_dir already exists, what is it?" 1>&2
         exit 1
 fi
-if orcl.on_vpn; then
-        export HTTPS_PROXY=http://www-proxy-brmdc.us.oracle.com:80
-        export HTTP_PROXY=http://www-proxy-brmdc.us.oracle.com:80
-fi
-cd $proj_dir/..
-damaged_dir=$proj_dir.old
-if ! mv $proj_dir $damaged_dir; then
-        echo "$0: mv $proj_dir $damaged_dir failed, exiting..." 1>&2
+if ! mkdir -p $new_dir; then
+        echo "$0: mkdir -p $new_dir failed, exiting..." 1>&2
         exit 1
 fi
-if ! git clone https://sproul:`cat $HOME/.gh`@github.com/sproul/$proj.git; then
-        echo "$0: git clone https://sproul:`cat $HOME/.gh`@github.com/sproul/$proj.git failed, exiting..." 1>&2
+. git.prep_auth.inc
+url=`grep 'url = ' $proj_dir/.git/config | sed -e 's;^[\t ]*url = ;;'`
+if ! cd $new_dir/..; then
+        echo "$0: cd $new_dir/.. failed, exiting..." 1>&2
         exit 1
 fi
-difr $proj_dir $damaged_dir
+. proxy_configure.sh
+if ! git clone "$url"; then
+        echo "$0: git clone $url failed, exiting..." 1>&2
+        exit 1
+fi
+backup_dir=/tmp/.git
+rm -rf $backup_dir
+if ! mv $proj_dir/.git $backup_dir; then
+        echo "$0: mv $proj_dir/.git /tmp/.git failed, exiting..." 1>&2
+        exit 1
+fi
+if ! mv "$new_dir/.git" "$proj_dir/.git"; then
+        echo "$0: mv $new_dir/.git $proj_dir/.git failed, exiting..." 1>&2
+        exit 1
+fi
+difr $proj_dir $new_dir
 exit
 proj_dir=$dp/emacs
 bx $dp/git_util/git.repair $dp/emacs

@@ -156,7 +156,9 @@ if [ -z "$dry_mode" ]; then
         #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
         #       hint: 'git pull') before pushing again.
         #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-        if ! git push origin $branch > $t 2>&1; then
+        if git push origin $branch > $t 2>&1; then
+                git pull
+        else
                 if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
                         if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
                                 cat $t
