@@ -108,35 +108,6 @@ Find_comment()
         fi
 }
 
-Prep_for_github_thru_the_firewall()
-{
-        if [ -z "$repo_name" ]; then
-                echo "$0: error: expected a value for \"repo_name\" by the time we got to Prep_for_github_thru_the_firewall, but saw nothing" 1>&2
-                exit 1
-                #return 1
-        fi
-        gc=.git/config
-        safe_gc=$gc.$$
-        if grep "url = https://sproul:" $gc > /dev/null 2>&1; then
-                # left over from a previous run, but we don't want the gc value to sit here indefinitely
-                cat $gc | sed -e "s;^\turl = https://sproul:.*;\turl = git@github.com:sproul/$repo_name.git;" > $safe_gc
-                trap "mv $safe_gc $gc" EXIT
-        elif grep "url = git@github.com:sproul/" $gc > /dev/null 2>&1; then
-                if [ -f $HOME/.gh ]; then
-                        # the normal case: temporarily insert gc value for this transaction
-                        mv $gc $safe_gc
-                        trap "mv $safe_gc $gc" EXIT
-                        cat $safe_gc | sed -e "s;^\turl =.*;\turl = https://sproul:`cat $HOME/.gh`@github.com/sproul/$repo_name.git;" > $gc
-                fi
-        fi
-        if [ -f $safe_gc ]; then
-                if [ -n "$verbose_mode" ]; then
-                        echo diff $safe_gc $gc
-                        diff $safe_gc $gc
-                fi
-        fi
-}
-
 comment_from_parms="$*"
 comment_from_c=`Find_comment`
 if [ -n "$comment_from_c" ]; then
@@ -176,7 +147,7 @@ fi
 echo "git push origin $branch"
 if [ -z "$dry_mode" ]; then
         if orcl.on_vpn; then
-                Prep_for_github_thru_the_firewall
+                . git.prep_auth.inc
         fi
         # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
         #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
@@ -213,6 +184,11 @@ if [ -z "$dry_mode" ]; then
                         echo "$0: error: git push origin failed" 1>&2
                         exit 1
                 fi
+        fi
+        echo "git pull"
+        if ! git pull; then
+                echo "$0: git pull failed, exiting..." 1>&2
+                exit 1
         fi
 fi
 exit
