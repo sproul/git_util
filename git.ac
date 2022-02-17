@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 dry_mode=''
 rm_cmd='echo rm'
 while [ -n "$1" ]; do
