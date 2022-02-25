@@ -20,6 +20,7 @@ if ! mkdir -p $new_dir; then
         exit 1
 fi
 . git.prep_auth.inc
+Prep_auth
 url=`grep 'url = ' $proj_dir/.git/config | sed -e 's;^[\t ]*url = ;;'`
 if ! cd $new_dir/..; then
         echo "$0: cd $new_dir/.. failed, exiting..." 1>&2

@@ -1,5 +1,6 @@
+# important that git_util come first
+git_util
 bin
 data
 emacs
-git_util
 home
