@@ -28,6 +28,11 @@ done
 
 git diff . > $t
 strait $t
-git status --short
+git status --short > $t
+if [ -s "$t" ]; then
+        . modified_repos.inc
+        git_util__modified_repos__Add_to_list $repo_name
+fi
+cat $t
 exit
 bx $dp/git_util/git.d a

@@ -12,11 +12,15 @@ git_util__modified_repos__Remove_from_list()
         mv $modified_repo_statuses_string_fn.new $modified_repo_statuses_string_fn
 }
 
-git_util__modified_repos__Add_repo_to_modified_list()
+git_util__modified_repos__Add_to_list()
 {
         proj=$1
         if ! grep "^$proj$" $modified_repo_statuses_string_fn > /dev/null 2>&1; then
-                echo "$proj" >> $modified_repo_statuses_string_fn
+                (
+                echo "$proj"
+                cat $modified_repo_statuses_string_fn
+                ) | sort > $modified_repo_statuses_string_fn.new
+                mv $modified_repo_statuses_string_fn.new $modified_repo_statuses_string_fn
         fi
 }
 
@@ -33,7 +37,7 @@ git_util__modified_repos__Check_repo()
         fi        
         rm $t
         if [ -n "$output" ]; then
-                git_util__modified_repos__Add_repo_to_modified_list `basename "$proj_root_dir"`
+                git_util__modified_repos__Add_to_list `basename "$proj_root_dir"`
         fi
         )
 }
@@ -54,4 +58,9 @@ git_util__modified_repos_Ls()
 {
         touch $modified_repo_statuses_string_fn
         cat   $modified_repo_statuses_string_fn | tr '\n' ' '
+}
+
+git_util__modified_repos_Ls()
+{
+        cat $modified_proj_statuses_string_fn | tr '\n' ' '
 }
