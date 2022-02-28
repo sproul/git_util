@@ -18,28 +18,6 @@ while [ -n "$1" ]; do
                         git.all $dry_mode git.up
                         exit
                 ;;
-                diff)
-                        if [ "$2" != "-rb" ]; then
-                                echo "$0: error: hm, expected that we were looking at diff output, but I am not sure what we are looking at: $*" 1>&2
-                                exit 1
-                        fi
-                        shift
-                        shift
-                        unmodified_fn=$1
-                        modified_fn=$2
-                        if [ ! -f "$modified_fn" ]; then
-                                echo "$0: error: could not find \"$modified_fn\"" 1>&2
-                                exit 1
-                        fi
-                        echo "cp -p $modified_fn $unmodified_fn"
-                        cp       -p $modified_fn $unmodified_fn
-                        shift
-                        shift
-                        updated_fn=$unmodified_fn
-                        echo "git commit -m \"$*\" $updated_fn"
-                        git       commit -m "$*" $updated_fn
-                        exit
-                ;;
                 -in_dir)
                         shift
                         cd "$1"
@@ -49,16 +27,6 @@ while [ -n "$1" ]; do
                 ;;
                 -f|-force)
                         force_mode=-force
-                ;;
-                -from_cron)
-                        if orcl.on_vpn; then
-                                echo git.up does not automatic checkin when connected to orcl
-                                exit 1
-                        fi
-                ;;
-                -m)
-                        echo "$0: error: no more -m, just pass in comment, unquoted" 1>&2
-                        exit 1
                 ;;
                 -new_branch)
                         new_branch_flag="$1"
@@ -193,6 +161,8 @@ if [ -z "$dry_mode" ]; then
                 echo "$0: git pull failed, exiting..." 1>&2
                 exit 1
         fi
+        . modified_repos.inc
+        git_util__modified_repos__Remove_from_list $repo_name
 fi
 exit
 bx $dp/bin/git.up -repo weblog_2_tests
