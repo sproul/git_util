@@ -40,6 +40,9 @@ while [ -n "$1" ]; do
                         git_util__modified_repos__Add_to_list "$repo"
                         exit
                 ;;
+                -check_all)
+                        git_util__modified_repos__Check_all_repos
+                ;;
                 -dry)
                         dry_mode=-dry
                 ;;

@@ -62,5 +62,7 @@ git_util__modified_repos_Ls()
 
 git_util__modified_repos_Ls()
 {
-        cat $modified_proj_statuses_string_fn | tr '\n' ' '
+        if [ -n "$modified_repo_statuses_string_fn" ]; then
+                cat $modified_repo_statuses_string_fn | sed -e 's;.*/;;' | tr '\n' ' '
+        fi
 }

@@ -1,6 +1,7 @@
 # important that git_util come first
-git_util
-bin
-data
-emacs
-home
+$dp/git_util
+$dp/bin
+$dp/data
+$dp/emacs
+$dp/home
+$dx/t

@@ -10,6 +10,15 @@ while [ -n "$1" ]; do
                         git.all $dry_mode git.d
                         exit
                 ;;
+                -in_dir)
+                        shift
+                        dir="$1"
+                        if [ ! -d "$dir" ]; then
+                                echo "$0: error: could not find directory \"$dir\"" 1>&2
+                                exit 1
+                        fi
+                        cd "$dir"
+                ;;
                 -dry)
                         dry_mode=-dry
                 ;;
@@ -28,10 +37,12 @@ done
 
 git diff . > $t
 strait $t
+. modified_repos.inc
 git status --short > $t
 if [ -s "$t" ]; then
-        . modified_repos.inc
-        git_util__modified_repos__Add_to_list $repo_name
+        git_util__modified_repos__Add_to_list `pwd`
+else
+        git_util__modified_repos__Remove_from_list `pwd`
 fi
 cat $t
 exit
