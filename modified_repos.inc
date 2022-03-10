@@ -7,9 +7,17 @@ modified_repo_statuses_string_fn="$dp/.modified_repo_statuses"
 git_util__modified_repos__Remove_from_list()
 {
         proj=$1
-        touch $modified_repo_statuses_string_fn
-        grep -v "^$proj$" $modified_repo_statuses_string_fn > $modified_repo_statuses_string_fn.new
-        mv $modified_repo_statuses_string_fn.new $modified_repo_statuses_string_fn
+        if [ -s $modified_repo_statuses_string_fn ]; then
+                if grep "^$proj$" $modified_repo_statuses_string_fn > /dev/null 2>&1; then
+                        grep -v "^$proj$" $modified_repo_statuses_string_fn > /tmp/modified_repo_statuses_string_fn.new
+                elif grep "/$proj$" $modified_repo_statuses_string_fn > /dev/null 2>&1; then
+                        # works with basename also
+                        grep -v "/$proj$" $modified_repo_statuses_string_fn > /tmp/modified_repo_statuses_string_fn.new
+                else
+                        return
+                fi
+                mv /tmp/modified_repo_statuses_string_fn.new $modified_repo_statuses_string_fn
+        fi
 }
 
 git_util__modified_repos__Add_to_list()
