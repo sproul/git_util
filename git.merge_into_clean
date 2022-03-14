@@ -1,4 +1,9 @@
 :
+echo USE git.repair instead
+exit 1
+
+
+
 # - mv current tree to *.merge_problem
 # - make a new, clean tree
 # - difr in order to merge to the clean tree

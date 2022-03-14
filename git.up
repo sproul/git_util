@@ -147,7 +147,8 @@ if [ -z "$dry_mode" ]; then
                                 echo "git status"
                                 git status
                                 echo EOD
-                                echo a way to resolve this: git.merge_into_clean
+                                echo a way to resolve this:
+                                echo git.repair
                                 exit 1
                         fi
                 fi
