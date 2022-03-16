@@ -73,6 +73,7 @@ Find_comment()
         if [ -n "$dotc_list" ]; then
                 comment=`cat $dotc_list`
                 rm $dotc_list
+                echo $comment
         fi
 }
 
