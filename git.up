@@ -81,7 +81,7 @@ comment_from_parms="$*"
 comment_from_c=`Find_comment`
 if [ -n "$comment_from_c" ]; then
         if [ -n "$comment_from_parms" ]; then
-                echo "$0: error: did not expect a .c comment and also a command line comment -- which should I use?" 1>&2
+                echo "$0: error: did not expect $comment_from_c and also a command line comment -- which should I use?" 1>&2
                 exit 1
         fi
         comment="$comment_from_c"
