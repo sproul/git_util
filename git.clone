@@ -138,7 +138,7 @@ else
 fi
 if [ -d $project_name ]; then
         if [ -z "$force_mode" ]; then
-                echo "$0: error: $git_dir/$project_name already exists (use -f to replace)" 1>&2
+                echo "$0: error: $git_dir/$project_name already exists (from `pwd`) (use -f to replace)" 1>&2
                 exit 1
         fi
         if [ -d /tmp/$project_name ]; then
@@ -354,3 +354,4 @@ git.clone https://nsproul97@bitbucket.org/qwickrate/monroe.biz.git
 git.clone git@github.com:sproul/git_util.git
 git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git
 git.clone git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git
+git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube'

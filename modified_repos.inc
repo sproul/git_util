@@ -74,3 +74,4 @@ git_util__modified_repos_Ls()
                 cat $modified_repo_statuses_string_fn | sed -e 's;.*/;;' | tr '\n' ' '
         fi
 }
+export PS1="\d \A \$( git_util__modified_repos_Ls )\h/\u \!\$ "
