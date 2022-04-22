@@ -42,9 +42,6 @@ if [ -z "$comment" ]; then
         exit
 fi
 
-echo git.ac removing emacs temp files...
-find . -name "#*" -print0 | xargs -0 $rm_cmd
-
 echo "git add --all ."
 if [ -z "$dry_mode" ]; then
         git       add --all .

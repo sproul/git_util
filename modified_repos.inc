@@ -64,14 +64,10 @@ Checkin_all()
 
 git_util__modified_repos_Ls()
 {
-        touch $modified_repo_statuses_string_fn
-        cat   $modified_repo_statuses_string_fn | tr '\n' ' '
-}
-
-git_util__modified_repos_Ls()
-{
         if [ -n "$modified_repo_statuses_string_fn" ]; then
-                cat $modified_repo_statuses_string_fn | sed -e 's;.*/;;' | tr '\n' ' '
+                if [ -f "$modified_repo_statuses_string_fn" ]; then
+                        cat $modified_repo_statuses_string_fn | sed -e 's;.*/;;' | tr '\n' ' '
+                fi
         fi
 }
 export PS1="\d \A \$( git_util__modified_repos_Ls )\h/\u \!\$ "

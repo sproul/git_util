@@ -1,19 +1,128 @@
 #!/bin/bash
 
-export PATH=`dirname $0`:$PATH
+Checkin()
+{
+        z=`pwd`
+        if [ -f git.pre_checkin_test.sh ]; then
+                if ! bash git.pre_checkin_test.sh; then
+                        echo "$0: bash git.pre_checkin_test.sh failed, exiting..." 1>&2
+                        exit 1
+                fi
+        fi
+        current_dir=`basename "$z"`
+        repo_name=$current_dir
+        if [ -z "$comment" ]; then
+                case "$repo_name" in
+                        emacs)
+                                comment="shortcut update"
+                        ;;
+                esac
+        fi
+        case "$repo_name" in
+                fin_doc_parser)
+                        # frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
+                        cp ui/src/public/MCBI_Q2_2018_Report.textract0.json.bak ui/src/public/MCBI_Q2_2018_Report.textract0.json
+                        cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
+                ;;
+        esac
 
+        git.ac $dry_mode $comment
+
+        branch=`ls ../$current_dir.BRANCH=* 2> /dev/null | sed -e 's/.*=//'`
+        if [ -z "$branch" ]; then
+                branch=master
+        fi
+
+        echo "git push origin $branch"
+        if [ -z "$dry_mode" ]; then
+                if orcl.on_vpn; then
+                        . git.prep_auth.inc
+                        Prep_auth
+                fi
+                # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
+                #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
+                #       hint: Updates were rejected because the remote contains work that you do
+                #       hint: not have locally. This is usually caused by another repository pushing
+                #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
+                #       hint: 'git pull') before pushing again.
+                #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+                if git push origin $branch > $t 2>&1; then
+                        git pull
+                else
+                        if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
+                                if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
+                                        cat $t
+                                        exit 1
+                                fi
+                        fi
+                        echo $0 saw merge problem...
+                        echo ===========================================================================
+                        cat $t
+                        echo ===========================================================================
+                        echo will try to rectify by rebasing, which will auto-merge if practical:
+                        # before pushing, do this, will auto-merge:
+                        echo "git pull --rebase"
+                        if [ -z "$dry_mode" ]; then
+                                if ! git pull --rebase; then
+                                        echo "$0: git pull --rebase failed......................" 1>&2
+                                        echo "git status"
+                                        git status
+                                        echo EOD
+                                        echo a way to resolve this:
+                                        echo git.repair
+                                        exit 1
+                                fi
+                        fi
+                        if ! git push origin $branch; then
+                                echo "$0: error: git push origin failed" 1>&2
+                                exit 1
+                        fi
+                fi
+                echo "git pull"
+                if ! git pull; then
+                        echo "$0: git pull failed, exiting..." 1>&2
+                        exit 1
+                fi
+                . modified_repos.inc
+                git_util__modified_repos__Remove_from_list $repo_name
+        fi
+}
+
+Find_comment_in_source_tree()
+{
+        dotc_list=`find . -name '.c'`
+        if [ -n "$dotc_list" ]; then
+                comment=`cat $dotc_list`
+                rm $dotc_list
+                echo $comment
+        fi
+}
+
+Resolve_comment()
+{
+        comment_from_parms="$*"
+        comment_from_c=`Find_comment_in_source_tree`
+        if [ -n "$comment_from_c" ]; then
+                if [ -n "$comment_from_parms" ]; then
+                        echo "$0: error: did not expect $comment_from_c and also a command line comment -- which should I use?" 1>&2
+                        exit 1
+                fi
+                comment="$comment_from_c"
+        else
+                comment="$comment_from_parms"
+        fi
+        echo $comment
+}
+
+export PATH=`dirname $0`:$PATH
 if [ ! -d .git ]; then
         echo "$0: error: could not find directory \".git\"" 1>&2
         exit 1
 fi
-
 . git.sync
-
 t=`mktemp`
-
 repo_name=''
 dry_mode=''
-
 force_mode=''
 new_branch=''
 verbose_mode=''
@@ -72,128 +181,10 @@ while [ -n "$1" ]; do
         shift
 done
 
-Find_comment()
-{
-        dotc_list=`find . -name '.c'`
-        if [ -n "$dotc_list" ]; then
-                comment=`cat $dotc_list`
-                rm $dotc_list
-                echo $comment
-        fi
-}
+comment=`Resolve_comment $*` || echo 1
+Checkin
 
-comment_from_parms="$*"
-comment_from_c=`Find_comment`
-if [ -n "$comment_from_c" ]; then
-        if [ -n "$comment_from_parms" ]; then
-                echo "$0: error: did not expect $comment_from_c and also a command line comment -- which should I use?" 1>&2
-                exit 1
-        fi
-        comment="$comment_from_c"
-else
-        comment="$comment_from_parms"
-fi
-
-z=`pwd`
-if [ -f git.pre_checkin_test.sh ]; then
-        if ! bash git.pre_checkin_test.sh; then
-                echo "$0: bash git.pre_checkin_test.sh failed, exiting..." 1>&2
-                exit 1
-        fi
-fi
-current_dir=`basename "$z"`
-repo_name=$current_dir
-if [ -z "$comment" ]; then
-        case "$repo_name" in
-                emacs)
-                        comment="shortcut update"
-                ;;
-        esac
-fi 
-case "$repo_name" in
-        fin_doc_parser)
-                # frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
-                cp ui/src/public/MCBI_Q2_2018_Report.textract0.json.bak ui/src/public/MCBI_Q2_2018_Report.textract0.json
-                cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
-        ;;
-esac
-
-git.ac $dry_mode $comment
-
-branch=`ls ../$current_dir.BRANCH=* 2> /dev/null | sed -e 's/.*=//'`
-if [ -z "$branch" ]; then
-        branch=master
-fi
-
-echo "git push origin $branch"
-if [ -z "$dry_mode" ]; then
-        if orcl.on_vpn; then
-                . git.prep_auth.inc
-                Prep_auth
-        fi
-        # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
-        #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
-        #       hint: Updates were rejected because the remote contains work that you do
-        #       hint: not have locally. This is usually caused by another repository pushing
-        #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
-        #       hint: 'git pull') before pushing again.
-        #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-        if git push origin $branch > $t 2>&1; then
-                git pull
-        else
-                if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
-                        if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
-                                cat $t
-                                exit 1
-                        fi
-                fi
-                echo $0 saw merge problem...
-                echo ===========================================================================
-                cat $t
-                echo ===========================================================================
-                echo will try to rectify by rebasing, which will auto-merge if practical:
-                # before pushing, do this, will auto-merge:
-                echo "git pull --rebase"
-                if [ -z "$dry_mode" ]; then
-                        if ! git pull --rebase; then
-                                echo "$0: git pull --rebase failed......................" 1>&2
-                                echo "git status"
-                                git status
-                                echo EOD
-                                echo a way to resolve this:
-                                echo git.repair
-                                exit 1
-                        fi
-                fi
-                if ! git push origin $branch; then
-                        echo "$0: error: git push origin failed" 1>&2
-                        exit 1
-                fi
-        fi
-        echo "git pull"
-        if ! git pull; then
-                echo "$0: git pull failed, exiting..." 1>&2
-                exit 1
-        fi
-        . modified_repos.inc
-        git_util__modified_repos__Remove_from_list $repo_name
-fi
 exit
-bx $dp/bin/git.up -repo weblog_2_tests
-exit
-comment='add documentation comments to the head of each script'
-bx $dp/bin/git.up -m "$comment"
-exit
-bx $dp/bin/git.up diff -rb /home/nsproul/git/public-maven-repo/staging.process/src/main/java/oracle/fmw/platform/mavenfactory/StagingController.java /home/nsproul/dp/public-maven-repo-master/staging.process/src/main/java/oracle/fmw/platform/mavenfactory/StagingController.java use 12.2.1.1 system.properties as the default
-exit
-cd $dp/qr/calculator/
-(
-echo 'segregate test from prod code'
-echo 'doc ytm code'
-) > .comment
-bx $dp/bin/git.up
-exit
-cd $dp/git/change_tracker/
 bx $dp/bin/git.up -dry_run
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git_util/git.up -in_dir dp/git/fin_doc_parser
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $aip git.up -in_dir dp/git/fin_doc_parser
