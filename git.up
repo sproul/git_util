@@ -103,6 +103,13 @@ if [ -f git.pre_checkin_test.sh ]; then
 fi
 current_dir=`basename "$z"`
 repo_name=$current_dir
+if [ -z "$comment" ]; then
+        case "$repo_name" in
+                emacs)
+                        comment="shortcut update"
+                ;;
+        esac
+fi 
 case "$repo_name" in
         fin_doc_parser)
                 # frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
