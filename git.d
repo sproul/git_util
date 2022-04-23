@@ -41,6 +41,16 @@ done
 
 git diff . > $t
 strait $t
+
+if [ -n "$pull_latest_updates_mode" ]; then
+        proj=`pwd | sed -e 's;.*/;;'`
+        case $proj in
+                data)
+                        git add shell/`hostname`* > /dev/null 2>&1
+                        git commit -m 'shell buffer archive' .
+                ;;
+        esac
+fi
 . modified_repos.inc
 git status --short > $t
 if [ -s "$t" ]; then
