@@ -90,7 +90,7 @@ Checkin()
 
 Synchronize_high_traffic_shared_projects()
 {
-        for proj in bin data emacs; do
+        for proj in bin data emacs git_util; do
                 echo $proj=================================
                 cd $dp/$proj
                 git.d -pull_latest_updates_if_no_local_changes
