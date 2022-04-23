@@ -88,6 +88,16 @@ Checkin()
         fi
 }
 
+Synchronize_high_traffic_shared_projects()
+{
+        for proj in bin data emacs; do
+                echo $proj=================================
+                cd $dp/$proj
+                git.d -pull_latest_updates_if_no_local_changes
+        done
+}
+
+
 Find_comment_in_source_tree()
 {
         dotc_list=`find . -name '.c'`
@@ -171,6 +181,9 @@ while [ -n "$1" ]; do
                                 exit 1
                         fi
                 ;;
+                -Synchronize_high_traffic_shared_projects_if_no_local_changes)
+                        Synchronize_high_traffic_shared_projects
+                ;;
                 -v|-verbose)
                         verbose_mode=-verbose
                 ;;
@@ -188,3 +201,5 @@ exit
 bx $dp/bin/git.up -dry_run
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git_util/git.up -in_dir dp/git/fin_doc_parser
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $aip git.up -in_dir dp/git/fin_doc_parser
+exit
+bx $dp/git_util/git.up -Synchronize_high_traffic_shared_projects_if_no_local_changes)
