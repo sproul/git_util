@@ -49,6 +49,14 @@ branch="$2"
 
 project_name=`basename "$remote_repo" | sed -e 's/.git$//'`
 
+case "$project_name" in
+        promotion-config)
+                branch=add_backup_and_deployment_management_code
+                echo "Note that git.clone is automatically setting the branch to be add_minor_comments_and_logging for $project_name"
+        ;;
+esac
+
+
 save_old_as_backup()
 {
         old_branch_marker=`ls $git_dir/$project_name.BRANCH=* 2> /dev/null`
