@@ -28,7 +28,7 @@ Checkin()
 
         git.ac $dry_mode $comment
 
-        branch=`ls ../$current_dir.BRANCH=* 2> /dev/null | sed -e 's/.*=//'`
+        branch=`git.branch`
         if [ -z "$branch" ]; then
                 branch=master
         fi
