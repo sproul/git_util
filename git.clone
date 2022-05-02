@@ -362,4 +362,5 @@ git.clone https://nsproul97@bitbucket.org/qwickrate/monroe.biz.git
 git.clone git@github.com:sproul/git_util.git
 git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git
 git.clone git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git
+git.clone             git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube'
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube'
