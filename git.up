@@ -95,13 +95,31 @@ Checkin()
         fi
 }
 
+Pull_latest_updates_if_no_local_changes()
+{
+        proj=$1
+        echo $proj=================================
+        cd $dp/$proj
+        git.d -pull_latest_updates_if_no_local_changes
+}
+
+
+
 Synchronize_high_traffic_shared_projects()
 {
         for proj in bin data emacs git_util; do
-                echo $proj=================================
-                cd $dp/$proj
-                git.d -pull_latest_updates_if_no_local_changes
+                Pull_latest_updates_if_no_local_changes $proj
         done
+        case "$HOSTNAME" in
+                lt5|x-mac)
+                        Pull_latest_updates_if_no_local_changes fin_doc_parser
+                        Pull_latest_updates_if_no_local_changes monr
+                        if orcl.on_vpn; then
+                                Pull_latest_updates_if_no_local_changes diagnostic-tool
+                        fi
+                ;;
+        esac
+
 }
 
 
