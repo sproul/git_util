@@ -54,7 +54,7 @@ Checkin()
                 #       hint: 'git pull') before pushing again.
                 #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
                 if git push origin $branch > $t 2>&1; then
-                        git pull
+                        git pull origin $branch
                 else
                         if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
                                 if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
@@ -85,8 +85,8 @@ Checkin()
                                 exit 1
                         fi
                 fi
-                echo "git pull"
-                if ! git pull; then
+                echo "git pull origin $branch"
+                if ! git pull origin $branch; then
                         echo "$0: git pull failed, exiting..." 1>&2
                         exit 1
                 fi
