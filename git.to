@@ -1,12 +1,20 @@
 :
 # copy .git from one project to another (normally to help resolve branching or merge problems)
+#
+# with no args, look for a similarly named project in ~/git to serve as the source, cwd is the dest
+#
+# To be explicit, use
+#
+#       git.to -src_project SRCDIR -dest_project DESTDIR
+#       git.to -from SRCDIR -to DESTDIR
+#       
 dest_project=''
 dry_mode=''
 src_project=''
 verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
-                -dest_project)
+                -dest_project|-to)
                         shift
                         dest_project="$1"
                 ;;
@@ -16,7 +24,7 @@ while [ -n "$1" ]; do
                 -q|-quiet)
                         verbose_mode=''
                 ;;
-                -src_project)
+                -src_project|-from)
                         shift
                         src_project="$1"
                 ;;
@@ -30,19 +38,24 @@ while [ -n "$1" ]; do
         shift
 done
 if [ -z "$src_project" ]; then
+        src_project=`pwd | sed -e 's:/dp::' -e 's:/Sync::'`
+fi
+if [ ! -d "$src_project" ]; then
+        echo "$0: error: could not find directory \"$src_project\"" 1>&2
+        exit 1
+fi
+if [ ! -d "$src_project/.git" ]; then
+        echo "$0: error: could not find directory \"$src_project/.git\"" 1>&2
+        exit 1
+fi
+if [ -z "$dest_project" ]; then
         if [ ! -d .git ]; then
                 echo "$0: error: could not find directory \".git\" from `pwd`, so not sure what to use for src_project" 1>&2
                 exit 1
         fi
-        src_project=`pwd`
+        dest_project=`pwd`
 fi
-if [ -z "$dest_project" ]; then
-        if [ -z "$1" ]; then
-                echo "$0: error: need a dest_project" 1>&2
-                exit 1
-        fi
-        dest_project="$1"
-fi
+
 echo "rm -rf /tmp/.git"
 rm       -rf /tmp/.git
 echo.clean "mv \"$dest_project/.git\" /tmp"
@@ -62,3 +75,6 @@ fi
 
 exit
 $dp/git_util/git.to -dry -src_project $HOME/git/pcaapps $dp/git/pcaapps
+$dp/git_util/git.to -dry $HOME/git/pcaapps $dp/git/pcaapps
+exit
+cd $dp/git/pcaapps; $dp/git_util/git.to -dry
