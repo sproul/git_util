@@ -1,0 +1,64 @@
+:
+# copy .git from one project to another (normally to help resolve branching or merge problems)
+dest_project=''
+dry_mode=''
+src_project=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dest_project)
+                        shift
+                        dest_project="$1"
+                ;;
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -src_project)
+                        shift
+                        src_project="$1"
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+if [ -z "$src_project" ]; then
+        if [ ! -d .git ]; then
+                echo "$0: error: could not find directory \".git\" from `pwd`, so not sure what to use for src_project" 1>&2
+                exit 1
+        fi
+        src_project=`pwd`
+fi
+if [ -z "$dest_project" ]; then
+        if [ -z "$1" ]; then
+                echo "$0: error: need a dest_project" 1>&2
+                exit 1
+        fi
+        dest_project="$1"
+fi
+echo "rm -rf /tmp/.git"
+rm       -rf /tmp/.git
+echo.clean "mv \"$dest_project/.git\" /tmp"
+if [ -z "$dry_mode" ]; then
+        if ! mv "$dest_project/.git" /tmp; then
+                echo "$0: cp -r $dest_project/.git /tmp failed, exiting..." 1>&2
+                exit 1
+        fi
+fi
+echo.clean "cp -r \"$src_project/.git\"  \"$dest_project/.git\""
+if [ -z "$dry_mode" ]; then
+        if ! cp -r "$src_project/.git"  "$dest_project/.git"; then
+                echo "$0: cp -r $src_project/.git  $dest_project/.git failed, exiting..." 1>&2
+                exit 1
+        fi
+fi
+
+exit
+$dp/git_util/git.to -dry -src_project $HOME/git/pcaapps $dp/git/pcaapps
