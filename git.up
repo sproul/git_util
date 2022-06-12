@@ -112,6 +112,7 @@ Synchronize_high_traffic_shared_projects()
         done
         case "$HOSTNAME" in
                 lt5|x-mac)
+                        Pull_latest_updates_if_no_local_changes doc
                         Pull_latest_updates_if_no_local_changes fin_doc_parser
                         Pull_latest_updates_if_no_local_changes monr
                         if orcl.on_vpn; then
