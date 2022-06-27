@@ -41,7 +41,7 @@ git_util__modified_repos__Check_repo()
                 echo "$0: output=`git status --short` failed, exiting..." 1>&2
                 cat $t
                 rm $t
-                exit 1
+                return 1
         fi        
         rm $t
         if [ -n "$output" ]; then
