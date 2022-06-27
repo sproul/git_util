@@ -3,20 +3,29 @@
 #
 # orahub requires ssh
 # github requires http (if we are on orcl network)
-# 
+#
+
+Test1()
+{
+        arg="$1"
+        actual=`$0 $arg`
+        expected="$2"
+        assert.eq "$expected" "$actual" "$arg"
+}
+
+Test()
+{
+        GH22=`cat $HOME/.gh`
+        Test1 https://sproul:abc123@github.com/sproul/emacs.git                  https://sproul:abc123@github.com/sproul/emacs.git
+        Test1          git@github.com:sproul/fin_doc_parser.git                  https://git@github.com/sproul/fin_doc_parser.git
+        Test1       sproul@github.com:sproul/fin_doc_parser.git                  https://sproul:$GH22@github.com/sproul/fin_doc_parser.git
+        Test1       sproul@github.com:sproul/emacs.git                           https://sproul:$GH22@github.com/sproul/emacs.git
+        Test1 sproul:$GH22@github.com:sproul/fin_doc_parser.git                  https://sproul:$GH22@github.com/sproul/fin_doc_parser.git
+}
 while [ -n "$1" ]; do
         case "$1" in
                 -test)
-                        actual=`$0 git@github.com:sproul/fin_doc_parser.git`
-                        if [ -z "$GH22" ]; then
-                                GH22=`.n.host sproul hub.docker/github`
-                        fi
-                        expected="https://sproul:$GH22@github.com/sproul/fin_doc_parser.git"
-                        if [ "$actual" != "$expected" ]; then
-                                echo expected $expected, but saw $actual
-                                exit 1
-                        fi
-                        echo OK $expected
+                        Test
                         exit
                 ;;
                 *)
@@ -25,14 +34,40 @@ while [ -n "$1" ]; do
         esac
         shift
 done
-ssh_git_ptr="$1"
-if [ -z "$GH22" ]; then
-        GH22=`.n.host sproul hub.docker/github`
+
+arg="$1"
+case "$arg" in
+        http*)
+                echo "$arg"
+                exit
+        ;;
+esac
+extracted_GH22=`sed -e 's/sproul:\(.*\)@github.com.*/\1/' <<< $arg`
+if [ "$extracted_GH22" = "$arg" ]; then
+        extracted_GH22=''
+fi 
+if [ -n "$extracted_GH22" ]; then
+        if [ -z "$GH22" ]; then
+                GH22=$extracted_GH22
+                arg=`sed -e 's/\(.*\):.*\(@github.com.*\)/\1\2/' <<< $arg`
+        fi
+elif [ -z "$GH22" ]; then
+        if [ -s $HOME/.gh ]; then
+                GH22=`cat $HOME/.gh`
+        else
+                GH22=`.n.host sproul hub.docker/github`
+                if [ -z "$GH22" ]; then
+                        echo "$0: error: expected a value for \"GH22\" but saw nothing" 1>&2
+                        exit 1
+                fi
+        fi
 fi
+ssh_git_ptr="$arg"
 z=sproul:$GH22
-http_git_ptr=`sed -e "s;git@github.com:;https://$z\\@github.com/;" <<< $ssh_git_ptr`
+http_git_ptr=`sed -e    "s;git@github.com:;https://git@github.com/;"  <<< $ssh_git_ptr`
+http_git_ptr=`sed -e "s;sproul@github.com:;https://$z\\@github.com/;" <<< $http_git_ptr`
 echo $http_git_ptr
 exit
 $pd/bin/git.ssh_to_http git@github.com:sproul/fin_doc_parser.git
 exit
-$pd/bin/git.ssh_to_http -test
+$dp/git_util/git.ssh_to_http -test

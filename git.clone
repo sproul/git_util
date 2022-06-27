@@ -12,6 +12,7 @@ esac
 
 src_chi_fns=''
 dp_mode=''
+dry_mode=''
 force_mode=''
 to_branch=''
 while [ -n "$1" ]; do
@@ -26,6 +27,9 @@ while [ -n "$1" ]; do
                 ;;
                 -dp)
                         dp_mode=yes
+                ;;
+                -dry)
+                        dry_mode=-dry
                 ;;
                 -f|-force)
                         force_mode=-force
@@ -167,6 +171,10 @@ if [ -n "$branch" ]; then
         touch $branch > "$branch_marker"
 else
         branch_args=''
+fi
+echo "git clone $branch_args $remote_repo"
+if [ -n "$dry_mode" ]; then
+        exit
 fi
 if ! git clone $branch_args $remote_repo; then
         echo "$0: git clone $branch_args $remote_repo failed, exiting..." 1>&2
@@ -352,8 +360,8 @@ $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/prom
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_DTE_event_ordering_dependency'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
-bx $dp/git_util/git.clone sproul@github.com:sproul/bin.git
-bx $dp/git_util/git.clone sproul@github.com:sproul/emacs.git
+bx $dp/git_util/git.clone git@github.com:sproul/bin.git
+bx $dp/git_util/git.clone git@github.com:sproul/emacs.git
 
 bx $dp/git_util/git.clone git@github.com/clj-commons/aleph.git
 git.clone https://github.com/clj-commons/aleph.git
