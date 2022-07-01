@@ -120,9 +120,8 @@ case "$remote_repo" in
                         remote_repo=`sed -e "s;sproul;sproul:$g;" <<< $remote_repo`
                 fi
                 remote_repo=`git.get_remote_repo $remote_repo`
-                if orcl.on_vpn; then
-                        remote_repo=`git.ssh_to_http $remote_repo`
-                fi
+                # needed on orcl boxes, and apparently on vms3 also
+                remote_repo=`git.ssh_to_http $remote_repo`
         ;;
 esac
 
