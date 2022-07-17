@@ -259,7 +259,7 @@ bx $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:22
 exit
 bx $dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_sensu-monitoring-infrastructure_5319/scm/sensu-monitoring-infrastructure.git
 exit
-bx $dp/git_util/git.clone ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
+bx $rdp/git_util/git.clone ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
 exit
 bx $dp/git_util/git.clone https://surabhi.pathak%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_cicd-dashboard_5996/scm/cicd-dashboard.git
 exit
@@ -289,7 +289,7 @@ $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/
 $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_paas-platform/oci-capacity-tools.git
 $dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_paas-platform/scm/oci-capacity-tools.git
 #ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_paas-platform/oci-capacity-tools.git
-# https://alm.oraclecorp.com/paasops/#projects/paas-platform/scm/oci-capacity-tools.git
+# rrhttps://alm.oraclecorp.com/paasops/#projects/paas-platform/scm/oci-capacity-tools.git
 exit
 $dp/git_util/git.clone -new_branch ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_oci-reports_17338/oci_reports.git dev_tenancy_reporting
 exit
@@ -319,7 +319,7 @@ git.up correct docker du
 bx git.up remove trailing hyphens from routine names
 bx $dp/git_util/git.clone https://github.com/sproul/fin_doc_parser_docs.git
 bx $dp/git_util/git.clone git@github.com:sproul/fin_doc_parser.git
-bx $dp/git_util/git.clone git@github.com:sproul/plastic_profile.git
++6bx $dp/git_util/git.clone git@github.com:sproul/plastic_profile.git
 bx $dp/git_util/git.clone git@github.com:sproul/web_buffer.git
 bx $dp/git_util/git.clone https://github.com/swannodette/mies.git
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:james.x.clark/carson.git 'use_oci_proxy'
