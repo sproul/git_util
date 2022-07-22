@@ -66,7 +66,12 @@ git_util__modified_repos_Ls()
 {
         if [ -n "$modified_repo_statuses_string_fn" ]; then
                 if [ -f "$modified_repo_statuses_string_fn" ]; then
-                        cat $modified_repo_statuses_string_fn | sed -e 's;.*/;;' | tr '\n' ' '
+                        cat $modified_repo_statuses_string_fn | sed -e 's;.*/;;' | tr '\n' ' ' |
+                        if [ -n "$full" ]; then
+                                cat
+                        else
+                                sed -e 's/\([a-z]\)[a-z]*/\1/g' -e 's/[-_]//g' -e 's;^ ;;' -e 's; $;;' -e 's; ;-;g' -e 's/$/ /'
+                        fi
                 fi
         fi
 }
