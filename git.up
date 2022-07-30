@@ -3,6 +3,7 @@
 Checkin()
 {
         z=`pwd`
+
         if [ -f git.pre_checkin_test.sh ]; then
                 if ! bash git.pre_checkin_test.sh; then
                         if [ -n "$force_mode" ]; then
@@ -15,6 +16,13 @@ Checkin()
         fi
         current_dir=`basename "$z"`
         repo_name=$current_dir
+        patt="EARLY"
+        patt="$patt.*exit"
+        if g.sh -search $repo_name "$patt"; then
+                echo FAILED early exit indicates debugging
+                exit 1
+        fi
+        echo OK no early exit
         if [ -z "$comment" ]; then
                 case "$repo_name" in
                         data)
