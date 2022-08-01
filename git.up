@@ -18,7 +18,7 @@ Checkin()
         repo_name=$current_dir
         patt="EARLY"
         patt="$patt.*exit"
-        if grep -l \-search $dp/bin/g.sh > /dev/null 2>&1; then
+        if grep -l ' -search' $dp/bin/g.sh > /dev/null 2>&1; then
                 if g.sh -search $repo_name "$patt"; then
                         echo FAILED early exit indicates debugging
                         exit 1
