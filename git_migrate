@@ -1,0 +1,206 @@
+:
+t=`mktemp`
+trap "rm $t*" EXIT
+
+dest_repo_dir=''
+dry_mode=''
+op='most_recent_update
+src_repo_dir=`pwd`
+verbose_mode=''
+touch $t.dirs
+while [ -n "$1" ]; do
+        case "$1" in
+                -add_dir)
+                        shift
+                        echo "$1" >> $t.dirs
+                ;;
+                -all)
+                        op='migrate_whole_repo'
+                ;;
+                -dir)
+                        op='some_dirs'
+                        shift
+                        dir=$1
+                        echo $dir >> $t.dirs
+                ;;
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -from_fin_doc_parser)
+                        Extract_fin_doc_parser_code_to_port
+                ;;
+                -to|-dest_repo_dir)
+                        shift
+                        dest_repo_dir="$1"
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+Prepare_src_repo()
+{
+        Repo_checks || exit 1
+        tmp_src_repo_dir=/tmp/`basename $src_repo_dir`
+        echo.clean "cp.via_rsync $src_repo_dir $tmp_src_repo_dir"
+        if [ -z "$dry_mode" ]; then
+                if ! cp.via_rsync $src_repo_dir $tmp_src_repo_dir; then
+                        echo "$0: cp.via_rsync $src_repo_dir $tmp_src_repo_dir failed, exiting..." 1>&2
+                        exit 1
+                fi
+        fi
+        src_repo_dir=$tmp_src_repo_dir
+        
+        if [ ! -d $src_repo_dir/$dir ]; then
+                echo "$0: error: could not find directory \"$src_repo_dir/$dir\"" 1>&2
+                exit 1
+        fi
+        cd $src_repo_dir
+        echo "git remote rm origin"
+        if [ -z "$dry_mode" ]; then
+                if ! git remote rm origin; then
+                        echo "$0: git remote rm origin failed, exiting..." 1>&2
+                        exit 1
+                fi
+        fi
+        echo "git filter-branch --subdirectory tmp -- --all"
+        if [ -z "$dry_mode" ]; then
+                if ! git filter-branch --subdirectory tmp -- --all; then
+                        echo "$0: git filter-branch --subdirectory tmp -- --all failed, exiting..." 1>&2
+                        exit 1
+                fi
+        fi
+        echo.clean "mkdir $src_repo_dir/tmp"
+        if [ -z "$dry_mode" ]; then
+                if ! mkdir $src_repo_dir/tmp; then
+                        echo "$0: mkdir $src_repo_dir/tmp failed, exiting..." 1>&2
+                        exit 1
+                fi
+        fi
+}
+
+Migrate_repo()
+{
+        Prepare_src_repo || exit 1
+        if ! Rename_overlapping_dirs_in_dest; then
+                echo "$0: Rename_overlapping_dirs_in_dest failed, exiting..." 1>&2
+                exit 1
+        fi
+        
+        # https://gbayer.com/development/moving-files-from-one-git-repository-to-another-preserving-history/
+        cd $src_repo_dir
+        echo.clean "git remote rm origin"
+        if [ -z "$dry_mode" ]; then
+                if ! git remote rm origin; then
+                        echo "$0: git remote rm origin failed, exiting..." 1>&2
+                        exit 1
+                fi
+        fi
+        cd $dest_repo_dir
+        repo_A_branch_name=code_from_`basename $src_repo_dir | sed -e 's/[^a-zA-Z0-9]/_/g'`
+        echo.clean "git remote add $repo_A_branch_name"
+        if [ -z "$dry_mode" ]; then
+                if ! git remote add $repo_A_branch_name; then
+                        echo "$0: git remote add $repo_A_branch_name failed, exiting..." 1>&2
+                        exit 1
+                fi
+        fi
+}
+
+Rename_overlapping_dirs_in_dest()
+{
+        for f in `ls $src_repo_dir`; do
+                if [ -d $dest_repo_dir/$f ]; then
+                        echo.clean "rm -fr               $dest_repo_dir/$f.bak"
+                        if [ -z "$dry_mode" ]; then
+                                rm -fr               $dest_repo_dir/$f.bak
+                        fi
+                        echo.clean "mv $dest_repo_dir/$f $dest_repo_dir/$f.bak"
+                        if [ -z "$dry_mode" ]; then
+                                mv $dest_repo_dir/$f $dest_repo_dir/$f.bak
+                        fi
+                fi
+        done
+        (
+        cd $dest_repo_dir
+        git.up $dry_mode rename directories that would conflict with code coming from $src_repo_dir
+        )
+}
+
+Repo_checks()
+{
+        if [ ! -z "$dest_repo_dir/.git" ]; then
+                echo "$0: require -to expected dest_repo_dir parm" 1>&2
+                exit 1
+        fi
+        if [ ! -d "$dest_repo_dir/.git" ]; then
+                echo "$0: expected directory at \"$dest_repo_dir/.git\"" 1>&2
+                exit 1
+        fi
+        if [ ! -d "$src_repo_dir/.git" ]; then
+                echo "$0: expected directory at \"$src_repo_dir/.git\"" 1>&2
+                exit 1
+        fi
+}
+
+
+if [ ! -s "$t.dirs" ]; then
+        echo "$0: error: at least one -dir is required to tell which dirs are being copied" 1>&2
+        exit 1
+fi 
+case $op in
+        migrate_whole_repo)
+                Migrate_repo
+        ;;
+        most_recent_update)
+                echo "$0: error: IMPL" 1>&2
+                exit 1
+        ;;
+        some_dirs)
+                Prepare_src_repo || exit 1
+                echo.clean "cd $src_repo_dir"
+                cd       $src_repo_dir
+                cat $t.dirs |
+                while read dir; do
+                        dir=$1
+                        mv $dir tmp
+                done
+                echo.clean "git add ."
+                echo "git commit -m 'prepare to move'"
+                if [ -z "$dry_mode" ]; then
+                        git add .
+                        git commit -m 'prepare to move'
+                fi
+                echo.clean "cd $dest_repo_dir"
+                cd       $dest_repo_dir
+                echo.clean "git remote add repo-A-branch --allow-unrelated-histories"
+                if [ -z "$dry_mode" ]; then
+                        if ! git remote add repo-A-branch --allow-unrelated-histories; then
+                                echo "$0: git remote add repo-A-branch --allow-unrelated-histories failed, exiting..." 1>&2
+                                exit 1
+                        fi
+                fi
+                echo.clean "git remote rm repo-A-branch"
+                if [ -z "$dry_mode" ]; then
+                        if ! git remote rm repo-A-branch; then
+                                echo "$0: git remote rm repo-A-branch failed, exiting..." 1>&2
+                                exit 1
+                        fi
+                fi
+                echo now check in and push, I think
+        ;;
+        *)
+                echo "$0: error: did not recognize op \"$op\"" 1>&2
+                exit 1
+        ;;
+esac
+exit
+bx $dp/git_util/git_migrate -dry -dir server -dir ui -to $HOME/git/qascraper

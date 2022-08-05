@@ -1,0 +1,3 @@
+:
+cd $dx/git/fin_doc_parser
+bx git_migrate -dir server -dir ui -to $HOME/git/qascraper
