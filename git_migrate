@@ -203,4 +203,5 @@ case $op in
         ;;
 esac
 exit
-bx $dp/git_util/git_migrate -dry -dir server -dir ui -to $HOME/git/qascraper
+
+bx $dp/git_util/git_migrate -dry -dir server -dir ui -to $HOME/git/qwickanalyticsscraper

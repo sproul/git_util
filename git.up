@@ -23,10 +23,13 @@ Checkin()
                         # skip search, which will be triggered by noise in shell buffers
                 ;;
                 *)
-                        if grep -l ' -search' $dp/bin/g.sh > /dev/null 2>&1; then
-                                if g.sh -search $repo_name "$patt"; then
-                                        echo FAILED early exit indicates debugging
-                                        exit 1
+                        # skip this test if we are dealing with an old version of g.sh
+                        if grep -l ' -project_exists' $dp/bin/g.sh > /dev/null 2>&1; then
+                                if g.sh -project_exists $repo_name; then
+                                        if g.sh -search $repo_name "$patt"; then
+                                                echo FAILED early exit indicates debugging
+                                                exit 1
+                                        fi
                                 fi
                         fi
                 ;; 
