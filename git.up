@@ -18,12 +18,19 @@ Checkin()
         repo_name=$current_dir
         patt="EARLY"
         patt="$patt.*exit"
-        if grep -l ' -search' $dp/bin/g.sh > /dev/null 2>&1; then
-                if g.sh -search $repo_name "$patt"; then
-                        echo FAILED early exit indicates debugging
-                        exit 1
-                fi
-        fi
+        case $repo_name in
+                data)
+                        # skip search, which will be triggered by noise in shell buffers
+                ;;
+                *)
+                        if grep -l ' -search' $dp/bin/g.sh > /dev/null 2>&1; then
+                                if g.sh -search $repo_name "$patt"; then
+                                        echo FAILED early exit indicates debugging
+                                        exit 1
+                                fi
+                        fi
+                ;; 
+        esac
         echo OK no early exit
         if [ -z "$comment" ]; then
                 case "$repo_name" in
