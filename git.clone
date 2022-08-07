@@ -319,7 +319,7 @@ git.up correct docker du
 bx git.up remove trailing hyphens from routine names
 bx $dp/git_util/git.clone https://github.com/sproul/fin_doc_parser_docs.git
 bx $dp/git_util/git.clone git@github.com:sproul/fin_doc_parser.git
-+6bx $dp/git_util/git.clone git@github.com:sproul/plastic_profile.git
+bx $dp/git_util/git.clone git@github.com:sproul/plastic_profile.git
 bx $dp/git_util/git.clone git@github.com:sproul/web_buffer.git
 bx $dp/git_util/git.clone https://github.com/swannodette/mies.git
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:james.x.clark/carson.git 'use_oci_proxy'
