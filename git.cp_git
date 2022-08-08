@@ -1,0 +1,30 @@
+:
+dest_dir=`pwd`
+if [ ! -d .git ]; then
+        echo "$0: error: could not find directory \".git\"" 1>&2
+        exit 1
+fi
+src_dir=$HOME/git/`basename $dest_dir`
+if [ ! -d $src_dir/.git ]; then
+        echo "$0: error: could not find directory \"$src_dir/.git\"" 1>&2
+        exit 1
+fi
+backup_dir=../`basename $dest_dir`.git.bak
+echo.clean "rm -rf $backup_dir"
+if ! rm       -rf $backup_dir; then
+        echo "$0: rm       -rf $backup_dir failed, exiting..." 1>&2
+        exit 1
+fi
+echo.clean "mv .git ../`basename $dest_dir`.git.bak"
+if ! mv       .git ../`basename $dest_dir`.git.bak; then
+        echo "$0: mv       .git ../`basename $dest_dir`.git.bak failed, exiting..." 1>&2
+        exit 1
+fi
+if ! cp -pr $src_dir/.git $dest_dir; then
+        echo "$0: cp -pr $src_dir/.git $dest_dir failed, exiting..." 1>&2
+        exit 1
+fi
+echo "git.d"
+git.d
+exit
+cd $dp/bin; bx $dp/git_util/git.cp_git
