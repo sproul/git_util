@@ -19,8 +19,8 @@ Checkin()
         patt="EARLY"
         patt="$patt.*exit"
         case $repo_name in
-                data)
-                        # skip search, which will be triggered by noise in shell buffers
+                data|pcaapps)
+                        # skip search, which will be triggered by noise in shell buffers, or will be slow due to large contents
                 ;;
                 *)
                         # skip this test if we are dealing with an old version of g.sh
