@@ -65,10 +65,8 @@ Checkin()
 
         echo "git push origin $branch"
         if [ -z "$dry_mode" ]; then
-                if orcl.on_vpn; then
-                        . git.prep_auth.inc
-                        Prep_auth
-                fi
+                . git.prep_auth.inc
+                Prep_auth
                 # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
                 #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
                 #       hint: Updates were rejected because the remote contains work that you do
