@@ -236,80 +236,47 @@ git checkout $BRANCH
 
 exit
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
-exit
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
-exit
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git Bug_24816336
 cd $HOME/git/promotion-config
 git checkout $BRANCH
 git rebase master
 git rebase origin/master
-exit
 bx $dp/git_util/git.clone https://github.com/sproul/weblog_2_tests
-exit
 bx $dp/git_util/git.clone https://github.com/sproul/sgrep
-exit
 bx $dp/git_util/git.clone https://github.com/sproul/calculator
-exit
 bx $dp/git_util/git.clone https://github.com/sproul/change_tracker
 bx $dp/git_util/git.clone https://github.com/sproul/mutivcs_query
-exit
 bx $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/syseng_sensu-monitoring-infrastructure_5319/sensu-monitoring-infrastructure.git
-exit
 bx $dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_sensu-monitoring-infrastructure_5319/scm/sensu-monitoring-infrastructure.git
-exit
 bx $rdp/git_util/git.clone ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
-exit
 bx $dp/git_util/git.clone https://surabhi.pathak%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_cicd-dashboard_5996/scm/cicd-dashboard.git
-exit
 remote_repo="git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git"
 branch=docker_layers
 bx $dp/git_util/git.clone -new_branch $remote_repo $branch
-exit
 remote_repo="git@orahub.oraclecorp.com:viraj.purang/patchartifactdefbuilder.git"
 bx $dp/git_util/git.clone $remote_repo
-exit
 remote_repo="git@git.osn.oraclecorp.com:osn/cec.git"
 bx $dp/git_util/git.clone $remote_repo
-exit
 git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/mcs_change-tracker_15881/change_tracker.git
-exit
 # this works, that http bs above did NOT work.
-git.clone git@github.com:sproul/multivcs_query.git
-git.clone git@github.com:sproul/fin_doc_parser.git
-git.clone git@github.com:sproul/rabbit_mq_cli_test.git
 git.clone git@github.com:SeleniumHQ/selenium.git
-exit
 git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/mcs/s/mcs_change-tracker_15881/scm/change_tracker.git
-exit
 $dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_oci-reports_17338/scm/oci_reports.git
-exit
 $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_oci-reports_17338/oci_reports.git
 $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_paas-platform/oci-capacity-tools.git
 $dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_paas-platform/scm/oci-capacity-tools.git
 #ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_paas-platform/oci-capacity-tools.git
 # rrhttps://alm.oraclecorp.com/paasops/#projects/paas-platform/scm/oci-capacity-tools.git
-exit
 $dp/git_util/git.clone -new_branch ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_oci-reports_17338/oci_reports.git dev_tenancy_reporting
-exit
 cd ~/git
 git clone ssh://git@alm.oraclecorp.com:2222/odocs_desktop/desktop.git
 yes
-exit
 $dp/git_util/git.clone ssh://git@alm.oraclecorp.com:2222;odocs_desktop/desktop.git
-exit
 $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/syseng_cloud-resource-view_18455/cloud-resource-view.git
-exit
 bx $dp/git_util/git.clone  git@orahub.oraclecorp.com:rohit.ro.kumar/sys-eng.git
-exit
-bx $dp/git_util/git.clone -dp git@github.com:sproul/div_calendar_crawler.git
-exit
 bx $dp/git_util/git.clone https://github.com/bracesproul/bart_scheduler.git
-exit
-bx $dp/git_util/git.clone git@github.com:sproul/fin_doc_parser.git
-exit
-
 bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:james.x.clark/carson.git fix_docker_du
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:james.x.clark/carson.git fix_docker_du
 diff /cygdrive/e/Users/nelsons/Sync/git/carson/src/clj/mm/artifactoryrest.clj /cygdrive/e/Users/nelsons/git/carson/src/clj/mm/artifactoryrest.clj
@@ -318,19 +285,14 @@ cd /cygdrive/c/Users/nelsons/git/carson
 git.up correct docker du
 bx git.up remove trailing hyphens from routine names
 bx $dp/git_util/git.clone https://github.com/sproul/fin_doc_parser_docs.git
-bx $dp/git_util/git.clone git@github.com:sproul/fin_doc_parser.git
-bx $dp/git_util/git.clone git@github.com:sproul/plastic_profile.git
-bx $dp/git_util/git.clone git@github.com:sproul/web_buffer.git
 bx $dp/git_util/git.clone https://github.com/swannodette/mies.git
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:james.x.clark/carson.git 'use_oci_proxy'
 bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'oci'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'support_new_SSO'
-exit
 bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/login.clj -f -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'fix_new_SSO'
 bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/hudsonrest.clj -f -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'cookie_regeneration_fix'
 bx $dp/git_util/git.clone -chi $cr/src/clj/mm/vault.clj -chi $cr/clj-vault/src/clj_vault/core.clj -f -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'portable_vault'
 bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'use_carson_users_email_instead_of_rohit'
-exit
 bx $dp/git_util/git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/provisioning-ui.git
 bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/cljs/mm/console/views.cljs -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_using_hudson_3.3.2_when_provisioning_new_masters'
 bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/adminops/provision.clj -chi  /scratch/carson/workspace/carson/src/clj/orch/messaging/rabbitmq.clj -chi  /scratch/carson/workspace/carson/src/clj/mm/adminops/orgs.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'add_minor_comments_and_logging'
@@ -360,16 +322,15 @@ $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
 bx $dp/git_util/git.clone sproul@github.com:sproul/bin.git
+bx $dp/git_util/git.clone sproul@github.com:sproul/git_util.git
 bx $dp/git_util/git.clone sproul@github.com:sproul/emacs.git
-
 bx $dp/git_util/git.clone git@github.com/clj-commons/aleph.git
 git.clone https://github.com/clj-commons/aleph.git
 git.clone https://github.com/clj-commons/aleph.git
 git.clone https://nsproul97@bitbucket.org/qwickrate/monroe.biz.git
-git.clone git@github.com:sproul/git_util.git
 git.clone git@orahub.oci.oraclecorp.com:mike.gilbode/messageproducer.git
-git.clone git@github.com:sproul/doc.git
 git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git
 git.clone git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git
 git.clone             git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
+exit
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
