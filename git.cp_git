@@ -1,30 +1,74 @@
 :
+
+Mv_contents()
+{
+        src="$1"
+        dest="$2"
+        
+        mv "$dest_dir"/*        "/tmp/$repo_name"
+        mv "$dest_dir"/.??*     "/tmp/$repo_name"       > /dev/null 2>&1
+        mv "$dest_dir"/.[a-zA-Z0-9]  "/tmp/$repo_name"  > /dev/null 2>&1
+}
+
+all_mode=''
+dry_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                a|-all)
+                        all_mode=-all
+                ;;
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
 dest_dir=`pwd`
 if [ ! -d .git ]; then
         echo "$0: error: could not find directory \".git\"" 1>&2
         exit 1
 fi
-src_dir=$HOME/git/`basename $dest_dir`
+repo_name=`basename $dest_dir`
+src_dir="$HOME/git/$repo_name"
 if [ ! -d $src_dir/.git ]; then
         echo "$0: error: could not find directory \"$src_dir/.git\"" 1>&2
         exit 1
 fi
-backup_dir=../`basename $dest_dir`.git.bak
+backup_dir=../$repo_name.git.bak
 echo.clean "rm -rf $backup_dir"
 if ! rm       -rf $backup_dir; then
         echo "$0: rm       -rf $backup_dir failed, exiting..." 1>&2
         exit 1
 fi
-echo.clean "mv .git ../`basename $dest_dir`.git.bak"
-if ! mv       .git ../`basename $dest_dir`.git.bak; then
-        echo "$0: mv       .git ../`basename $dest_dir`.git.bak failed, exiting..." 1>&2
+echo.clean "mv .git ../$repo_name.git.bak"
+if ! mv       .git ../$repo_name.git.bak; then
+        echo "$0: mv       .git ../$repo_name.git.bak failed, exiting..." 1>&2
         exit 1
 fi
 if ! cp -pr $src_dir/.git $dest_dir; then
         echo "$0: cp -pr $src_dir/.git $dest_dir failed, exiting..." 1>&2
         exit 1
 fi
-echo "git.d"
-git.d
+if [ -z "$all_mode" ]; then
+        echo "git.d"
+        git.d
+else
+        rm -rf                  "/tmp/$repo_name"
+        mkdir                   "/tmp/$repo_name"
+        Mv_contents "$dest_dir" "/tmp/$repo_name"
+        Mv_contents "$src_dir" "$dest_dir"
+fi
 exit
+cd $dp/monr; bx $dp/git_util/git.cp_git a
 cd $dp/bin; bx $dp/git_util/git.cp_git
