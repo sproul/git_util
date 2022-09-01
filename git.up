@@ -3,7 +3,6 @@
 Checkin()
 {
         z=`pwd`
-
         if [ -f git.pre_checkin_test.sh ]; then
                 if ! bash git.pre_checkin_test.sh $force_mode; then
                         if [ -n "$force_mode" ]; then
@@ -16,6 +15,7 @@ Checkin()
         fi
         current_dir=`basename "$z"`
         repo_name=$current_dir
+        echo Checkin $repo_name in $z...
         patt="EARLY"
         patt="$patt.*exit"
         case $repo_name in
