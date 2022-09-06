@@ -56,13 +56,8 @@ Checkin()
                         cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
                 ;;
         esac
-        git.ac $dry_mode $comment
-
+        git.ac $dry_mode $comment 
         branch=`git.branch`
-        if [ -z "$branch" ]; then
-                branch=master
-        fi
-
         echo "git push origin $branch"
         if [ -z "$dry_mode" ]; then
                 . git.prep_auth.inc

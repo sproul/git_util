@@ -12,6 +12,8 @@ Mv_contents()
 
 all_mode=''
 dry_mode=''
+fast_mode=''
+t=`mktemp`; trap "rm $t" EXIT
 verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
@@ -20,6 +22,9 @@ while [ -n "$1" ]; do
                 ;;
                 -dry)
                         dry_mode=-dry
+                ;;
+                -f|-fast)
+                        fast_mode=-fast
                 ;;
                 -q|-quiet)
                         verbose_mode=''
@@ -55,6 +60,21 @@ echo.clean "mv .git ../$repo_name.git.bak"
 if ! mv       .git ../$repo_name.git.bak; then
         echo "$0: mv       .git ../$repo_name.git.bak failed, exiting..." 1>&2
         exit 1
+fi
+if [ -z "$fast_mode" ]; then
+        cd "$src_dir"
+        git.d > $t
+        if [ -s $t ]; then
+                echo "FAIL $src_dir has changes:" 1>&2
+                cat $t
+                exit 1
+        fi
+        branch=`git.branch`
+        
+        . git.prep_auth.inc
+        Prep_auth
+        git pull origin $branch
+        Sanitize_git_config_on_end_of_process
 fi
 if ! cp -pr $src_dir/.git $dest_dir; then
         echo "$0: cp -pr $src_dir/.git $dest_dir failed, exiting..." 1>&2

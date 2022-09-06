@@ -1,2 +1,6 @@
 :
-git symbolic-ref --short HEAD
+branch=`git symbolic-ref --short HEAD`
+if [ -z "$branch" ]; then
+        branch=master
+fi
+echo $branch
