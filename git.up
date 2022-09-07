@@ -1,4 +1,5 @@
 #!/bin/bash
+. git_util.inc
 
 Checkin()
 {
