@@ -1,5 +1,7 @@
 #!/bin/bash
-. git_util.inc
+
+t=`mktemp`
+trap "rm $t" EXIT
 
 Checkin()
 {
@@ -27,7 +29,8 @@ Checkin()
                         # skip this test if we are dealing with an old version of g.sh
                         if grep -l ' -project_exists' $dp/bin/g.sh > /dev/null 2>&1; then
                                 if g.sh -project_exists $repo_name; then
-                                        if g.sh -search $repo_name "$patt"; then
+                                        g.sh -search $repo_name "$patt" > $t
+                                        if [ -s "$t" ]; then
                                                 echo FAILED early exit indicates debugging
                                                 if [ -n "$force_mode" ]; then
                                                         echo OK force mode says we push on no matter what
