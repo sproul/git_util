@@ -20,7 +20,7 @@ Checkin()
         patt="EARLY"
         patt="$patt.*exit"
         case $repo_name in
-                data|home|pcaapps)
+                bin|data|home|monr|pcaapps)
                         # skip search, which will be triggered by noise in shell buffers, or is N/A for whatever reason
                 ;;
                 *)
