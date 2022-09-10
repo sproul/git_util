@@ -31,6 +31,7 @@ Checkin()
                                 if g.sh -project_exists $repo_name; then
                                         g.sh -search $repo_name "$patt" > $t
                                         if [ -s "$t" ]; then
+                                                ls -l $t
                                                 echo FAILED early exit indicates debugging
                                                 if [ -n "$force_mode" ]; then
                                                         echo OK force mode says we push on no matter what
