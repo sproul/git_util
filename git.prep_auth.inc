@@ -11,7 +11,9 @@ Restore_clean_configs()
                 if [ ! -f $safe_gc ]; then
                         echo "Restore_clean_configs: error: could not find \"$safe_gc\"" 1>&2
                 elif [ ! -f $gc ]; then
-                        echo "Restore_clean_configs: error: could not find \"$gc\"" 1>&2
+                        if [ -n "$verbose_mode" ]; then
+                                echo "Restore_clean_configs: error: could not find \"$gc\"" 1>&2
+                        fi
                 else
                         mv $safe_gc $gc
                 fi
