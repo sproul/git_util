@@ -51,6 +51,13 @@ done
 remote_repo="$1"
 branch="$2"
 
+case "$remote_repo" in
+        */*)
+        ;;
+        *)
+                remote_repo=sproul@github.com:sproul/$remote_repo.git
+        ;;
+esac
 project_name=`basename "$remote_repo" | sed -e 's/.git$//'`
 
 case "$project_name" in

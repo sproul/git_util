@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+=======
+>>>>>>> cf871f0 (plug leak)
 git@alm.oraclecorp.com:2222/odocs_desktop/desktop.git
 git@git.osn.oraclecorp.com:osn/cec.git
 git@github.com:SeleniumHQ/selenium.git
@@ -45,12 +48,9 @@ https://nelson.sproul%40oracle.com@alm.oraclecorp.com/mcs/s/mcs_change-tracker_1
 https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_oci-reports_17338/scm/oci_reports.git
 https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_paas-platform/scm/oci-capacity-tools.git
 https://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_sensu-monitoring-infrastructure_5319/scm/sensu-monitoring-infrastructure.git
-<<<<<<< HEAD
-=======
-https://sproul@github.com/sproul/doc.git
->>>>>>> cf871f0 (plug leak)
 https://sproul@github.com/sproul/bin.git
 https://sproul@github.com/sproul/data.git
+https://sproul@github.com/sproul/doc.git
 https://sproul@github.com/sproul/emacs.git
 https://sproul@github.com/sproul/home.git
 https://sproul@github.com/sproul/monr.git
