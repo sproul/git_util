@@ -88,9 +88,6 @@ Checkin()
         echo OK no early exit
         if [ -z "$comment" ]; then
                 case "$repo_name" in
-                        data)
-                                comment="shell records"
-                        ;;
                         emacs)
                                 comment="shortcut update"
                         ;;

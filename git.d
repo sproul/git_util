@@ -54,14 +54,6 @@ if [ -n "$pull_latest_updates_mode" ]; then
                                 git             commit -m 'clojure notes' Linux/carson.*
                         fi
                 ;;
-                data)
-                        if [ -n "grep shell/ $t.status" ]; then
-                                echo.clean "git add shell/`hostname`*"
-                                git             add shell/`hostname`*
-                                echo.clean "git commit -m 'shell buffer archive' ."
-                                git             commit -m 'shell buffer archive' .
-                        fi
-                ;;
                 emacs)
                         if [ -n "grep lisp/data/n-data-menu-browse $t.status" ]; then
                                 echo.clean "git commit -m 'shortcut updates' lisp/data/n-data-menu-browse.*"
