@@ -214,7 +214,8 @@ if [ -n "$src_chi_fns" ]; then
         Bring_over_and_check_in_some_files
 fi
 
-echo $remote_repo | f.append.uniquely $dp/git_util/git.known_projects
+# don't allow something like https://sproul:oops@github.com/sproul/emacs.git
+echo $remote_repo | sed -e 's/sproul:[^@]*/sproul/' | f.append.uniquely $dp/git_util/git.known_projects
 
 exit
 git clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
