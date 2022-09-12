@@ -44,12 +44,32 @@ strait $t
 
 if [ -n "$pull_latest_updates_mode" ]; then
         proj=`pwd | sed -e 's;.*/;;'`
+        git status --short  > $t.status
         case $proj in
+                bin)
+                        if [ -n "grep Linux/carson.can $t.status" ]; then
+                                echo.clean "git add Linux/carson.can*"
+                                git             add Linux/carson.can*
+                                echo.clean "git commit -m 'clojure notes'"
+                                git             commit -m 'clojure notes' Linux/carson.*
+                        fi
+                ;;
                 data)
-                        git add shell/`hostname`* > /dev/null 2>&1
-                        git commit -m 'shell buffer archive' .
+                        if [ -n "grep shell/ $t.status" ]; then
+                                echo.clean "git add shell/`hostname`*"
+                                git             add shell/`hostname`*
+                                echo.clean "git commit -m 'shell buffer archive' ."
+                                git             commit -m 'shell buffer archive' .
+                        fi
+                ;;
+                emacs)
+                        if [ -n "grep lisp/data/n-data-menu-browse $t.status" ]; then
+                                echo.clean "git commit -m 'shortcut updates' lisp/data/n-data-menu-browse.*"
+                                git             commit -m 'shortcut updates' lisp/data/n-data-menu-browse.*
+                        fi
                 ;;
         esac
+        rm $t.status
 fi
 . modified_repos.inc
 git status --short > $t
