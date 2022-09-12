@@ -24,6 +24,9 @@ Possibly_propagate_update()
                         esac                        
                 ;;
         esac
+        if [ -z $target_dir ]; then
+                return 0
+        fi
         if [ ! -d $target_dir ]; then
                 echo "WARNING expected to see $target_dir for a propagated checkin" 1>&2
                 return 1
