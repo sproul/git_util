@@ -1,11 +1,16 @@
 #!/bin/bash
+. git_util.inc
 dry_mode=''
 rm_cmd='echo rm'
+verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
                 -dry)
                         dry_mode=-dry
                         rm_cmd='rm'
+                ;;
+                -v|-verbose)
+                        verbose_mode=-verbose
                 ;;
                 *)
                         break
@@ -13,6 +18,32 @@ while [ -n "$1" ]; do
         esac
         shift
 done
+
+t=`mktemp`; trap "rm $t" EXIT
+
+git status > $t
+files_added=''
+
+Add_all()
+{
+        echo "git add --all ."
+        files_added=yes
+        if [ -z "$dry_mode" ]; then
+                git       add --all .
+        fi
+}
+
+
+if grep '^Untracked files' $t > /dev/null 2>&1; then
+        Add_all
+elif grep 'modified:' $t > /dev/null 2>&1; then
+        Add_all
+elif ! grep 'deleted:' $t > /dev/null 2>&1; then
+        if [ -n "$verbose_mode" ]; then
+                echo "no changes seen, so git.ac just exiting w/ no commit"
+        fi
+        exit 1
+fi
 
 # add and commit
 work_was_done_marker=$TMP/git.ac.$$
@@ -42,10 +73,6 @@ if [ -z "$comment" ]; then
         exit
 fi
 
-echo "git add --all ."
-if [ -z "$dry_mode" ]; then
-        git       add --all .
-fi
 echo "git commit -m \"$comment\""
 if [ -z "$dry_mode" ]; then
         git       commit -m "$comment"

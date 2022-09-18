@@ -4,7 +4,7 @@ Mv_contents()
 {
         src="$1"
         dest="$2"
-        
+
         mv "$dest_dir"/*        "/tmp/$repo_name"
         mv "$dest_dir"/.??*     "/tmp/$repo_name"       > /dev/null 2>&1
         mv "$dest_dir"/.[a-zA-Z0-9]  "/tmp/$repo_name"  > /dev/null 2>&1
@@ -13,6 +13,7 @@ Mv_contents()
 all_mode=''
 dry_mode=''
 fast_mode=''
+force_mode=''
 t=`mktemp`; trap "rm $t" EXIT
 verbose_mode=''
 while [ -n "$1" ]; do
@@ -25,6 +26,9 @@ while [ -n "$1" ]; do
                 ;;
                 -f|-fast)
                         fast_mode=-fast
+                ;;
+                -fo|-force)
+                        force_mode=-force
                 ;;
                 -q|-quiet)
                         verbose_mode=''
@@ -40,26 +44,30 @@ while [ -n "$1" ]; do
 done
 
 dest_dir=`pwd`
-if [ ! -d .git ]; then
-        echo "$0: error: could not find directory \".git\"" 1>&2
-        exit 1
-fi
 repo_name=`basename $dest_dir`
 src_dir="$HOME/git/$repo_name"
 if [ ! -d $src_dir/.git ]; then
         echo "$0: error: could not find directory \"$src_dir/.git\"" 1>&2
         exit 1
 fi
-backup_dir=../$repo_name.git.bak
-echo.clean "rm -rf $backup_dir"
-if ! rm       -rf $backup_dir; then
-        echo "$0: rm       -rf $backup_dir failed, exiting..." 1>&2
-        exit 1
-fi
-echo.clean "mv .git ../$repo_name.git.bak"
-if ! mv       .git ../$repo_name.git.bak; then
-        echo "$0: mv       .git ../$repo_name.git.bak failed, exiting..." 1>&2
-        exit 1
+if [ ! -d .git ]; then
+        echo "$0 could not find directory \".git\"" 1>&2
+        if [ -z "$force_mode" ]; then
+                exit 1
+        fi
+        touch /tmp/Restore_clean_configs__just_return
+else
+        backup_dir=../$repo_name.git.bak
+        echo.clean "rm -rf $backup_dir"
+        if ! rm       -rf $backup_dir; then
+                echo "$0: rm       -rf $backup_dir failed, exiting..." 1>&2
+                exit 1
+        fi
+        echo.clean "mv .git ../$repo_name.git.bak"
+        if ! mv       .git ../$repo_name.git.bak; then
+                echo "$0: mv       .git ../$repo_name.git.bak failed, exiting..." 1>&2
+                exit 1
+        fi
 fi
 if [ -z "$fast_mode" ]; then
         cd "$src_dir"
@@ -70,7 +78,7 @@ if [ -z "$fast_mode" ]; then
                 exit 1
         fi
         branch=`git.branch`
-        
+
         . git.prep_auth.inc
         Prep_auth
         git pull origin $branch

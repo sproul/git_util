@@ -1,7 +1,6 @@
 #!/bin/bash
-
-t=`mktemp`
-trap "rm $t" EXIT
+. git_util.inc
+t=`mktemp`; trap "rm $t" EXIT
 
 Possibly_propagate_update()
 {
@@ -60,7 +59,7 @@ Checkin()
         fi
         current_dir=`basename "$z"`
         repo_name=$current_dir
-        echo Checkin $repo_name in $z...
+        echo gu $repo_name in $z...
         patt="EARLY"
         patt="$patt.*exit"
         case $repo_name in
@@ -76,7 +75,9 @@ Checkin()
                                                 ls -l $t
                                                 echo FAILED early exit indicates debugging
                                                 if [ -n "$force_mode" ]; then
-                                                        echo OK force mode says we push on no matter what
+                                                        if [ -n "$verbose_mode" ]; then
+                                                                echo OK force mode says we push on no matter what
+                                                        fi
                                                 else
                                                         return 1
                                                 fi
@@ -85,7 +86,9 @@ Checkin()
                         fi
                 ;; 
         esac
-        echo OK no early exit
+        if [ -n "$verbose_mode" ]; then
+                echo OK no early exit
+        fi
         if [ -z "$comment" ]; then
                 case "$repo_name" in
                         emacs)
@@ -100,7 +103,10 @@ Checkin()
                         cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
                 ;;
         esac
-        git.ac $dry_mode $comment 
+        if ! git.ac $dry_mode $comment; then
+                # nothing was changed, so just return
+                return 1
+        fi
         branch=`git.branch`
         echo "git push origin $branch"
         if [ -z "$dry_mode" ]; then
@@ -157,29 +163,67 @@ Checkin()
         fi
 }
 
+Commit_routine_changes()
+{
+        proj=`pwd | sed -e 's;.*/;;'`
+        git status --short > $t.status
+        case $proj in
+                bin)
+                        if grep Linux/carson.can $t.status > $t.carson.cans 2>&1; then
+                                fns=`cat $t.carson.cans | sed -e 's/.*Linux/Linux/'`
+                                echo.clean "git add $fns"
+                                git             add $fns
+                                echo.clean "git commit -m 'clojure notes'"
+                                git             commit -m 'clojure notes' $fns
+                                return 0
+                        fi
+                ;;
+                emacs)
+                        if grep lisp/data/n-data-menu-browse $t.status > /dev/null 2>&1; then
+                                fns=`cat $t.carson.cans | sed -e 's/.*lisp/lisp/'`
+                                echo.clean "git commit -m 'shortcut updates' $fns"
+                                git             commit -m 'shortcut updates' $fns
+                                return 0
+                        fi
+                ;;
+        esac
+        return 1
+}
+
 Pull_latest_updates_if_no_local_changes()
 {
-        proj=$1
-        d=$2
-        if [ -z "$d" ]; then
-                d=$dp
+        proj=${1-$(basename $(pwd))}
+        d=${2-$dp}
+        if [ ! -d $d/$proj ]; then
+                return
         fi
-        echo $proj=================================
-        if [ -d $d/$proj ]; then
-                cd $d/$proj
-                git.d -pull_latest_updates_if_no_local_changes
+        cd $d/$proj
+        changes_to_be_pushed=''
+        if Commit_routine_changes $proj $d; then
+                changes_to_be_pushed=yes
         fi
+        if Changes_seen_in_git_status_output $t.status; then
+                if [ -z "$changes_to_be_pushed" ]; then
+                        echo changes seen that are not routine, so leaving it alone
+                        return
+                fi
+        fi
+        rm $t.status
+        branch=`git.branch`
+        echo "git pull origin $branch"
+        git       pull origin $branch
 }
 
 Synchronize_high_traffic_shared_projects()
 {
         for proj in bin data emacs git_util; do
+                echo $proj==========================================================
                 Pull_latest_updates_if_no_local_changes $proj
         done
         case "$HOSTNAME" in
                 lt5|x-mac)
                         Pull_latest_updates_if_no_local_changes doc             $dx
-                        Pull_latest_updates_if_no_local_changes fin_doc_parser
+                        Pull_latest_updates_if_no_local_changes fin_doc_parser  $dx
                         Pull_latest_updates_if_no_local_changes monr
                         if orcl.on_vpn; then
                                 Pull_latest_updates_if_no_local_changes diagnostic-tool
@@ -246,6 +290,11 @@ while [ -n "$1" ]; do
                         shift
                         new_branch="$1"
                 ;;
+                -Pull_latest_updates_if_no_local_changes)
+                        shift
+                        Pull_latest_updates_if_no_local_changes       $*
+                        exit
+                ;;
                 -repo)
                         shift
                         repo_name=$1
@@ -291,5 +340,6 @@ exit
 bx $dp/bin/git.up -dry_run
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git_util/git.up -in_dir dp/git/fin_doc_parser
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $aip git.up -in_dir dp/git/fin_doc_parser
+bx $dp/git_util/git.up -Synchronize_high_traffic_shared_projects_if_no_local_changes
 exit
-bx $dp/git_util/git.up -Synchronize_high_traffic_shared_projects_if_no_local_changes)
+bx $dp/git_util/git.up -Pull_latest_updates_if_no_local_changes

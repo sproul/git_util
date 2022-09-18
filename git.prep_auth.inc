@@ -6,6 +6,10 @@ end_of_process_safe_gc_list=/tmp/git.prep_auth.inc.$$
 
 Restore_clean_configs()
 {
+        if [ -f /tmp/Restore_clean_configs__just_return ]; then
+                rm /tmp/Restore_clean_configs__just_return
+                return
+        fi
         for safe_gc in `cat $end_of_process_safe_gc_list`; do
                 gc=`sed -e 's/\.[0-9][0-9]*$//' <<< $safe_gc`
                 if [ ! -f $safe_gc ]; then
