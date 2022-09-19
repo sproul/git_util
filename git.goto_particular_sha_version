@@ -1,0 +1,4 @@
+:
+# https://devopscube.com/checkout-clone-specific-git-commit-id-sha/
+sha=$1
+git checkout $sha
