@@ -1,5 +1,6 @@
 #!/bin/bash
 . git_util.inc
+. git.prep_auth.inc
 t=`mktemp`; trap "rm $t" EXIT
 
 Possibly_propagate_update()
@@ -103,64 +104,61 @@ Checkin()
                         cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
                 ;;
         esac
-        if ! git.ac $dry_mode $comment; then
-                # nothing was changed, so just return
+        branch=`git.branch`
+        Prep_auth
+        if git.ac $dry_mode $comment; then
+                echo "git push origin $branch"
+                if [ -z "$dry_mode" ]; then
+                        git status --short  > $t.status
+                        Possibly_propagate_update $repo_name $t.status
+                        # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
+                        #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
+                        #       hint: Updates were rejected because the remote contains work that you do
+                        #       hint: not have locally. This is usually caused by another repository pushing
+                        #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
+                        #       hint: 'git pull') before pushing again.
+                        #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+                        if git push origin $branch > $t 2>&1; then
+                                git pull origin $branch
+                        else
+                                if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
+                                        if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
+                                                cat $t
+                                                return 1
+                                        fi
+                                fi
+                                echo $0 saw merge problem...
+                                echo ===========================================================================
+                                cat $t
+                                echo ===========================================================================
+                                echo will try to rectify by rebasing, which will auto-merge if practical:
+                                # before pushing, do this, will auto-merge:
+                                echo "git pull --rebase"
+                                if [ -z "$dry_mode" ]; then
+                                        if ! git pull --rebase; then
+                                                echo "$0: git pull --rebase failed......................" 1>&2
+                                                echo "git status"
+                                                git status
+                                                echo EOD
+                                                echo a way to resolve this:
+                                                echo git.repair
+                                                return 1
+                                        fi
+                                fi
+                                if ! git push origin $branch; then
+                                        echo "$0: error: git push origin failed" 1>&2
+                                        return 1
+                                fi
+                        fi
+                fi
+        fi
+        echo "git pull origin $branch"
+        if ! git pull origin $branch; then
+                echo "$0: git pull failed, returning..." 1>&2
                 return 1
         fi
-        branch=`git.branch`
-        echo "git push origin $branch"
-        if [ -z "$dry_mode" ]; then
-                git status --short  > $t.status
-                Possibly_propagate_update $repo_name $t.status                
-                . git.prep_auth.inc
-                Prep_auth
-                # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
-                #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
-                #       hint: Updates were rejected because the remote contains work that you do
-                #       hint: not have locally. This is usually caused by another repository pushing
-                #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
-                #       hint: 'git pull') before pushing again.
-                #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-                if git push origin $branch > $t 2>&1; then
-                        git pull origin $branch
-                else
-                        if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
-                                if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
-                                        cat $t
-                                        return 1
-                                fi
-                        fi
-                        echo $0 saw merge problem...
-                        echo ===========================================================================
-                        cat $t
-                        echo ===========================================================================
-                        echo will try to rectify by rebasing, which will auto-merge if practical:
-                        # before pushing, do this, will auto-merge:
-                        echo "git pull --rebase"
-                        if [ -z "$dry_mode" ]; then
-                                if ! git pull --rebase; then
-                                        echo "$0: git pull --rebase failed......................" 1>&2
-                                        echo "git status"
-                                        git status
-                                        echo EOD
-                                        echo a way to resolve this:
-                                        echo git.repair
-                                        return 1
-                                fi
-                        fi
-                        if ! git push origin $branch; then
-                                echo "$0: error: git push origin failed" 1>&2
-                                return 1
-                        fi
-                fi
-                echo "git pull origin $branch"
-                if ! git pull origin $branch; then
-                        echo "$0: git pull failed, returning..." 1>&2
-                        return 1
-                fi
-                . modified_repos.inc
-                git_util__modified_repos__Remove_from_list $repo_name
-        fi
+        . modified_repos.inc
+        git_util__modified_repos__Remove_from_list $repo_name
 }
 
 Commit_routine_changes()
@@ -210,6 +208,7 @@ Pull_latest_updates_if_no_local_changes()
         fi
         rm $t.status
         branch=`git.branch`
+        Prep_auth
         echo "git pull origin $branch"
         git       pull origin $branch
 }

@@ -82,7 +82,6 @@ if [ -z "$fast_mode" ]; then
         . git.prep_auth.inc
         Prep_auth
         git pull origin $branch
-        Sanitize_git_config_on_end_of_process
 fi
 if ! cp -pr $src_dir/.git $dest_dir; then
         echo "$0: cp -pr $src_dir/.git $dest_dir failed, exiting..." 1>&2

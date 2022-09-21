@@ -28,6 +28,7 @@ Restore_clean_configs()
 
 Prep_auth()
 {
+        echo git.prep_auth.inc/Prep_auth
         if [ -z "$xrepo_name" ]; then
                 xrepo_name=`basename $(pwd)`
         fi
@@ -53,9 +54,4 @@ Prep_auth()
                         diff $safe_gc $gc
                 fi
         fi
-}
-
-Sanitize_git_config_on_end_of_process()
-{
-        Prep_auth
 }
