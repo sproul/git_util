@@ -22,7 +22,7 @@ Restore_clean_configs()
                         mv $safe_gc $gc
                 fi
         done
-        rm $end_of_process_safe_gc_list
+        rm -f $end_of_process_safe_gc_list
 }
 
 

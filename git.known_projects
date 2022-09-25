@@ -37,6 +37,7 @@ git@orahub.oraclecorp.com:viraj.purang/patchartifactdefbuilder.git
 https://alm.oraclecorp.com/paasops/#projects/paas-platform/scm/oci-capacity-tools.git
 https://github.com/bracesproul/bart_scheduler.git
 https://github.com/clj-commons/aleph.git
+https://github.com/oracle-terraform-modules/terraform-oci-olcne.git
 https://github.com/sproul/calculator
 https://github.com/sproul/change_tracker
 https://github.com/sproul/fin_doc_parser_docs.git
@@ -52,6 +53,7 @@ https://sproul@github.com/sproul/bin.git
 https://sproul@github.com/sproul/data.git
 https://sproul@github.com/sproul/doc.git
 https://sproul@github.com/sproul/emacs.git
+https://sproul@github.com/sproul/git_util.git
 https://sproul@github.com/sproul/home.git
 https://sproul@github.com/sproul/java_scratch.git
 https://sproul@github.com/sproul/monr.git

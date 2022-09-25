@@ -1,7 +1,8 @@
 #!/bin/bash
 . git_util.inc
 . git.prep_auth.inc
-t=`mktemp`; trap "rm $t" EXIT
+t=`mktemp`; trap "rm $t*; Restore_clean_configs" EXIT
+branch=`git.branch`
 
 Possibly_propagate_update()
 {
@@ -43,6 +44,64 @@ Possibly_propagate_update()
         echo.clean "git.up"
         git.up
         )
+}
+
+Git_status()
+{
+        if [ ! -f $t.status ]; then
+                git status --short > $t.status
+        fi
+        cat $t.status
+}
+
+Push()
+{
+        Prep_auth
+        if git push origin $branch > $t 2>&1; then
+                return 0
+        fi
+        if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
+                if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
+                        cat $t
+                        return 1
+                fi
+        fi
+        echo $0 saw merge problem...
+        echo ===========================================================================
+        cat $t
+        echo ===========================================================================
+        echo will try to rectify by rebasing, which will auto-merge if practical:
+        # before pushing, do this, will auto-merge:
+        echo "git pull --rebase"
+        if [ -z "$dry_mode" ]; then
+                if ! git pull --rebase; then
+                        echo "$0: git pull --rebase failed......................" 1>&2
+                        echo "git status"
+                        Git_status
+                        echo EOD
+                        echo a way to resolve this:
+                        echo git.repair
+                        return 1
+                fi
+        fi
+        if ! git push origin $branch; then
+                echo "$0: error: git push origin failed" 1>&2
+                return 1
+        else
+                . modified_repos.inc
+                git_util__modified_repos__Remove_from_list $repo_name
+                rm -f $t.status
+        fi
+}
+
+Modified()
+{
+        fn="$1"
+        if Git_status | grep " M $fn$" > /dev/null 2>&1; then
+                return 0
+        else
+                return 1
+        fi
 }
 
 Checkin()
@@ -90,12 +149,8 @@ Checkin()
         if [ -n "$verbose_mode" ]; then
                 echo OK no early exit
         fi
-        if [ -z "$comment" ]; then
-                case "$repo_name" in
-                        emacs)
-                                comment="shortcut update"
-                        ;;
-                esac
+        if Commit_routine_changes; then
+                changes_seen=yes
         fi
         case "$repo_name" in
                 fin_doc_parser)
@@ -109,7 +164,7 @@ Checkin()
         if git.ac $dry_mode $comment; then
                 echo "git push origin $branch"
                 if [ -z "$dry_mode" ]; then
-                        git status --short  > $t.status
+                        Git_status
                         Possibly_propagate_update $repo_name $t.status
                         # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
                         #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
@@ -118,35 +173,10 @@ Checkin()
                         #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
                         #       hint: 'git pull') before pushing again.
                         #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-                        if git push origin $branch > $t 2>&1; then
-                                git pull origin $branch
-                        else
-                                if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
-                                        if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
-                                                cat $t
-                                                return 1
-                                        fi
-                                fi
-                                echo $0 saw merge problem...
-                                echo ===========================================================================
-                                cat $t
-                                echo ===========================================================================
-                                echo will try to rectify by rebasing, which will auto-merge if practical:
-                                # before pushing, do this, will auto-merge:
-                                echo "git pull --rebase"
-                                if [ -z "$dry_mode" ]; then
-                                        if ! git pull --rebase; then
-                                                echo "$0: git pull --rebase failed......................" 1>&2
-                                                echo "git status"
-                                                git status
-                                                echo EOD
-                                                echo a way to resolve this:
-                                                echo git.repair
-                                                return 1
-                                        fi
-                                fi
-                                if ! git push origin $branch; then
-                                        echo "$0: error: git push origin failed" 1>&2
+                        if Push; then
+                                echo "git pull origin $branch"
+                                if ! git pull origin $branch; then
+                                        echo "$0: git pull failed, returning..." 1>&2
                                         return 1
                                 fi
                         fi
@@ -161,31 +191,58 @@ Checkin()
         git_util__modified_repos__Remove_from_list $repo_name
 }
 
+Commit()
+{
+        comment="$1"
+        shift
+        
+        echo.clean "git add $*"
+        git             add $*
+        echo.clean "git commit -m  $comment"
+        git             commit -m "$comment"
+}
+
 Commit_routine_changes()
 {
         proj=`pwd | sed -e 's;.*/;;'`
-        git status --short > $t.status
+        Git_status
         case $proj in
                 bin)
                         if grep Linux/carson.can $t.status > $t.carson.cans 2>&1; then
                                 fns=`cat $t.carson.cans | sed -e 's/.*Linux/Linux/'`
-                                echo.clean "git add $fns"
-                                git             add $fns
-                                echo.clean "git commit -m 'clojure notes'"
-                                git             commit -m 'clojure notes' $fns
-                                return 0
+                                Commit 'clojure notes' $fns
+                                changes_seen=yes
+                        fi
+                        if Modified g.sh; then
+                                Commit 'adjusted project search settings' g.sh
+                                changes_seen=yes
+                        fi
+                        if [ -z "$changes_seen" ]; then
+                                return
                         fi
                 ;;
                 emacs)
                         if grep lisp/data/n-data-menu-browse $t.status > /dev/null 2>&1; then
                                 fns=`cat $t.carson.cans | sed -e 's/.*lisp/lisp/'`
-                                echo.clean "git commit -m 'shortcut updates' $fns"
-                                git             commit -m 'shortcut updates' $fns
-                                return 0
+                                Commit 'shortcut updates' $fns
+                        else
+                                return
                         fi
                 ;;
+                *)
+                        return
+                ;;
         esac
-        return 1
+        Push || return 1
+}
+
+Changes_seen()
+{
+        if Git_status | grep '^ [DMA] ' > /dev/null 2>&1; then
+                return 0
+        else
+                return 1
+        fi
 }
 
 Pull_latest_updates_if_no_local_changes()
@@ -197,17 +254,11 @@ Pull_latest_updates_if_no_local_changes()
         fi
         cd $d/$proj
         changes_to_be_pushed=''
-        if Commit_routine_changes $proj $d; then
-                changes_to_be_pushed=yes
-        fi
-        if Changes_seen_in_git_status_output $t.status; then
-                if [ -z "$changes_to_be_pushed" ]; then
-                        echo changes seen that are not routine, so leaving it alone
-                        return
-                fi
+        Commit_routine_changes $proj $d || return 1
+        if Changes_seen; then
+                return
         fi
         rm $t.status
-        branch=`git.branch`
         Prep_auth
         echo "git pull origin $branch"
         git       pull origin $branch
@@ -257,6 +308,75 @@ Resolve_comment()
                 comment="$comment_from_parms"
         fi
         echo $comment
+}
+
+Test_init()
+{
+        test_dir1=$dp/git/java_scratch
+        test_dir2=$HOME/git/java_scratch
+        if [ -n "$test_env_wipe_first" ]; then
+                echo "rm -rf $test_dir1 $test_dir2"
+                rm       -rf $test_dir1 $test_dir2
+        fi
+        tf=papa_testing_area/whatever.$$
+        
+        if [ ! -d $test_dir2 ]; then
+                git.clone java_scratch
+                if [ ! -d $test_dir2 ]; then
+                        echo "FAIL apparently git.clone $test_dir2 did not work" 1>&2
+                        exit 1
+                fi
+                mkdir -p $test_dir2/`dirname $tf`
+        fi
+        echo "OK $test_dir2"
+        if [ ! -d $test_dir1 ]; then
+                cp       -pr $test_dir2 $test_dir1
+                if [ ! -d $test_dir1 ]; then
+                        echo "FAIL cp to \"$test_dir1\"" 1>&2
+                        exit 1
+                fi
+        fi
+        echo "OK $test_dir1"
+}
+
+
+Test_simple_chi()
+{
+        cd $test_dir1
+        branch=`git.branch`
+        
+        echo hi > $tf
+        git.up > $t.git.up1 2>&1
+        
+        cd $test_dir2
+        branch=`git.branch`
+        
+        assert.f.exist -not "test ck $tf not there early" $tf $tf
+        git.up no changes here, but expecting to sync in $tf from $test_dir1
+        assert.f.exist -label "after git.up in $test_dir2, should see change from $test_dir1" $tf
+        git rm $tf
+        git.up "removed $tf for test"
+        cd $test_dir1
+        git.up "no changes, but syncing should rm $tf"
+        assert.f.exist -not "$tf removed in $test_dir2, so should also be removed in $test_dir1" $tf
+}
+
+Test_2_simultaneous_chis()
+{
+        echo Test_2_simultaneous_chis
+}
+
+Test_Pull_latest_updates_if_no_local_changes()
+{
+        echo Test_Pull_latest_updates_if_no_local_changes
+}
+
+Test()
+{
+        Test_init
+        Test_simple_chi
+        Test_2_simultaneous_chis
+        Test_Pull_latest_updates_if_no_local_changes
 }
 
 export PATH=$PATH:`dirname $0`
@@ -322,6 +442,13 @@ while [ -n "$1" ]; do
                         Synchronize_high_traffic_shared_projects
                         exit
                 ;;
+                -test)
+                        Test
+                ;;
+                -test0)
+                        test_env_wipe_first=yes
+                        Test
+                ;;
                 -v|-verbose)
                         verbose_mode=-verbose
                 ;;
@@ -340,5 +467,5 @@ bx $dp/bin/git.up -dry_run
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git_util/git.up -in_dir dp/git/fin_doc_parser
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $aip git.up -in_dir dp/git/fin_doc_parser
 bx $dp/git_util/git.up -Synchronize_high_traffic_shared_projects_if_no_local_changes
-exit
 bx $dp/git_util/git.up -Pull_latest_updates_if_no_local_changes
+exit 0

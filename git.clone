@@ -247,10 +247,6 @@ bx $dp/git_util/git.clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/publi
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git Bug_24816336
-cd $HOME/git/promotion-config
-git checkout $BRANCH
-git rebase master
-git rebase origin/master
 bx $dp/git_util/git.clone https://github.com/sproul/weblog_2_tests
 bx $dp/git_util/git.clone https://github.com/sproul/sgrep
 bx $dp/git_util/git.clone https://github.com/sproul/calculator

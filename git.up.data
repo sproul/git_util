@@ -1,9 +1,0 @@
-#!/bin/bash
-z=$HOME/git/fin_doc_parser_docs
-cp.via_rsync $pd/git/fin_doc_parser/ui/src/data $z
-cd $z
-git.ac
-git pull origin master
-git push origin $branch
-exit
-bx $dp/bin/git.up.data 

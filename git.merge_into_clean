@@ -44,12 +44,13 @@ Test()
         echo t2b > newer
         git commit -m "t2b"
         git pull --rebase
-        git push origin master
+        branch=`git.branch`
+        git push origin $branch
         cd $t2a
         echo t2a > newer
         git commit -m "t2a"
         git pull --rebase
-        git push origin master
+        git push origin $branch
         echo.clean "mv $t2a $t2"
         if !        mv $t2a $t2; then
                 echo "$0: mv $t2a $t2 failed, exiting..." 1>&2

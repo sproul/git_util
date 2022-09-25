@@ -184,15 +184,16 @@ case $op in
                 echo.clean "cd $dest_repo_dir"
                 cd       $dest_repo_dir
                 echo.clean "git remote add repo-A-branch $src_repo_dir"
+                branch=`git.branch`
                 if [ -z "$dry_mode" ]; then
                         if ! git remote add repo-A-branch $src_repo_dir; then
                                 echo "$0: git remote add repo-A-branch --allow-unrelated-histories failed, exiting..." 1>&2
                                 exit 1
                         fi
                 fi
-                echo.clean "git pull repo-A-branch master --allow-unrelated-histories"
+                echo.clean "git pull repo-A-branch $branch --allow-unrelated-histories"
                 if [ -z "$dry_mode" ]; then
-                        git pull repo-A-branch master --allow-unrelated-histories
+                        git pull repo-A-branch $branch --allow-unrelated-histories
                 fi
                 echo.clean "git remote rm repo-A-branch"
                 if [ -z "$dry_mode" ]; then

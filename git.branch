@@ -1,6 +1,8 @@
 :
-branch=`git symbolic-ref --short HEAD`
-if [ -z "$branch" ]; then
-        branch=master
-fi
-echo $branch
+git branch | sed -e 's/^\* //'
+#branch=`git symbolic-ref --short HEAD`
+#if [ -z "$branch" ]; then
+#        #branch=master
+#        branch=main
+#fi
+#echo $branch
