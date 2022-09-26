@@ -14,10 +14,6 @@ Restore_clean_configs()
                 gc=`sed -e 's/\.[0-9][0-9]*$//' <<< $safe_gc`
                 if [ ! -f $safe_gc ]; then
                         echo "Restore_clean_configs: error: could not find \"$safe_gc\"" 1>&2
-                elif [ ! -f $gc ]; then
-                        if [ -n "$verbose_mode" ]; then
-                                echo "Restore_clean_configs: error: could not find \"$gc\"" 1>&2
-                        fi
                 else
                         mv $safe_gc $gc
                 fi
