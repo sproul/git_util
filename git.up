@@ -1,7 +1,7 @@
 #!/bin/bash
 . git_util.inc
 . git.prep_auth.inc
-t=`mktemp`; trap "rm $t*; Restore_clean_configs" EXIT
+t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
 branch=`git.branch`
 
 Possibly_propagate_update()
