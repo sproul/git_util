@@ -83,6 +83,20 @@ if [ -z "$fast_mode" ]; then
         Prep_auth
         git pull origin $branch
 fi
+if [ -n "$all_mode" ]; then
+        rm -rf /tmp/$repo_name
+        echo.clean "mv $dest_dir /tmp"
+        if          mv $dest_dir /tmp; then
+                echo.clean "cp -pr $src_dir $dest_dir"
+                if cp -pr $src_dir $dest_dir; then
+                        exit
+                else
+                        echo "FAIL cp -pr $src_dir $dest_dir, time to clean up"
+                        exit 1
+                fi
+        fi
+fi
+
 if ! cp -pr $src_dir/.git $dest_dir; then
         echo "$0: cp -pr $src_dir/.git $dest_dir failed, exiting..." 1>&2
         exit 1
