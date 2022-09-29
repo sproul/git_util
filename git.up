@@ -104,6 +104,18 @@ Modified()
         fi
 }
 
+Change_set_consists_entirely_of_new_files()
+{
+        git status > $t
+        if grep modified: $t > /dev/null 2>&1; then
+                return 1
+        fi
+        if ! grep 'untracked files' $t > /dev/null 2>&1; then
+                return 1
+        fi
+        new_file_list=`grep '^#	' $t | sed -e 's/#	//' | tr '\n' ' '`
+}
+
 Checkin()
 {
         z=`pwd`
@@ -152,6 +164,20 @@ Checkin()
         if Commit_routine_changes; then
                 changes_seen=yes
         fi
+        if [ -z "$comment" ]; then
+                if Change_set_consists_entirely_of_new_files; then
+                        comment="add $new_file_list"
+                else
+                        case "$repo_name" in
+                                data)
+                                        comment="shell records"
+                                ;;
+                                emacs)
+                                        comment="shortcut update"
+                                ;;
+                        esac
+                fi
+        fi        
         case "$repo_name" in
                 fin_doc_parser)
                         # frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
