@@ -3,6 +3,7 @@
 . git.prep_auth.inc
 t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
 branch=`git.branch`
+new_file_list=''
 
 Possibly_propagate_update()
 {
@@ -113,7 +114,7 @@ Change_set_consists_entirely_of_new_files()
         if ! grep 'untracked files' $t > /dev/null 2>&1; then
                 return 1
         fi
-        new_file_list=`grep '^#	' $t | sed -e 's/#	//' | tr '\n' ' '`
+        new_file_list=`grep '^#*	' $t | sed -e 's/#	//' | tr '\n' ' '`
 }
 
 Checkin()
