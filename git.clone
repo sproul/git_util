@@ -63,7 +63,7 @@ project_name=`basename "$remote_repo" | sed -e 's/.git$//'`
 case "$project_name" in
         promotion-config)
                 branch=add_backup_and_deployment_management_code
-                echo "Note that git.clone is automatically setting the branch to be add_minor_comments_and_logging for $project_name"
+                echo "Note that git.clone is automatically setting the branch to be $branch for $project_name"
         ;;
 esac
 
