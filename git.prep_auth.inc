@@ -12,9 +12,7 @@ Restore_clean_configs()
         fi
         for safe_gc in `cat $end_of_process_safe_gc_list`; do
                 gc=`sed -e 's/\.[0-9][0-9]*$//' <<< $safe_gc`
-                if [ ! -f $safe_gc ]; then
-                        echo "Restore_clean_configs: error: could not find \"$safe_gc\"" 1>&2
-                else
+                if [ -f $safe_gc ]; then
                         mv $safe_gc $gc
                 fi
         done
