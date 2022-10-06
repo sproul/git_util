@@ -10,13 +10,15 @@ Restore_clean_configs()
                 rm /tmp/Restore_clean_configs__just_return
                 return
         fi
-        for safe_gc in `cat $end_of_process_safe_gc_list`; do
-                gc=`sed -e 's/\.[0-9][0-9]*$//' <<< $safe_gc`
-                if [ -f $safe_gc ]; then
-                        mv $safe_gc $gc
-                fi
-        done
-        rm -f $end_of_process_safe_gc_list
+        if [ -f "$end_of_process_safe_gc_list" ]; then
+                for safe_gc in `cat $end_of_process_safe_gc_list`; do
+                        gc=`sed -e 's/\.[0-9][0-9]*$//' <<< $safe_gc`
+                        if [ -f $safe_gc ]; then
+                                mv $safe_gc $gc
+                        fi
+                done
+                rm -f $end_of_process_safe_gc_list
+        fi
 }
 
 
