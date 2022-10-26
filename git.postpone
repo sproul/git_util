@@ -1,0 +1,22 @@
+:
+fn=$1
+
+if [ ! -f "$fn" ]; then
+        echo "FAIL: expected file at \"$fn\"" 1>&2
+        exit 1
+fi
+echo "OK [ ! -f "$fn" ]"
+if [ -f $fn.new ]; then
+        echo "FAIL found \"$fn.new\"" 1>&2
+        exit 1
+fi
+echo "OK [ -f $fn.new ]"
+
+echo "mv $fn $fn.new"
+mv       $fn $fn.new
+
+echo "git checkout -- $fn"
+git       checkout -- $fn
+
+exit
+bx $dp/git_util/git.postpone 

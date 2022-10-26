@@ -1,3 +1,9 @@
 :
-git reset --hard
-git clean -fxd
+if [ -n "$fn" ]; then
+        git checkout -- $fn
+else
+        git reset --hard
+        git clean -fxd
+fi
+exit
+bx $dp/git_util/git.discard_local_changes $HOME/git/fin_doc_parser/server/src/u.rb
