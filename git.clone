@@ -62,7 +62,7 @@ project_name=`basename "$remote_repo" | sed -e 's/.git$//'`
 
 case "$project_name" in
         promotion-config)
-                branch=add_backup_and_deployment_management_code
+                branch=port_to_tomcat_10
                 echo "Note that git.clone is automatically setting the branch to be $branch for $project_name"
         ;;
 esac
@@ -225,7 +225,6 @@ fi
 echo $remote_repo | sed -e 's/sproul:[^@]*/sproul/' | f.append.uniquely $dp/git_util/git.known_projects
 
 exit
-git clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
 git clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
 #
 #ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=1 -T 'nelson.sproul@oracle.com@alm.oraclecorp.com' -p 2222
@@ -244,9 +243,7 @@ git checkout $BRANCH
 
 exit
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
-bx $dp/git_util/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
-bx $dp/git_util/git.clone git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git Bug_24816336
 bx $dp/git_util/git.clone https://github.com/sproul/weblog_2_tests
 bx $dp/git_util/git.clone https://github.com/sproul/sgrep
 bx $dp/git_util/git.clone https://github.com/sproul/calculator
@@ -256,16 +253,6 @@ bx $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:22
 bx $dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_sensu-monitoring-infrastructure_5319/scm/sensu-monitoring-infrastructure.git
 bx $rdp/git_util/git.clone ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
 bx $dp/git_util/git.clone https://surabhi.pathak%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_cicd-dashboard_5996/scm/cicd-dashboard.git
-remote_repo="git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git"
-branch=docker_layers
-bx $dp/git_util/git.clone -new_branch $remote_repo $branch
-remote_repo="git@orahub.oraclecorp.com:viraj.purang/patchartifactdefbuilder.git"
-bx $dp/git_util/git.clone $remote_repo
-remote_repo="git@git.osn.oraclecorp.com:osn/cec.git"
-bx $dp/git_util/git.clone $remote_repo
-git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/mcs_change-tracker_15881/change_tracker.git
-# this works, that http bs above did NOT work.
-git.clone git@github.com:SeleniumHQ/selenium.git
 git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/mcs/s/mcs_change-tracker_15881/scm/change_tracker.git
 $dp/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_oci-reports_17338/scm/oci_reports.git
 $dp/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_oci-reports_17338/oci_reports.git
@@ -321,7 +308,7 @@ bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationh
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'proxy_settings_and_4_minute_db_query_to_maintain_connection'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'no_config_reload_with_each_get'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'dev2oci'
-$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git 'add docker setup code'
+$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git 'port_to_tomcat_10'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_DTE_event_ordering_dependency'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
