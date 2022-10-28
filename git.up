@@ -219,6 +219,10 @@ Checkin()
         fi
         . modified_repos.inc
         git_util__modified_repos__Remove_from_list $repo_name
+        if [ -f git.post_checkin.sh ]; then
+                echo "bash -x git.post_checkin.sh"
+                bash       -x git.post_checkin.sh
+        fi
 }
 
 Commit()
