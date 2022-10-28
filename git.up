@@ -176,6 +176,9 @@ Checkin()
                                 emacs)
                                         comment="shortcut update"
                                 ;;
+                                home)
+                                        comment="IP updates"
+                                ;;
                         esac
                 fi
         fi        
