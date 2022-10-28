@@ -242,6 +242,8 @@ git fetch remote add -t $BRANCH -f origin $REMOTE_REPO
 git checkout $BRANCH
 
 exit
+git clone git@bitbucket.org:qwickrate/monroe.biz.git
+git clone git@bitbucket.org:qwickrate/qwickanalyticsscraper.git
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
 bx $dp/git_util/git.clone https://github.com/sproul/weblog_2_tests
