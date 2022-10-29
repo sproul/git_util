@@ -1,19 +1,47 @@
 #!/bin/bash
-echo UNTESTED, weird execution to be debugged; exit
+. git_util.inc
+. git.prep_auth.inc
+t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
+
+dry_mode=''
+new_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -new)
+                        new_mode=-new
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
 
 fn="$1"
 cd `dirname "$fn"`
-cp -p "$fn"  "$fn.new"
-echo Saved $fn in $fn.new, now syncing $fn to latest...
-git checkout "$fn"
-echo doing git pull from `pwd`, am I in the right place
-git pull
-diff "$fn"  "$fn.new"
-put "$fn"
+if [ -n "$new_mode" ]; then
+        zfn="$fn.new"
+else
+        zfn="/tmp/`basename $fn`"
+fi
+echo.clean "cp -p \"$fn\" \"$zfn\""
+cp       -p "$fn" "$zfn"
+
+echo.clean "git checkout \"$fn\""
+git       checkout "$fn"
+echo.clean "diff \"$fn\"  \"$zfn\""
+diff       "$fn"  "$zfn"
 exit
-fn=$DISCOVERY/rest-test/src/oracle/social/discovery/recommendations/rest/test/GraphSearchTest.java
-fn=$DISCOVERY/rest/src/oracle/social/discovery/rest/graphsearch/GraphSearchResultsResource.java
-fn=$DISCOVERY/deps.xml
-fn=$DISCOVERY/ivy.xml
-diff -b $fn $fn.new
-bx $DROP/git_util/git.revert1 $fn
+cksum $dp/home/.profile /tmp/.profile ~/k
+$DROP/git_util/git.revert1 $dp/home/.profile
