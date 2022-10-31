@@ -1,5 +1,13 @@
 :
-fn=$1
+if [ -z "$1" ]; then
+        git status . | grep modified | sed -e 's/^[\t ]*modified:[\t ]*//' |
+        while read fn; do
+                $0 $fn
+        done
+        exit
+else
+        fn=$1
+fi
 
 if [ ! -f "$fn" ]; then
         echo "FAIL: expected file at \"$fn\"" 1>&2
@@ -19,4 +27,4 @@ echo "git checkout -- $fn"
 git       checkout -- $fn
 
 exit
-bx $dp/git_util/git.postpone 
+$dp/git_util/git.postpone 
