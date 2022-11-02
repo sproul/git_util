@@ -133,34 +133,29 @@ Checkin()
         current_dir=`basename "$z"`
         repo_name=$current_dir
         echo gu $repo_name in $z...
+        git.changed_or_added_files.ls > $t.changed_or_added
         patt="EARLY"
         patt="$patt.*exit"
-        case $repo_name in
-                bin|data|home|monr|pcaapps)
-                        # skip search, which will be triggered by noise in shell buffers, or is N/A for whatever reason
-                ;;
-                *)
-                        # skip this test if we are dealing with an old version of g.sh
-                        if grep -l ' -project_exists' $dp/bin/g.sh > /dev/null 2>&1; then
-                                if g.sh -project_exists $repo_name; then
-                                        g.sh -search $repo_name "$patt" > $t
-                                        if [ -s "$t" ]; then
-                                                ls -l $t
-                                                echo FAILED early exit indicates debugging
-                                                if [ -n "$force_mode" ]; then
-                                                        if [ -n "$verbose_mode" ]; then
-                                                                echo OK force mode says we push on no matter what
-                                                        fi
-                                                else
-                                                        return 1
-                                                fi
-                                        fi
-                                fi
-                        fi
-                ;; 
-        esac
-        if [ -n "$verbose_mode" ]; then
+        if grep -n "$patt" $t.changed_or_added; then
+                echo FAILED early exit indicates debugging
+        else
                 echo OK no early exit
+        fi
+        grep '\.sh$'  $t.changed_or_added >  $t.changed_or_added_sh
+        grep '\.inc$' $t.changed_or_added >> $t.changed_or_added_sh
+        if [ -s $t.changed_or_added_sh ]; then
+                if grep -n "^  *EOF$" $t.changed_or_added_sh; then
+                        echo FAILED suspiciously indented EOF, possible malformed here-doc
+                        if [ -n "$force_mode" ]; then
+                                if [ -n "$verbose_mode" ]; then
+                                        echo OK force mode says we push on no matter what
+                                fi
+                        else
+                                return 1
+                        fi
+                else
+                        echo OK no suspicious here-doc
+                fi
         fi
         if Commit_routine_changes; then
                 changes_seen=yes
