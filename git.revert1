@@ -29,7 +29,6 @@ done
 
 
 fn="$1"
-cd `dirname "$fn"`
 if [ -n "$new_mode" ]; then
         zfn="$fn.new"
 else
