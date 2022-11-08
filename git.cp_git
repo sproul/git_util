@@ -24,10 +24,10 @@ while [ -n "$1" ]; do
                 -dry)
                         dry_mode=-dry
                 ;;
-                -f|-fast)
+                -fast)
                         fast_mode=-fast
                 ;;
-                -fo|-force)
+                -f|-force)
                         force_mode=-force
                 ;;
                 -q|-quiet)
