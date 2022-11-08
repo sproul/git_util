@@ -178,7 +178,7 @@ Checkin()
                 if Change_set_consists_entirely_of_new_files; then
                         comment="add $new_file_list"
                 elif Change_set_consists_entirely_of_deletions; then
-                        comment="add superfluous file(s)"
+                        comment="remove superfluous file(s)"
                 else
                         case "$repo_name" in
                                 data)
