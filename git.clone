@@ -61,8 +61,9 @@ esac
 project_name=`basename "$remote_repo" | sed -e 's/.git$//'`
 
 case "$project_name" in
-        promotion-config)
-                branch=port_to_tomcat_10
+        promotion-configXX)
+                #branch=port_to_tomcat_10
+                branch=test_blackbox
                 echo "Note that git.clone is automatically setting the branch to be $branch for $project_name"
         ;;
 esac
@@ -310,7 +311,7 @@ bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationh
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'proxy_settings_and_4_minute_db_query_to_maintain_connection'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'no_config_reload_with_each_get'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'dev2oci'
-$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git 'port_to_tomcat_10'
+$dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git 'test_blackbox'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_DTE_event_ordering_dependency'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
