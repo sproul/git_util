@@ -230,24 +230,23 @@ Checkin()
         esac
         branch=`git.branch`
         Prep_auth
-        if git.ac $dry_mode $comment; then
-                echo "git push origin $branch"
-                if [ -z "$dry_mode" ]; then
-                        Git_status
-                        Possibly_propagate_update $repo_name $t.status
-                        # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
-                        #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
-                        #       hint: Updates were rejected because the remote contains work that you do
-                        #       hint: not have locally. This is usually caused by another repository pushing
-                        #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
-                        #       hint: 'git pull') before pushing again.
-                        #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-                        if Push; then
-                                echo "git pull origin $branch"
-                                if ! git pull origin $branch; then
-                                        echo "$0: git pull failed, returning..." 1>&2
-                                        return 1
-                                fi
+        git.ac $dry_mode $comment
+        echo "git push origin $branch"
+        if [ -z "$dry_mode" ]; then
+                Git_status
+                Possibly_propagate_update $repo_name $t.status
+                # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
+                #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
+                #       hint: Updates were rejected because the remote contains work that you do
+                #       hint: not have locally. This is usually caused by another repository pushing
+                #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
+                #       hint: 'git pull') before pushing again.
+                #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+                if Push; then
+                        echo "git pull origin $branch"
+                        if ! git pull origin $branch; then
+                                echo "$0: git pull failed, returning..." 1>&2
+                                return 1
                         fi
                 fi
         fi
@@ -290,9 +289,6 @@ Commit_routine_changes()
                                 Commit 'adjusted project search settings' g.sh
                                 changes_seen=yes
                         fi
-                        if [ -z "$changes_seen" ]; then
-                                return
-                        fi
                 ;;
                 emacs)
                         if grep lisp/data/n-data-menu-browse $t.status > /dev/null 2>&1; then
@@ -326,7 +322,6 @@ Pull_latest_updates_if_no_local_changes()
                 return
         fi
         cd $d/$proj
-        changes_to_be_pushed=''
         Commit_routine_changes $proj $d || return 1
         if Changes_seen; then
                 return
