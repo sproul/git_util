@@ -10,6 +10,9 @@ Mv_contents()
         mv "$dest_dir"/.[a-zA-Z0-9]  "/tmp/$repo_name"  > /dev/null 2>&1
 }
 
+dest_dir=`pwd`
+repo_name=`basename $dest_dir`
+
 all_mode=''
 dry_mode=''
 fast_mode=''
@@ -30,6 +33,29 @@ while [ -n "$1" ]; do
                 -f|-force)
                         force_mode=-force
                 ;;
+                p|put)
+                        case `pwd` in
+                                $HOME/git/*)
+                                ;;
+                                *)
+                                        echo "FAIL expected this op from ~/git, but instead we are in `pwd`"
+                                        exit 1
+                                ;;
+                        esac
+                        dest_dir=$dp/git/$repo_name
+                        if [ -d "$dest_dir" ]; then
+                                if [ -z "$force_mode" ]; then
+                                        echo "FAIL: directory \"$dest_dir\" already exists" 1>&2
+                                        exit 1
+                                fi
+                                rm -rf /tmp/$repo_name
+                                echo "mv $dest_dir /tmp"
+                                mv       $dest_dir /tmp
+                        fi
+                        echo.clean "cp -pr $HOME/git/$repo_name $dp/git"
+                        cp             -pr $HOME/git/$repo_name $dp/git
+                        exit
+                ;;
                 -q|-quiet)
                         verbose_mode=''
                 ;;
@@ -43,8 +69,6 @@ while [ -n "$1" ]; do
         shift
 done
 
-dest_dir=`pwd`
-repo_name=`basename $dest_dir`
 src_dir="$HOME/git/$repo_name"
 if [ ! -d $src_dir/.git ]; then
         echo "$0: error: could not find directory \"$src_dir/.git\"" 1>&2
@@ -69,6 +93,7 @@ else
                 exit 1
         fi
 fi
+
 if [ -z "$fast_mode" ]; then
         cd "$src_dir"
         git.d > $t
