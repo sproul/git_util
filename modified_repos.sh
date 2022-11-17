@@ -37,6 +37,19 @@ while [ -n "$1" ]; do
                 -add)
                         shift
                         repo=$1
+                        case "$repo" in
+                                $DOWNLOADS)
+                                        echo Ignorable folder, skipping...
+                                        exit
+                                ;;
+                                $dp/git/diagnostic-tool)
+                                        case "$HOSTNAME" in
+                                                cicd-stage)
+                                                        echo Ignoring DT changes on cicd-stage
+                                                        exit
+                                                ;;
+                                        esac
+                        esac
                         git_util__modified_repos__Add_to_list "$repo"
                         exit
                 ;;
