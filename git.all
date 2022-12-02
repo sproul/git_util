@@ -1,4 +1,5 @@
 :
+echo UNUSED; exit
 
 dry_mode=''
 verbose_mode=''

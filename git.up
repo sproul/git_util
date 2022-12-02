@@ -1,9 +1,12 @@
 #!/bin/bash
-. git_util.inc
+
 . git.prep_auth.inc
-t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
-branch=`git.branch`
-new_file_list=''
+
+Init_for_work_in_cwd()
+{
+        . git_util.inc
+        branch=`git.branch`
+}
 
 Possibly_propagate_update()
 {
@@ -242,15 +245,9 @@ Checkin()
                 #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
                 #       hint: 'git pull') before pushing again.
                 #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-                if Push; then
-                        echo "git pull origin $branch"
-                        if ! git pull origin $branch; then
-                                echo "$0: git pull failed, returning..." 1>&2
-                                return 1
-                        fi
-                fi
+                Push
         fi
-        echo "git pull origin $branch"
+        echo "git pull origin $branch from `pwd`"
         if ! git pull origin $branch; then
                 echo "$0: git pull failed, returning..." 1>&2
                 return 1
@@ -316,23 +313,30 @@ Changes_seen()
 
 Pull_latest_updates_if_no_local_changes()
 {
+        # some odd interaction occurring between projects when this is called multiple times, so isolating in a separate process for safety
+        (
         proj=${1-$(basename $(pwd))}
         d=${2-$dp}
         if [ ! -d $d/$proj ]; then
+                if [ -n "$verbose_mode" ]; then
+                        echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
+                fi
                 return
         fi
         cd $d/$proj
+        Init_for_work_in_cwd
         Commit_routine_changes $proj $d || return 1
         if Changes_seen; then
                 return
         fi
         rm $t.status
         Prep_auth
-        echo "git pull origin $branch"
+        echo "git pull origin $branch in `pwd`"
         git       pull origin $branch
+        )
 }
 
-Synchronize_high_traffic_shared_projects()
+Synchronize_high_traffic_shared_projects_if_no_local_changes()
 {
         for proj in bin data emacs git_util; do
                 echo $proj==========================================================
@@ -450,18 +454,20 @@ Test()
 export PATH=$PATH:`dirname $0`
 . git.sync
 
-t=`mktemp`
+t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
 repo_name=''
 dry_mode=''
 force_mode=''
 new_branch=''
+new_file_list=''
 verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
-                a|-all)
-                        git.all $dry_mode git.up
-                        exit
-                ;;
+                #a|-all)
+                #        Init_for_work_in_cwd
+                #        git.all $dry_mode git.up
+                #        exit
+                #;;
                 -in_dir)
                         shift
                         cd "$1"
@@ -507,7 +513,7 @@ while [ -n "$1" ]; do
                         fi
                 ;;
                 -Synchronize_high_traffic_shared_projects_if_no_local_changes)
-                        Synchronize_high_traffic_shared_projects
+                        Synchronize_high_traffic_shared_projects_if_no_local_changes
                         exit
                 ;;
                 -test)
@@ -527,6 +533,7 @@ while [ -n "$1" ]; do
         shift
 done
 
+Init_for_work_in_cwd || exit 1
 comment=`Resolve_comment $*` || echo 1
 Checkin || exit 1
 
