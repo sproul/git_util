@@ -1,5 +1,4 @@
 #!/bin/bash
-
 . git.prep_auth.inc
 
 Init_for_work_in_cwd()
