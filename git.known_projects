@@ -56,6 +56,10 @@ https://sproul@github.com/sproul/git_util.git
 https://sproul@github.com/sproul/home.git
 https://sproul@github.com/sproul/java_scratch.git
 https://sproul@github.com/sproul/monr.git
+<<<<<<< HEAD
+=======
+https://sproul@github.com/sproul/rest_test_generator.git
+>>>>>>> 04b466e... fixes
 https://sproul@github.com/sproul/weblog_2_tests.git
 https://surabhi.pathak%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_cicd-dashboard_5996/scm/cicd-dashboard.git
 ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/mcs_change-tracker_15881/change_tracker.git
