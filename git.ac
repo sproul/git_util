@@ -40,7 +40,9 @@ elif grep 'new file:' $t > /dev/null 2>&1; then
         Add_all
 elif grep 'modified:' $t > /dev/null 2>&1; then
         Add_all
-elif ! grep 'deleted:' $t > /dev/null 2>&1; then
+elif grep 'deleted:' $t > /dev/null 2>&1; then
+        Rm_missing
+        
         if [ -n "$verbose_mode" ]; then
                 echo "no changes seen, so git.ac just exiting w/ no commit"
         fi
