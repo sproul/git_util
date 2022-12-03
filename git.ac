@@ -33,6 +33,14 @@ Add_all()
         fi
 }
 
+Rm_missing()
+{
+        echo "git add -u # reflect deletions, and I think this could be used for the other types of changes too"
+        if [ -z "$dry_mode" ]; then
+                git add -u
+        fi
+}
+
 
 if grep '^# Untracked files' $t > /dev/null 2>&1; then
         Add_all
@@ -42,7 +50,7 @@ elif grep 'modified:' $t > /dev/null 2>&1; then
         Add_all
 elif grep 'deleted:' $t > /dev/null 2>&1; then
         Rm_missing
-        
+else
         if [ -n "$verbose_mode" ]; then
                 echo "no changes seen, so git.ac just exiting w/ no commit"
         fi
