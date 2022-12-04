@@ -1,4 +1,5 @@
 #!/bin/bash
+
 . git.prep_auth.inc
 
 Init_for_work_in_cwd()
@@ -89,6 +90,7 @@ Push()
 {
         Prep_auth
         if git push origin $branch > $t 2>&1; then
+                rm -f $t.status
                 return 0
         fi
         if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
@@ -106,6 +108,7 @@ Push()
         echo "git pull --rebase"
         if [ -z "$dry_mode" ]; then
                 if ! git pull --rebase; then
+                        rm -f $t.status
                         echo "$0: git pull --rebase failed......................" 1>&2
                         echo "git status"
                         Git_status
@@ -114,8 +117,10 @@ Push()
                         echo git.repair
                         return 1
                 fi
+                rm -f $t.status
         fi
         if ! git push origin $branch; then
+                rm -f $t.status
                 echo "$0: error: git push origin failed" 1>&2
                 return 1
         else
@@ -248,9 +253,11 @@ Checkin()
         fi
         echo "git pull origin $branch from `pwd`"
         if ! git pull origin $branch; then
+                rm -f $t.status
                 echo "$0: git pull failed, returning..." 1>&2
                 return 1
         fi
+        rm -f $t.status
         . modified_repos.inc
         git_util__modified_repos__Remove_from_list $repo_name
         if [ -f git.post_checkin.sh ]; then
@@ -305,6 +312,9 @@ Changes_seen()
 {
         if Git_status | grep '^ [DMA] ' > /dev/null 2>&1; then
                 return 0
+        elif Git_status | grep '^\?\? ' > /dev/null 2>&1; then
+                # untracked (potentially added) files
+                return 0
         else
                 return 1
         fi
@@ -332,6 +342,7 @@ Pull_latest_updates_if_no_local_changes()
         Prep_auth
         echo "git pull origin $branch in `pwd`"
         git       pull origin $branch
+        rm -f $t.status
         )
 }
 
