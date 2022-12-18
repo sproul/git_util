@@ -312,6 +312,7 @@ $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'no_config_reload_with_each_get'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'dev2oci'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git 'test_blackbox'
+$dp/git_util/git.clone             git@orahub.oraclecorp.com:paas-innovationhub-central/misc-utils.git
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_DTE_event_ordering_dependency'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
