@@ -42,7 +42,7 @@ Rm_missing()
 }
 
 
-if grep '^# Untracked files' $t > /dev/null 2>&1; then
+if grep '^#* *Untracked files' $t > /dev/null 2>&1; then
         Add_all
 elif grep 'new file:' $t > /dev/null 2>&1; then
         Add_all

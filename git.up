@@ -185,7 +185,7 @@ Checkin()
         git.changed_or_added_files.ls > $t.changed_or_added
         patt="EARLY"
         patt="$patt.*exit"
-        if grep -n "$patt" $t.changed_or_added; then
+        if grep -n "$patt" `cat $t.changed_or_added`; then
                 echo FAILED early exit indicates debugging
         else
                 echo OK no early exit
@@ -193,7 +193,7 @@ Checkin()
         grep '\.sh$'  $t.changed_or_added >  $t.changed_or_added_sh
         grep '\.inc$' $t.changed_or_added >> $t.changed_or_added_sh
         if [ -s $t.changed_or_added_sh ]; then
-                if grep -n "^  *EOF$" $t.changed_or_added_sh; then
+                if grep -n "^[ \t][ \t]*EOF$" `cat $t.changed_or_added_sh`; then
                         echo FAILED suspiciously indented EOF, possible malformed here-doc
                         if [ -n "$force_mode" ]; then
                                 if [ -n "$verbose_mode" ]; then
