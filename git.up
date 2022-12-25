@@ -185,11 +185,13 @@ Checkin()
         git.changed_or_added_files.ls > $t.changed_or_added
         patt="EARLY"
         patt="$patt.*exit"
-        if grep -n "$patt" `cat $t.changed_or_added`; then
-                echo FAILED early exit indicates debugging
-        else
-                echo OK no early exit
+        if [ -s $t.changed_or_added ]; then
+                if grep -n "$patt" `cat $t.changed_or_added`; then
+                        echo FAILED early exit indicates debugging
+                        exit 1
+                fi
         fi
+        echo OK no early exit
         grep '\.sh$'  $t.changed_or_added >  $t.changed_or_added_sh
         grep '\.inc$' $t.changed_or_added >> $t.changed_or_added_sh
         if [ -s $t.changed_or_added_sh ]; then
