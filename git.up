@@ -322,6 +322,8 @@ Changes_seen()
 
 Pull_latest_updates_if_no_local_changes()
 {
+        # clear caches
+        rm -f $t.status
         # some odd interaction occurring between projects when this is called multiple times, so isolating in a separate process for safety
         (
         proj=${1-$(basename $(pwd))}
