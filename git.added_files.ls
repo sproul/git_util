@@ -23,10 +23,10 @@ while [ -n "$1" ]; do
         esac
         shift
 done
-if [ -f $status_output_fn ]; then
+if [ -f "$status_output_fn" ]; then
         cat $status_output_fn
 else
-        git status .
-fi | grep '^	[^:][^:]*' | sed -e 's/^	//'
+        git status --short .
+fi | sed -n -e 's/^?? //p'
 exit
-bx $dp/git_util/git.added_files.ls 
+bx $dp/git_util/git.added_files.ls

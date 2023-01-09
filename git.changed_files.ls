@@ -23,8 +23,10 @@ while [ -n "$1" ]; do
         esac
         shift
 done
-if [ -f $status_output_fn ]; then
+if [ -f "$status_output_fn" ]; then
         cat $status_output_fn
 else
-        git status .
-fi | grep '^	modified: ' | sed -e 's/.*modified: //'
+        git status --short .
+fi | grep '^ M ' | sed -e 's/^ M //'
+exit
+$dp/git_util/git.changed_files.ls 

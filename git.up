@@ -47,26 +47,28 @@ Possibly_propagate_update()
         if [ -z $target_dir ]; then
                 return 0
         fi
-        if [ ! -d $target_dir ]; then
-                echo "WARNING expected to see $target_dir for a propagated checkin" 1>&2
-                return 1
-        fi
         updated_files=`git.changed_or_added_files.ls`
         if [ -z "$updated_files" ]; then
                 return
         fi
         tar_fn=/tmp/git.up.changed.tar
-        tar cf $tar_fn `git.changed_or_added_files.ls`
-        cp.via_tar -tar_fn $tar_fn $target_dir
+        tar cvf $tar_fn $updated_files
         case $target_dir in
                 *:*)
-                        host=`sed -e 's/:.*//'`
-                        echo "ssh $host cd $target_dir && git.up"
+                        scp $tar_fn $q:$tar_fn
+                        host=`sed -e 's/:.*//'       <<< $target_dir`
+                        target_dir=`sed -e 's/.*://' <<< $target_dir`
+                        echo "ssh $host cd $target_dir && tar xvf $tar_fn && git.up"
                         if [ -z "$dry_mode" ]; then
-                                ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $host "cd $target_dir && git.up"
+                                ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $host "cd $target_dir && tar xvf $tar_fn && bash -x git.up $comment"
                         fi
                 ;;
                 *)
+                        if [ ! -d $target_dir ]; then
+                                echo "WARNING expected to see $target_dir for a propagated checkin" 1>&2
+                                return 1
+                        fi
+                        cp.via_tar -tar_fn $tar_fn $target_dir
                         (
                         echo.clean "cd $target_dir && git.up"
                         if [ -z "$dry_mode" ]; then 
