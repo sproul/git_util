@@ -1,0 +1,41 @@
+#!/bin/sh
+# cf https://stackoverflow.com/questions/4713088/how-to-use-git-bisect
+dry_mode=''
+judgment_script=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -judgment_script)
+                        shift
+                        judgment_script="$1"
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+good_sha=$1
+if [ -z "$good_sha" ]; then
+        echo "FAIL: expected SHA of known good commit before we start, but saw nothing" 1>&2
+        exit 1
+fi
+git stash save
+git checkout -
+git bisect start
+git bisect bad
+git bisect good $good_sha
+echo "When you are finished, do # git bisect reset"
+exit
+# see mac mc-e
+bx $dp/git_util/git.bisect
