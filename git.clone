@@ -146,7 +146,11 @@ if [ ! -d $git_dir ]; then
         echo "$0: error: could not create directory \"$git_dir\"" 1>&2
         exit 1
 fi
-cd $git_dir
+if [ -n "$dp_mode" ]; then
+        cd $dp
+else
+        cd $git_dir
+fi
 
 save_old_as_backup
 
