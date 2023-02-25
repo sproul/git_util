@@ -1,0 +1,10 @@
+#!/bin/bash
+fn="$1"
+cat >> "$fn"
+t=`mktemp`
+trap "rm $t" EXIT
+
+cat "$fn" | sort -u > $t
+cat $t > "$fn"
+
+exit

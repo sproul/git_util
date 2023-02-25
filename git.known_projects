@@ -20,7 +20,10 @@ git@github.com:sproul/t.git
 git@github.com:sproul/web_buffer.git
 git@git.osn.oraclecorp.com:osn/cec.git
 git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git
+<<<<<<< HEAD
 git@orahub.oci.oraclecorp.com:paascicd/authz
+=======
+>>>>>>> 166fb31... fixes
 git@orahub.oci.oraclecorp.com:paascicd/authz.git
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/misc-utils.git
@@ -60,6 +63,7 @@ https://sproul@github.com/sproul/java_scratch.git
 https://sproul@github.com/sproul/monr.git
 https://sproul@github.com/sproul/rest_test_generator.git
 https://sproul@github.com/sproul/weblog_2_tests.git
+https://sproul@github.com/sproul/win.git
 https://surabhi.pathak%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_cicd-dashboard_5996/scm/cicd-dashboard.git
 ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/mcs_change-tracker_15881/change_tracker.git
 ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/paasops_oci-reports_17338/oci_reports.git

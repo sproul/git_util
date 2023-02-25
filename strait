@@ -1,0 +1,60 @@
+#!/bin/bash
+# potentially truncate large output both horizontally (where lines exceed 300 chars) and vertically (where output exceeds 1000 lines)
+max_horizontal_line_len=300
+max_vertical_line_count=1000
+
+dry_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -max_horizontal_line_len)
+                        shift
+                        max_horizontal_line_len=$1
+                ;;
+                -max_vertical_line_count)
+                        shift
+                        max_vertical_line_count=$1
+                ;;
+                -test)
+                        tt=`mktemp`
+                        #trap "rm $tt.*" EXIT
+                        
+                        cat <<EOF > $tt.expected
+[full content in $tt.full_output]
+1234567
+abcdefg                        
+xyz
+...
+[full content in $tt.full_output]
+EOF
+                        cat <<EOF > $tt.input
+1234567890
+abcdefghij
+xyz
+abc
+EOF
+                        bash $0 -tmp_for_full_output $tt.full_output -max_horizontal_line_len 7 -max_vertical_line_count 3 $tt.input > $tt.actual
+                        cat $tt.expected | assert.f.is "strait" $tt.actual
+                        exit
+                ;;
+                -tmp_for_full_output)
+                        shift
+                        tmp_for_full_output_arg="-tmp_for_full_output $1"
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+
+if [ -z "$1" ]; then
+        cat
+else
+        fn="$1"
+        cat "$fn"
+fi |
+trunc_lines $tmp_for_full_output_arg -vertically_truncate_to $max_vertical_line_count $max_horizontal_line_len
+exit
+bx $dp/bin/strait -test

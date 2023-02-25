@@ -1,0 +1,4 @@
+#!/bin/bash
+echo $* | env.use-var-names
+exit
+echo.clean $dp/AAA
