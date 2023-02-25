@@ -23,12 +23,12 @@ git@github.com:sproul/ssh_evalj.git
 git@github.com:sproul/t.git
 git@github.com:sproul/web_buffer.git
 git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git
-git@orahub.oci.oraclecorp.com:paascicd/authz
-git@orahub.oci.oraclecorp.com:paascicd/authz.git
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/misc-utils.git
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/provisioning-ui.git
+git@orahub.oci.oraclecorp.com:paascicd/authz
+git@orahub.oci.oraclecorp.com:paascicd/authz.git
 git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
 git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
 git@orahub.oraclecorp.com:james.x.clark/carson.git
