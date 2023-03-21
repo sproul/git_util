@@ -334,6 +334,7 @@ bx $dp/git_util/git.clone sproul@github.com:sproul/emacs.git
 bx $dp/git_util/git.clone git@github.com/clj-commons/aleph.git
 git.clone https://github.com/clj-commons/aleph.git
 git.clone https://github.com/clj-commons/aleph.git
+git.clone https://github.com/lsproul/flight_planner.git
 git.clone https://nsproul97@bitbucket.org/qwickrate/monroe.biz.git
 git.clone git@orahub.oci.oraclecorp.com:mike.gilbode/messageproducer.git
 git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git

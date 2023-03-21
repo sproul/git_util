@@ -253,7 +253,7 @@ Checkin()
                 ;;
         esac
         branch=`git.branch`
-        Prep_auth
+        #Prep_auth
         git.ac $dry_mode $comment
         echo "git push origin $branch"
         if [ -z "$dry_mode" ]; then

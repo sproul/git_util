@@ -1,6 +1,8 @@
+<<<<<<< HEAD
 =======
 >>>>>>> 166fb31... fixes
 git@alm.oraclecorp.com:2222/odocs_desktop/desktop.git
+git@git.osn.oraclecorp.com:osn/cec.git
 git@github.com:SeleniumHQ/selenium.git
 git@github.com:sproul/bin.git
 git@github.com:sproul/div_calendar_crawler.git
@@ -13,21 +15,20 @@ git@github.com:sproul/init.git
 git@github.com:sproul/multivcs_query.git
 git@github.com:sproul/pix.git
 git@github.com:sproul/plastic_profile.git
-git@github.com:sproul/rabbit_mq_cli_test.git
 git@github.com:sproul/rabbit_mq.git
+git@github.com:sproul/rabbit_mq_cli_test.git
 git@github.com:sproul/rest_test_generator.git
 git@github.com:sproul/resume.git
 git@github.com:sproul/ssh_evalj.git
 git@github.com:sproul/t.git
 git@github.com:sproul/web_buffer.git
-git@git.osn.oraclecorp.com:osn/cec.git
 git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git
-git@orahub.oci.oraclecorp.com:paascicd/authz
-git@orahub.oci.oraclecorp.com:paascicd/authz.git
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/misc-utils.git
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps
 git@orahub.oci.oraclecorp.com:paas-innovationhub-central/provisioning-ui.git
+git@orahub.oci.oraclecorp.com:paascicd/authz
+git@orahub.oci.oraclecorp.com:paascicd/authz.git
 git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git
 git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
 git@orahub.oraclecorp.com:james.x.clark/carson.git
@@ -36,10 +37,10 @@ git@orahub.oraclecorp.com:paas-innovationhub-central/misc-utils.git
 git@orahub.oraclecorp.com:rohit.ro.kumar/sys-eng.git
 git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
 git@orahub.oraclecorp.com:viraj.purang/patchartifactdefbuilder.git
-<<<<<<< HEAD
 https://alm.oraclecorp.com/paasops/#projects/paas-platform/scm/oci-capacity-tools.git
 https://github.com/bracesproul/bart_scheduler.git
 https://github.com/clj-commons/aleph.git
+https://github.com/lsproul/flight_planner.git
 https://github.com/oracle-terraform-modules/terraform-oci-olcne.git
 https://github.com/sproul/calculator
 https://github.com/sproul/change_tracker
