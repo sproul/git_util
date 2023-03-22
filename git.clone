@@ -2,7 +2,7 @@
 new_branch_mode=''
 
 case `whoami` in
-        admin.nelson|nelsonsproul|nelson|nsproul|opc|x)
+        admin.nelson|brace|leighton|nelsonsproul|nelson|nsproul|opc|x)
         ;;
         *)
                 echo "$0: error: logged in as wrong user: `whoami`" 1>&2
