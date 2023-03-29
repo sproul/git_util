@@ -65,7 +65,7 @@ Prep_auth()
         echo git.prep_auth.inc/Prep_auth
         
         if [ -f .gitconfig.override ]; then
-                Swap_gitconfigs .gitconfig
+                Swap_gitconfigs .gitconfig.override
         elif [ -f $HOME/.gitconfig.global ]; then
                 Swap_gitconfigs $HOME/.gitconfig.global
         fi
