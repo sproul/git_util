@@ -6,6 +6,7 @@ end_of_process_safe_gc_list=/tmp/git.prep_auth.inc.$$
 
 Restore_clean_configs()
 {
+        
         if [ -f /tmp/Restore_clean_configs__just_return ]; then
                 rm /tmp/Restore_clean_configs__just_return
                 return
@@ -70,7 +71,7 @@ Prep_auth()
                 #cat $gc | sed -e "s;^\turl = https://sproul:.*;\turl = git@github.com:sproul/$xrepo_name.git;" > $safe_gc
                 cat  $gc | sed -e "s;^\turl = https://\\(.*sproul\\):.*;\turl = git@github.com:\\1/$xrepo_name.git;" > $safe_gc
                 echo $safe_gc >> $end_of_process_safe_gc_list
-                trap "Restore_clean_configs" EXIT
+                #trap "Restore_clean_configs" EXIT
         elif grep "url = git@github.com:.*sproul/" $gc > $t 2>&1; then
                 gh_user=`cat $t | sed -e 's/.*github.com://' -e 's;/.*;;'`
                 email=`grep 'email =' $HOME/.gitconfig | sed -e 's/.* = //'`
@@ -85,7 +86,7 @@ Prep_auth()
                         # the normal case: temporarily insert gc value for this transaction
                         mv $gc $safe_gc
                         echo $safe_gc >> $end_of_process_safe_gc_list
-                        trap "Restore_clean_configs" EXIT
+                        #trap "Restore_clean_configs" EXIT
                         cat $safe_gc | sed -e "s;^\turl =.*;\turl = https://$gh_user:`cat $hgh`@github.com/$gh_user/$xrepo_name.git;" > $gc
                         grep @github.com $gc
                 fi
