@@ -6,7 +6,7 @@ end_of_process_safe_gc_list=/tmp/git.prep_auth.inc.$$
 
 Restore_clean_configs()
 {
-        
+        echo Restore_clean_configs disabled; return
         if [ -f /tmp/Restore_clean_configs__just_return ]; then
                 rm /tmp/Restore_clean_configs__just_return
                 return
