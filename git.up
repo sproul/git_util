@@ -348,16 +348,19 @@ Pull_latest_updates_if_no_local_changes()
         proj=${1-$(basename $(pwd))}
         Clear_status
         d=${2-$dp}
-        case $proj in
-                bin)
-                        d="$d/git"
-                ;;
-        esac
         if [ ! -d $d/$proj ]; then
                 if [ -n "$verbose_mode" ]; then
                         echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
                 fi
-                return
+                if [ -d $d/git/$proj ]; then
+                        d="$d/git"
+                fi
+                if [ ! -d $d/$proj ]; then
+                        if [ -n "$verbose_mode" ]; then
+                                echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
+                        fi
+                        return
+                fi
         fi
         cd $d/$proj
         Init_for_work_in_cwd
