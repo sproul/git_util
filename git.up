@@ -520,15 +520,15 @@ while [ -n "$1" ]; do
                 #        git.all $dry_mode git.up
                 #        exit
                 #;;
-                -in_dir)
-                        shift
-                        cd "$1"
-                ;;
                 -dry|-dry_run)
                         dry_mode=-dry
                 ;;
                 -f|-force)
                         force_mode=-force
+                ;;
+                -in_dir)
+                        shift
+                        cd "$1"
                 ;;
                 -new_branch)
                         new_branch_flag="$1"
