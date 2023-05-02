@@ -29,18 +29,25 @@ done
 
 
 fn="$1"
-if [ -n "$new_mode" ]; then
-        zfn="$fn.new"
+if [ ! -f "$fn" ]; then
+        touch "$fn"
+        zfn=''
 else
-        zfn="/tmp/`basename $fn`"
+        if [ -n "$new_mode" ]; then
+                zfn="$fn.new"
+        else
+                zfn="/tmp/`basename $fn`"
+        fi
+        echo.clean "cp -p \"$fn\" \"$zfn\""
+        cp       -p "$fn" "$zfn"
+        
+        echo.clean "git checkout \"$fn\""
 fi
-echo.clean "cp -p \"$fn\" \"$zfn\""
-cp       -p "$fn" "$zfn"
-
-echo.clean "git checkout \"$fn\""
 git       checkout "$fn"
-echo.clean "diff \"$fn\"  \"$zfn\""
-diff       "$fn"  "$zfn"
+if [ $zfn ]; then
+        echo.clean "diff \"$fn\"  \"$zfn\""
+        diff       "$fn"  "$zfn"
+fi
 exit
 cksum $dp/home/.profile /tmp/.profile ~/k
 $DROP/git_util/git.revert1 $dp/home/.profile
