@@ -526,6 +526,12 @@ while [ -n "$1" ]; do
                 -f|-force)
                         force_mode=-force
                 ;;
+                -if_no_changes)
+                        if git.d; then
+                                echo Changes seen, so exiting...
+                                exit 0
+                        fi
+                ;;
                 -in_dir)
                         shift
                         cd "$1"
