@@ -5,6 +5,7 @@ t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
 
 dry_mode=''
 new_mode=''
+rev=''
 verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
@@ -16,6 +17,10 @@ while [ -n "$1" ]; do
                 ;;
                 -q|-quiet)
                         verbose_mode=''
+                ;;
+                -rev)
+                        shift
+                        rev="$1"
                 ;;
                 -v|-verbose)
                         verbose_mode=-v
@@ -40,10 +45,14 @@ else
         fi
         echo.clean "cp -p \"$fn\" \"$zfn\""
         cp       -p "$fn" "$zfn"
-        
-        echo.clean "git checkout \"$fn\""
 fi
-git       checkout "$fn"
+if [ $rev ]; then
+        echo "git restore -s $rev \"$fn\""
+        git       restore -s $rev "$fn"
+else
+        echo.clean "git checkout \"$fn\""
+        git       checkout "$fn"
+fi
 if [ $zfn ]; then
         echo.clean "diff \"$fn\"  \"$zfn\""
         diff       "$fn"  "$zfn"
