@@ -254,7 +254,7 @@ Checkin()
         esac
         branch=`git.branch`
         #Prep_auth
-        git.ac $dry_mode $comment
+        git.ac $dry_mode "$comment on `hostname`"
         echo "git push origin $branch"
         if [ -z "$dry_mode" ]; then
                 Git_status
