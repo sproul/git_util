@@ -1,0 +1,67 @@
+#!/bin/bash
+
+Check_for_bad_orcl_vpn_code()
+{
+        host=$1
+        echo "scp $HOME/.gitconfig.orcl $HOME/.gitconfig.global $host:.
+        echo "scp $dp/emacs/bin/orcl.on_vpn $host:dp/emacs/bin/orcl.on_vpn # to fix git access for updates"
+        echo "ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $host git.up -in_dir dp/emacs"
+}
+
+Update_host()
+{
+        host=$1
+        Check_for_bad_orcl_vpn_code $host
+        echo "ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $host git.up -Synchronize_high_traffic_shared_projects_if_no_local_changes"
+}
+
+dry_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -host)
+                        shift
+                        host=$1
+                        Update_host $host
+                        exit
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+if [ ! $host ]; then
+        (
+        echo $cs1
+        echo $cs2
+        r.echo coci1
+        r.echo coci2
+        r.echo c3
+        r.ls -hosts_only k8
+        ) |
+        while read host; do
+                Update_host $host
+        done > $t.script
+        cat $t.script
+        if [ $dry_mode ]; then
+                exit
+        fi
+        
+        bash -x $t.script
+fi
+
+exit
+bx $dp/git_util/git.up.all -dry 
+exit
+$dp/git_util/git.up.all

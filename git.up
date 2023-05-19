@@ -82,11 +82,9 @@ Possibly_propagate_update()
 
 Clear_status()
 {
-        if [ -z "$proj" ]; then
-                echo "FAIL: Clear_status expected a value for \"proj\" but saw nothing" 1>&2
-                exit 1
+        if [ -n "$proj" ]; then
+                rm -f $t.$proj.status
         fi
-        rm -f $t.$proj.status
 }
 
 Git_status()

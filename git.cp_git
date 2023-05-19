@@ -33,6 +33,14 @@ while [ -n "$1" ]; do
                 -f|-force)
                         force_mode=-force
                 ;;
+                -in_dir)
+                        shift
+                        echo "cd $1"
+                        cd       $1
+                        
+                        dest_dir=`pwd`
+                        repo_name=`basename $dest_dir`
+                ;;
                 p|put)
                         case `pwd` in
                                 $HOME/git/*)
@@ -52,7 +60,7 @@ while [ -n "$1" ]; do
                                 echo "mv $dest_dir /tmp"
                                 mv       $dest_dir /tmp
                         fi
-                        echo.clean "cp -pr $HOME/git/$repo_name $dp/git"
+                        echo "cp -pr $HOME/git/$repo_name $dp/git"
                         cp             -pr $HOME/git/$repo_name $dp/git
                         exit
                 ;;
@@ -70,10 +78,6 @@ while [ -n "$1" ]; do
 done
 
 src_dir="$HOME/git/$repo_name"
-if [ ! -d $src_dir/.git ]; then
-        echo "$0: error: could not find directory \"$src_dir/.git\"" 1>&2
-        exit 1
-fi
 if [ ! -d .git ]; then
         echo "$0 could not find directory \".git\"" 1>&2
         if [ -z "$force_mode" ]; then
@@ -82,12 +86,12 @@ if [ ! -d .git ]; then
         touch /tmp/Restore_clean_configs__just_return
 else
         backup_dir=../$repo_name.git.bak
-        echo.clean "rm -rf $backup_dir"
+        echo "rm -rf $backup_dir"
         if ! rm       -rf $backup_dir; then
                 echo "$0: rm       -rf $backup_dir failed, exiting..." 1>&2
                 exit 1
         fi
-        echo.clean "mv .git ../$repo_name.git.bak"
+        echo "mv .git ../$repo_name.git.bak"
         if ! mv       .git ../$repo_name.git.bak; then
                 echo "$0: mv       .git ../$repo_name.git.bak failed, exiting..." 1>&2
                 exit 1
@@ -110,9 +114,9 @@ if [ -z "$fast_mode" ]; then
 fi
 if [ -n "$all_mode" ]; then
         rm -rf /tmp/$repo_name
-        echo.clean "mv $dest_dir /tmp"
+        echo "mv $dest_dir /tmp"
         if          mv $dest_dir /tmp; then
-                echo.clean "cp -pr $src_dir $dest_dir"
+                echo "cp -pr $src_dir $dest_dir"
                 if cp -pr $src_dir $dest_dir; then
                         exit
                 else
