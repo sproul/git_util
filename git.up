@@ -513,11 +513,12 @@ new_file_list=''
 verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
-                #a|-all)
-                #        Init_for_work_in_cwd
-                #        git.all $dry_mode git.up
-                #        exit
-                #;;
+                a|-all)
+                        for d in `cat $dp/.modified_repo_statuses`; do
+                                git.up -in_dir $d
+                        done
+                        exit
+                ;;
                 -dry|-dry_run)
                         dry_mode=-dry
                 ;;

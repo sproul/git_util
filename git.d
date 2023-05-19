@@ -7,7 +7,9 @@ verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
                 a|-all)
-                        git.all $dry_mode git.d
+                        for d in `cat $dp/.modified_repo_statuses`; do
+                                git.d -in_dir $d
+                        done
                         exit
                 ;;
                 -in_dir)
