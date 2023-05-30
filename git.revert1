@@ -9,6 +9,16 @@ rev=''
 verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
+                diff)
+                        # user prepended 'gr' to git diff output, e.g.,
+                        #       gr diff --git a/guide1209/canon_found.png b/guide1209/canon_found.png
+                        # strip away the debris to get the underlying file name, to make the command equivalent to
+                        #       gr guide1209/canon_found.png
+                        cmd=`sed -e 's;.* b/;git.revert1 ;' <<< $*`
+                        echo $cmd
+                        eval $cmd
+                        exit
+                ;;
                 -dry)
                         dry_mode=-dry
                 ;;
