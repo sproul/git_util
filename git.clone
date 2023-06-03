@@ -17,6 +17,11 @@ force_mode=''
 to_branch=''
 while [ -n "$1" ]; do
         case "$1" in
+                -both)
+                        git.clone -dp $*
+                        git.clone     $*
+                        exit
+                ;;
                 -chi)
                         shift
                         if [ ! -f "$1" ]; then
