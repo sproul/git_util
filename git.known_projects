@@ -52,6 +52,9 @@ https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_oci-repo
 https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_paas-platform/scm/oci-capacity-tools.git
 https://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_sensu-monitoring-infrastructure_5319/scm/sensu-monitoring-infrastructure.git
 https://sproul@github.com/sproul/bin.git
+https://sproul@github.com/sproul/bin_Linux.git
+https://sproul@github.com/sproul/bin_mac.git
+https://sproul@github.com/sproul/bin_win.git
 https://sproul@github.com/sproul/data.git
 https://sproul@github.com/sproul/doc.git
 https://sproul@github.com/sproul/emacs.git
@@ -60,6 +63,7 @@ https://sproul@github.com/sproul/git_util.git
 https://sproul@github.com/sproul/home.git
 https://sproul@github.com/sproul/java_scratch.git
 https://sproul@github.com/sproul/monr.git
+https://sproul@github.com/sproul/pipeline_infra.git
 https://sproul@github.com/sproul/rest_test_generator.git
 https://sproul@github.com/sproul/t.git
 https://sproul@github.com/sproul/weblog_2_tests.git
