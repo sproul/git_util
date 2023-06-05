@@ -4,10 +4,11 @@ trap "rm $t*" EXIT
 
 dest_repo_dir=''
 dry_mode=''
-op='most_recent_update
+op='most_recent_update'
 src_repo_dir=`pwd`
 verbose_mode=''
 touch $t.dirs
+skip_tmp_staging_mode=''
 while [ -n "$1" ]; do
         case "$1" in
                 -add_dir)
@@ -26,11 +27,14 @@ while [ -n "$1" ]; do
                 -dry)
                         dry_mode=-dry
                 ;;
+                -from_fin_doc_parser)
+                        Extract_fin_doc_parser_code_to_port
+                ;;
                 -q|-quiet)
                         verbose_mode=''
                 ;;
-                -from_fin_doc_parser)
-                        Extract_fin_doc_parser_code_to_port
+                -skip_tmp_staging)
+                        skip_tmp_staging_mode=-skip_tmp_staging
                 ;;
                 -to|-dest_repo_dir)
                         shift
@@ -51,7 +55,7 @@ Prepare_src_repo()
         Repo_checks || return 1
         tmp_src_repo_dir=/tmp/`basename $src_repo_dir`
         echo.clean "cp.via_rsync $src_repo_dir $tmp_src_repo_dir"
-        if [ -z "$dry_mode" ]; then
+        if [ -z "$skip_tmp_staging_mode" ]; then
                 if ! cp.via_rsync $src_repo_dir $tmp_src_repo_dir; then
                         echo "$0: cp.via_rsync $src_repo_dir $tmp_src_repo_dir failed, exiting..." 1>&2
                         return 1
@@ -137,7 +141,7 @@ Rename_overlapping_dirs_in_dest()
 
 Repo_checks()
 {
-        if [ ! -z "$dest_repo_dir/.git" ]; then
+        if [ -z "$dest_repo_dir" ]; then
                 echo "$0: require -to expected dest_repo_dir parm" 1>&2
                 return 1
         fi
@@ -219,4 +223,6 @@ server
 ui
 EOF
 dir=server
-bx $dp/git_util/git_migrate -dry -dir server -dir ui -to $HOME/git/qwickanalyticsscraper
+bx $dp/git_util/git_migrate -dry -skip_tmp_staging -dir server -dir ui -to $HOME/git/qwickanalyticsscraper
+exit
+bx $dp/git_util/git_migrate -skip_tmp_staging -dir server -dir ui -to $HOME/git/qwickanalyticsscraper
