@@ -10,74 +10,33 @@ Init_for_work_in_cwd()
 
 Possibly_propagate_update()
 {
-        case `pwd` in
-                $HOME/git/*)
-                        # no propagation from HOME/git/...
-                        return
-                ;;
-        esac
-        repo_name=$1
-        git_status_output_fn=$2
-        target_dir=''
-        case $repo_name in
-                monr)
-                        case "$HOSTNAME" in
-                                VMS3|TRADES)
-                                        repo_name2=monroe.biz
-                                        target_dir=$HOME/git/$repo_name2
+        git2=''
+        case `hostname` in
+                qascraper)
+                        case $repo_name in
+                                fin_doc_parser)
+                                        git2=$HOME/git/fin_doc_parser
                                 ;;
                                 *)
                                         return
                                 ;;
                         esac
                 ;;
-                fin_doc_parser)
-                        repo_name2=qwickanalyticsscraper
-                        target_dir=$HOME/git/$repo_name2
-                        case "$HOSTNAME" in
-                                qascraper)
-                                        # target_dir is fine
-                                ;;
-                                *)
-                                        target_dir=$q:git/$repo_name2
-                                ;;
-                        esac
-                ;;
-        esac
-        if [ -z $target_dir ]; then
-                return 0
-        fi
-        updated_files=`git.changed_or_added_files.ls`
-        if [ -z "$updated_files" ]; then
-                return
-        fi
-        tar_fn=/tmp/git.up.changed.tar
-        tar cvf $tar_fn $updated_files
-        case $target_dir in
-                *:*)
-                        scp $tar_fn $q:$tar_fn
-                        host=`sed -e 's/:.*//'       <<< $target_dir`
-                        target_dir=`sed -e 's/.*://' <<< $target_dir`
-                        echo "ssh $host cd $target_dir && tar xvf $tar_fn && git.up"
-                        if [ -z "$dry_mode" ]; then
-                                ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $host "cd $target_dir && tar xvf $tar_fn && bash -x git.up $comment"
-                        fi
-                ;;
                 *)
-                        if [ ! -d $target_dir ]; then
-                                echo "WARNING expected to see $target_dir for a propagated checkin" 1>&2
-                                return 1
-                        fi
-                        cp.via_tar -tar_fn $tar_fn $target_dir
-                        (
-                        echo.clean "cd $target_dir && git.up"
-                        if [ -z "$dry_mode" ]; then
-                                cd $target_dir
-                                git.up
-                        fi
-                        )
+                        return
                 ;;
         esac
+        if [ ! -d $git2/.git ]; then
+                echo "FAIL could not find directory $git2/.git"
+                exit 1
+        else
+                echo "OK found directory $git2/.git"
+        fi
+        mv .git ..
+        mv $git2/.git .
+        gu $*
+        mv .git $git2
+        mv ../.git .
 }
 
 Clear_status()
