@@ -27,16 +27,21 @@ Possibly_propagate_update()
                 ;;
         esac
         if [ ! -d $git2/.git ]; then
-                echo "FAIL could not find directory $git2/.git"
-                exit 1
+                echo "WARN could not find directory $git2/.git"
+                return
         else
                 echo "OK found directory $git2/.git"
         fi
-        mv .git ..
-        mv $git2/.git .
+        echo "mv .git .."
+        mv       .git ..
+        echo "mv $git2/.git ."
+        mv       $git2/.git .
+        git.d
         gu $*
-        mv .git $git2
-        mv ../.git .
+        echo "mv .git $git2"
+        mv       .git $git2
+        echo "mv ../.git ."
+        mv       ../.git .
 }
 
 Clear_status()
