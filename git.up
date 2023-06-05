@@ -37,7 +37,7 @@ Possibly_propagate_update()
         echo "mv $git2/.git ."
         mv       $git2/.git .
         git.d
-        gu $*
+        git.up $*
         echo "mv .git $git2"
         mv       .git $git2
         echo "mv ../.git ."
