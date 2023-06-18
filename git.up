@@ -26,12 +26,6 @@ Set_git2()
 
 _Sync_git2()
 {
-        echo IMPL, coded but not tested; exit 1
-        
-        
-        
-        
-        
         if git.d; then
                 echo "FAIL git.d showed changes, but we expect none if we are running _Sync_git2"
                 exit 1
@@ -568,6 +562,8 @@ while [ -n "$1" ]; do
                 ---Sync_git2)
                         shift
                         dir=$1
+                        shift
+                        comment="$*"
                         if [ ! -d $dir ]; then
                                 echo "FAIL could not find directory $dir"
                                 exit 1
@@ -604,7 +600,7 @@ case `hostname` in
         lt5|x-mac)
                 case "$repo_name" in
                         fin_doc_parser)
-                                sshe q git.up ---Sync_git2 dp/git/fin_doc_parser
+                                sshe q git.up ---Sync_git2 dp/git/fin_doc_parser $comment
                         ;;
                 esac
         ;;
