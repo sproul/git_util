@@ -1,0 +1,4 @@
+:
+t=`mktemp`; trap "rm $t" EXIT
+git.d | sed -n -e 's/^?? /mv /p' | sed -e 's;$; /tmp;' > $t
+bash -x $t

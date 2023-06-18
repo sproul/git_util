@@ -4,491 +4,511 @@
 
 Init_for_work_in_cwd()
 {
-        . git_util.inc
-        branch=`git.branch`
+	. git_util.inc
+	branch=`git.branch`
 }
 
 Set_git2()
 {
-        git2=''
-        case `hostname` in
-                qascraper)
-                        case $repo_name in
-                                fin_doc_parser)
-                                        git2=$HOME/git/fin_doc_parser
-                                        return 0
-                                ;;
-                        esac
-                ;;
-        esac
-        return 1
+	git2=''
+	case `hostname` in
+		qascraper)
+			case $repo_name in
+				fin_doc_parser)
+					git2=$HOME/git/fin_doc_parser
+					return 0
+				;;
+			esac
+		;;
+	esac
+	return 1
 }
 
 _Sync_git2()
 {
-        if git.d; then
-                echo "FAIL git.d showed changes, but we expect none if we are running _Sync_git2"
+	if git.d; then
+		echo "FAIL git.d showed changes, but we expect none if we are running _Sync_git2"
+		exit 1
+	fi
+	Set_git2 || ( echo "FAIL Set_git2" 1>&2; exit 1 )
+	if [ ! -d $git2/.git ]; then
+		echo "WARN could not find directory $git2/.git"
+		return
+	else
+		echo "OK found directory $git2/.git"
+	fi
+        # step 1: get git2 up-to-date:
+	(
+	echo cd $git2
+	cd $git2
+        if git pull --rebase; then
+		echo "OK git pull --rebase"
+	else
+		echo "FAIL git pull --rebase"
+                echo "WARN are there unstaged changes perhaps in $git2?"
                 exit 1
         fi
-        Set_git2 || ( echo "FAIL Set_git2" 1>&2; exit 1 )
-        if [ ! -d $git2/.git ]; then
-                echo "WARN could not find directory $git2/.git"
-                return
-        else
-                echo "OK found directory $git2/.git"
-        fi
-        echo "mv .git .."
-        mv       .git ..
+        )
+        # step 2: get git over to git2, and request latest checkin w/ $comment:
+        echo "mv $git2/.git `dirname $git2`"
+	mv	 $git2/.git `dirname $git2`
+	echo "mv `pwd`/.git $git2"
+        mv       `pwd`/.git $git2
+        (
+        cd $git2
+        git.ac
+	git commit . -m "$comment"
+        )
+        # step 3: put everything back, then do a git revert to make it so the freshly updated .git dir's views are reflected on disk:
         echo "mv $git2/.git ."
         mv       $git2/.git .
-        Resolve_comment
-        git commit . -m "$comment"
-        echo "mv .git $git2"
-        mv       .git $git2
-        echo "mv ../.git ."
-        mv       ../.git .
+        echo "mv `dirname $git2`/.git $git2"
+        mv       `dirname $git2`/.git $git2
+        
+        git reset --hard        #       to get into sync with the freshly updated .git files
+        git.rm_untracked_and_unignored_files
 }
 
 Possibly_propagate_update()
 {
-        Set_git2 || return
-        if [ ! -d $git2/.git ]; then
-                echo "WARN could not find directory $git2/.git"
-                return
-        else
-                echo "OK found directory $git2/.git"
-        fi
-        echo "mv .git .."
-        mv       .git ..
-        echo "mv $git2/.git ."
-        mv       $git2/.git .
-        git.d
-        git.up $*
-        echo "mv .git $git2"
-        mv       .git $git2
-        echo "mv ../.git ."
-        mv       ../.git .
+	Set_git2 || return
+	if [ ! -d $git2/.git ]; then
+		echo "WARN could not find directory $git2/.git"
+		return
+	else
+		echo "OK found directory $git2/.git"
+	fi
+	echo "mv .git .."
+	mv	 .git ..
+	echo "mv $git2/.git ."
+	mv	 $git2/.git .
+	git.d
+	git.up $*
+	echo "mv .git $git2"
+	mv	 .git $git2
+	echo "mv ../.git ."
+	mv	 ../.git .
 }
 
 Clear_status()
 {
-        if [ -n "$proj" ]; then
-                rm -f $t.$proj.status
-        fi
+	if [ -n "$proj" ]; then
+		rm -f $t.$proj.status
+	fi
 }
 
 Git_status()
 {
-        if [ -z "$proj" ]; then
-                echo "FAIL: Git_status expected a value for \"proj\" but saw nothing" 1>&2
-                exit 1
-        fi
-        if [ ! -f $t.$proj.status ]; then
-                git status --short > $t.$proj.status
-        fi
-        cat $t.$proj.status
+	if [ -z "$proj" ]; then
+		echo "FAIL: Git_status expected a value for \"proj\" but saw nothing" 1>&2
+		exit 1
+	fi
+	if [ ! -f $t.$proj.status ]; then
+		git status --short > $t.$proj.status
+	fi
+	cat $t.$proj.status
 }
 
 Push()
 {
-        Prep_auth
-        if git push origin $branch > $t 2>&1; then
-                Clear_status
-                return 0
-        fi
-        if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
-                if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
-                        cat $t
-                        return 1
-                fi
-        fi
-        echo $0 saw merge problem...
-        echo ===========================================================================
-        cat $t
-        echo ===========================================================================
-        echo will try to rectify by rebasing, which will auto-merge if practical:
-        # before pushing, do this, will auto-merge:
-        echo "git pull --rebase"
-        if [ -z "$dry_mode" ]; then
-                if ! git pull --rebase; then
-                        Clear_status
-                        echo "$0: git pull --rebase failed......................" 1>&2
-                        echo "git status"
-                        Git_status
-                        echo EOD
-                        echo a way to resolve this:
-                        echo git.repair
-                        return 1
-                fi
-                Clear_status
-        fi
-        if ! git push origin $branch; then
-                Clear_status
-                echo "$0: error: git push origin failed" 1>&2
-                return 1
-        else
-                . modified_repos.inc
-                git_util__modified_repos__Remove_from_list $repo_name
-                Clear_status
-        fi
+	Prep_auth
+	if git push origin $branch > $t 2>&1; then
+		Clear_status
+		return 0
+	fi
+	if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
+		if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
+			cat $t
+			return 1
+		fi
+	fi
+	echo $0 saw merge problem...
+	echo ===========================================================================
+	cat $t
+	echo ===========================================================================
+	echo will try to rectify by rebasing, which will auto-merge if practical:
+	# before pushing, do this, will auto-merge:
+	echo "git pull --rebase"
+	if [ -z "$dry_mode" ]; then
+		if ! git pull --rebase; then
+			Clear_status
+			echo "$0: git pull --rebase failed......................" 1>&2
+			echo "git status"
+			Git_status
+			echo EOD
+			echo a way to resolve this:
+			echo git.repair
+			return 1
+		fi
+		Clear_status
+	fi
+	if ! git push origin $branch; then
+		Clear_status
+		echo "$0: error: git push origin failed" 1>&2
+		return 1
+	else
+		. modified_repos.inc
+		git_util__modified_repos__Remove_from_list $repo_name
+		Clear_status
+	fi
 }
 
 Modified()
 {
-        fn="$1"
-        if Git_status | grep " M $fn$" > /dev/null 2>&1; then
-                return 0
-        else
-                return 1
-        fi
+	fn="$1"
+	if Git_status | grep " M $fn$" > /dev/null 2>&1; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 Change_set_consists_entirely_of_new_files()
 {
-        git status > $t
-        if grep modified: $t > /dev/null 2>&1; then
-                return 1
-        fi
-        if ! grep 'untracked files' $t > /dev/null 2>&1; then
-                return 1
-        fi
-        new_file_list=`grep '^#*	' $t | sed -e 's/#	//' | tr '\n' ' '`
+	git status > $t
+	if grep modified: $t > /dev/null 2>&1; then
+		return 1
+	fi
+	if ! grep 'untracked files' $t > /dev/null 2>&1; then
+		return 1
+	fi
+	new_file_list=`grep '^#*	' $t | sed -e 's/#	//' | tr '\n' ' '`
 }
 
 Change_set_consists_entirely_of_deletions()
 {
-        git status > $t
-        if grep modified: $t > /dev/null 2>&1; then
-                return 1
-        fi
-        if grep 'untracked files' $t > /dev/null 2>&1; then
-                return 1
-        fi
-        if grep 'deleted:' $t > /dev/null 2>&1; then
-                return 0
-        fi
+	git status > $t
+	if grep modified: $t > /dev/null 2>&1; then
+		return 1
+	fi
+	if grep 'untracked files' $t > /dev/null 2>&1; then
+		return 1
+	fi
+	if grep 'deleted:' $t > /dev/null 2>&1; then
+		return 0
+	fi
 }
 
 Checkin()
 {
-        z=`pwd`
-        if [ -f git.pre_checkin_test.sh ]; then
-                if ! bash git.pre_checkin_test.sh $force_mode; then
-                        if [ -n "$force_mode" ]; then
-                                echo "$0: bash git.pre_checkin_test.sh failed, forcing anyway..." 1>&2
-                        else
-                                echo "$0: bash git.pre_checkin_test.sh failed, exiting..." 1>&2
-                                return 1
-                        fi
-                fi
-        fi
-        current_dir=`basename "$z"`
-        repo_name=$current_dir
-        echo gu $repo_name in $z...
-        git.changed_or_added_files.ls > $t.changed_or_added
-        patt="EARLY"
-        patt="$patt.*exit"
-        if [ -s $t.changed_or_added ]; then
-                if grep -n "$patt" `cat $t.changed_or_added`; then
-                        echo FAILED early exit indicates debugging
-                        exit 1
-                fi
-        fi
-        echo OK no early exit
-        grep '\.sh$'  $t.changed_or_added >  $t.changed_or_added_sh
-        grep '\.inc$' $t.changed_or_added >> $t.changed_or_added_sh
-        if [ -s $t.changed_or_added_sh ]; then
-                if grep -n "^[ \t][ \t]*EOF$" `cat $t.changed_or_added_sh`; then
-                        echo FAILED suspiciously indented EOF, possible malformed here-doc
-                        if [ -n "$force_mode" ]; then
-                                if [ -n "$verbose_mode" ]; then
-                                        echo OK force mode says we push on no matter what
-                                fi
-                        else
-                                return 1
-                        fi
-                else
-                        echo OK no suspicious here-doc
-                fi
-        fi
-        if Commit_routine_changes; then
-                changes_seen=yes
-        fi
-        if [ -z "$comment" ]; then
-                if Change_set_consists_entirely_of_new_files; then
-                        comment="add $new_file_list"
-                elif Change_set_consists_entirely_of_deletions; then
-                        comment="remove superfluous file(s)"
-                else
-                        case "$repo_name" in
-                                data)
-                                        comment="shell records"
-                                ;;
-                                emacs)
-                                        comment="shortcut update"
-                                ;;
-                                home)
-                                        comment="IP updates"
-                                ;;
-                        esac
-                fi
-        fi        
-        case "$repo_name" in
-                fin_doc_parser)
-                        # frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
-                        cp ui/src/public/MCBI_Q2_2018_Report.textract0.json.bak ui/src/public/MCBI_Q2_2018_Report.textract0.json
-                        cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
-                ;;
-        esac
-        branch=`git.branch`
-        #Prep_auth
-        git.ac $dry_mode "$comment on `hostname`"
-        echo "git push origin $branch"
-        if [ -z "$dry_mode" ]; then
-                Git_status
-                Possibly_propagate_update $repo_name $t.status
-                # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
-                #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
-                #       hint: Updates were rejected because the remote contains work that you do
-                #       hint: not have locally. This is usually caused by another repository pushing
-                #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
-                #       hint: 'git pull') before pushing again.
-                #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-                Push
-        fi
-        echo "git pull origin $branch from `pwd`"
-        if ! git pull origin $branch; then
-                Clear_status
-                echo "$0: git pull failed, returning..." 1>&2
-                return 1
-        fi
-        Clear_status
-        . modified_repos.inc
-        git_util__modified_repos__Remove_from_list $repo_name
-        if [ -f git.post_checkin.sh ]; then
-                echo "bash -x git.post_checkin.sh $comment"
-                bash       -x git.post_checkin.sh $comment
-        fi
+	z=`pwd`
+	if [ -f git.pre_checkin_test.sh ]; then
+		if ! bash git.pre_checkin_test.sh $force_mode; then
+			if [ -n "$force_mode" ]; then
+				echo "$0: bash git.pre_checkin_test.sh failed, forcing anyway..." 1>&2
+			else
+				echo "$0: bash git.pre_checkin_test.sh failed, exiting..." 1>&2
+				return 1
+			fi
+		fi
+	fi
+	current_dir=`basename "$z"`
+	repo_name=$current_dir
+	echo gu $repo_name in $z...
+	git.changed_or_added_files.ls > $t.changed_or_added
+	patt="EARLY"
+	patt="$patt.*exit"
+	if [ -s $t.changed_or_added ]; then
+		if grep -n "$patt" `cat $t.changed_or_added`; then
+			echo FAILED early exit indicates debugging
+			exit 1
+		fi
+	fi
+	echo OK no early exit
+	grep '\.sh$'  $t.changed_or_added >  $t.changed_or_added_sh
+	grep '\.inc$' $t.changed_or_added >> $t.changed_or_added_sh
+	if [ -s $t.changed_or_added_sh ]; then
+		if grep -n "^[ \t][ \t]*EOF$" `cat $t.changed_or_added_sh`; then
+			echo FAILED suspiciously indented EOF, possible malformed here-doc
+			if [ -n "$force_mode" ]; then
+				if [ -n "$verbose_mode" ]; then
+					echo OK force mode says we push on no matter what
+				fi
+			else
+				return 1
+			fi
+		else
+			echo OK no suspicious here-doc
+		fi
+	fi
+	if Commit_routine_changes; then
+		changes_seen=yes
+	fi
+	if [ -z "$comment" ]; then
+		if Change_set_consists_entirely_of_new_files; then
+			comment="add $new_file_list"
+		elif Change_set_consists_entirely_of_deletions; then
+			comment="remove superfluous file(s)"
+		else
+			case "$repo_name" in
+				data)
+					comment="shell records"
+				;;
+				emacs)
+					comment="shortcut update"
+				;;
+				home)
+					comment="IP updates"
+				;;
+			esac
+		fi
+	fi	  
+	case "$repo_name" in
+		fin_doc_parser)
+			# frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
+			cp ui/src/public/MCBI_Q2_2018_Report.textract0.json.bak ui/src/public/MCBI_Q2_2018_Report.textract0.json
+			cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
+		;;
+	esac
+	branch=`git.branch`
+	#Prep_auth
+	git.ac $dry_mode "$comment on `hostname`"
+	echo "git push origin $branch"
+	if [ -z "$dry_mode" ]; then
+		Git_status
+		Possibly_propagate_update $repo_name $t.status
+		# If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
+		#	error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
+		#	hint: Updates were rejected because the remote contains work that you do
+		#	hint: not have locally. This is usually caused by another repository pushing
+		#	hint: to the same ref. You may want to first merge the remote changes (e.g.,
+		#	hint: 'git pull') before pushing again.
+		#	hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+		Push
+	fi
+	echo "git pull origin $branch from `pwd`"
+	if ! git pull origin $branch; then
+		Clear_status
+		echo "$0: git pull failed, returning..." 1>&2
+		return 1
+	fi
+	Clear_status
+	. modified_repos.inc
+	git_util__modified_repos__Remove_from_list $repo_name
+	if [ -f git.post_checkin.sh ]; then
+		echo "bash -x git.post_checkin.sh $comment"
+		bash	   -x git.post_checkin.sh $comment
+	fi
 }
 
 Commit()
 {
-        comment="$1"
-        shift
-        
-        echo.clean "git add $*"
-        git             add $*
-        echo.clean "git commit -m  $comment"
-        git             commit -m "$comment"
+	comment="$1"
+	shift
+	
+	echo.clean "git add $*"
+	git		add $*
+	echo.clean "git commit -m  $comment"
+	git		commit -m "$comment"
 }
 
 Commit_routine_changes()
 {
-        proj=`pwd | sed -e 's;.*/;;'`
-        Git_status
-        case $proj in
-                bin)
-                        if grep Linux/carson.can $t.status > $t.carson.cans 2>&1; then
-                                fns=`cat $t.carson.cans | sed -e 's/.*Linux/Linux/'`
-                                Commit 'clojure notes' $fns
-                                changes_seen=yes
-                        fi
-                        if Modified g.sh; then
-                                Commit 'adjusted project search settings' g.sh
-                                changes_seen=yes
-                        fi
-                ;;
-                emacs)
-                        if grep lisp/data/n-data-menu-browse $t.status > /dev/null 2>&1; then
-                                fns=`cat $t.carson.cans | sed -e 's/.*lisp/lisp/'`
-                                Commit 'shortcut updates' $fns
-                        else
-                                return
-                        fi
-                ;;
-                *)
-                        return
-                ;;
-        esac
-        Push
+	proj=`pwd | sed -e 's;.*/;;'`
+	Git_status
+	case $proj in
+		bin)
+			if grep Linux/carson.can $t.status > $t.carson.cans 2>&1; then
+				fns=`cat $t.carson.cans | sed -e 's/.*Linux/Linux/'`
+				Commit 'clojure notes' $fns
+				changes_seen=yes
+			fi
+			if Modified g.sh; then
+				Commit 'adjusted project search settings' g.sh
+				changes_seen=yes
+			fi
+		;;
+		emacs)
+			if grep lisp/data/n-data-menu-browse $t.status > /dev/null 2>&1; then
+				fns=`cat $t.carson.cans | sed -e 's/.*lisp/lisp/'`
+				Commit 'shortcut updates' $fns
+			else
+				return
+			fi
+		;;
+		*)
+			return
+		;;
+	esac
+	Push
 }
 
 Changes_seen()
 {
-        if Git_status | grep '^ [DMA] ' > /dev/null 2>&1; then
-                echo Changes_seen saw DMA
-                return 0
-        elif Git_status | grep '^\?\? ' > /dev/null 2>&1; then
-                # untracked (potentially added) files
-                echo Changes_seen saw new files
-                return 0
-        else
-                echo Changes_seen saw nothing
-                return 1
-        fi
+	if Git_status | grep '^ [DMA] ' > /dev/null 2>&1; then
+		echo Changes_seen saw DMA
+		return 0
+	elif Git_status | grep '^\?\? ' > /dev/null 2>&1; then
+		# untracked (potentially added) files
+		echo Changes_seen saw new files
+		return 0
+	else
+		echo Changes_seen saw nothing
+		return 1
+	fi
 }
 
 Pull_latest_updates_if_no_local_changes()
 {
-        # clear caches
-        # some odd interaction occurring between projects when this is called multiple times, so isolating in a separate process for safety
-        (
-        proj=${1-$(basename $(pwd))}
-        Clear_status
-        d=${2-$dp}
-        if [ ! -d $d/$proj ]; then
-                if [ -n "$verbose_mode" ]; then
-                        echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
-                fi
-                if [ -d $d/git/$proj ]; then
-                        d="$d/git"
-                fi
-                if [ ! -d $d/$proj ]; then
-                        if [ -n "$verbose_mode" ]; then
-                                echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
-                        fi
-                        return
-                fi
-        fi
-        cd $d/$proj
-        Init_for_work_in_cwd
-        Commit_routine_changes $proj $d
-        if Changes_seen; then
-                return
-        fi
-        Clear_status
-        Prep_auth
-        echo "git pull origin $branch in `pwd`"
-        git       pull origin $branch
-        Clear_status
-        )
+	# clear caches
+	# some odd interaction occurring between projects when this is called multiple times, so isolating in a separate process for safety
+	(
+	proj=${1-$(basename $(pwd))}
+	Clear_status
+	d=${2-$dp}
+	if [ ! -d $d/$proj ]; then
+		if [ -n "$verbose_mode" ]; then
+			echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
+		fi
+		if [ -d $d/git/$proj ]; then
+			d="$d/git"
+		fi
+		if [ ! -d $d/$proj ]; then
+			if [ -n "$verbose_mode" ]; then
+				echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
+			fi
+			return
+		fi
+	fi
+	cd $d/$proj
+	Init_for_work_in_cwd
+	Commit_routine_changes $proj $d
+	if Changes_seen; then
+		return
+	fi
+	Clear_status
+	Prep_auth
+	echo "git pull origin $branch in `pwd`"
+	git	  pull origin $branch
+	Clear_status
+	)
 }
 
 Synchronize_high_traffic_shared_projects_if_no_local_changes()
 {
-        if [ ! -f $dp/emacs/bin/migrate.sh ]; then
-                echo "pre-migration, need to migrate"
-                Pull_latest_updates_if_no_local_changes emacs
-                if [ ! -f $dp/emacs/bin/migrate.sh ]; then
-                        echo "FAIL could not find $dp/emacs/bin/migrate.sh, expected to see it after Pull_latest_updates_if_no_local_changes emacs"
-                        exit 1
-                else
-                        echo "OK found $dp/emacs/bin/migrate.sh"
-                fi
-                bash -x $dp/emacs/bin/migrate.sh
-                exit
-        fi
-        for proj in bin data emacs git_util home bin_$OS; do
-                echo $proj==========================================================
-                Pull_latest_updates_if_no_local_changes $proj
-        done
-        case "$HOSTNAME" in
-                lt5|x-mac)
-                        Pull_latest_updates_if_no_local_changes doc             $dx
-                        Pull_latest_updates_if_no_local_changes fin_doc_parser  $dx
-                        Pull_latest_updates_if_no_local_changes monr
-                        if orcl.on_vpn; then
-                                Pull_latest_updates_if_no_local_changes diagnostic-tool
-                        fi
-                ;;
-        esac
+	if [ ! -f $dp/emacs/bin/migrate.sh ]; then
+		echo "pre-migration, need to migrate"
+		Pull_latest_updates_if_no_local_changes emacs
+		if [ ! -f $dp/emacs/bin/migrate.sh ]; then
+			echo "FAIL could not find $dp/emacs/bin/migrate.sh, expected to see it after Pull_latest_updates_if_no_local_changes emacs"
+			exit 1
+		else
+			echo "OK found $dp/emacs/bin/migrate.sh"
+		fi
+		bash -x $dp/emacs/bin/migrate.sh
+		exit
+	fi
+	for proj in bin data emacs git_util home bin_$OS; do
+		echo $proj==========================================================
+		Pull_latest_updates_if_no_local_changes $proj
+	done
+	case "$HOSTNAME" in
+		lt5|x-mac)
+			Pull_latest_updates_if_no_local_changes doc		$dx
+			Pull_latest_updates_if_no_local_changes fin_doc_parser	$dx
+			Pull_latest_updates_if_no_local_changes monr
+			if orcl.on_vpn; then
+				Pull_latest_updates_if_no_local_changes diagnostic-tool
+			fi
+		;;
+	esac
 
 }
 
 
 Find_comment_in_source_tree()
 {
-        dotc_list=`find . -name '.c'`
-        if [ -n "$dotc_list" ]; then
-                comment=`cat $dotc_list`
-                rm $dotc_list
-                echo $comment
-        fi
+	dotc_list=`find . -name '.c'`
+	if [ -n "$dotc_list" ]; then
+		comment=`cat $dotc_list`
+		rm $dotc_list
+		echo $comment
+	fi
 }
 
 Resolve_comment()
 {
-        comment_from_parms="$*"
-        comment_from_c=`Find_comment_in_source_tree`
-        if [ -n "$comment_from_c" ]; then
-                if [ -n "$comment_from_parms" ]; then
-                        echo "$0: error: did not expect $comment_from_c and also a command line comment -- which should I use?" 1>&2
-                        return 1
-                fi
-                comment="$comment_from_c"
-        else
-                comment="$comment_from_parms"
-        fi
-        echo $comment
+	comment_from_parms="$*"
+	comment_from_c=`Find_comment_in_source_tree`
+	if [ -n "$comment_from_c" ]; then
+		if [ -n "$comment_from_parms" ]; then
+			echo "$0: error: did not expect $comment_from_c and also a command line comment -- which should I use?" 1>&2
+			return 1
+		fi
+		comment="$comment_from_c"
+	else
+		comment="$comment_from_parms"
+	fi
+	echo $comment
 }
 
 Test_init()
 {
-        test_dir1=$dp/git/java_scratch
-        test_dir2=$HOME/git/java_scratch
-        if [ -n "$test_env_wipe_first" ]; then
-                echo "rm -rf $test_dir1 $test_dir2"
-                rm       -rf $test_dir1 $test_dir2
-        fi
-        tf=papa_testing_area/whatever.$$
-        
-        if [ ! -d $test_dir2 ]; then
-                git.clone java_scratch
-                if [ ! -d $test_dir2 ]; then
-                        echo "FAIL apparently git.clone $test_dir2 did not work" 1>&2
-                        exit 1
-                fi
-                mkdir -p $test_dir2/`dirname $tf`
-        fi
-        echo "OK $test_dir2"
-        if [ ! -d $test_dir1 ]; then
-                cp       -pr $test_dir2 $test_dir1
-                if [ ! -d $test_dir1 ]; then
-                        echo "FAIL cp to \"$test_dir1\"" 1>&2
-                        exit 1
-                fi
-        fi
-        echo "OK $test_dir1"
+	test_dir1=$dp/git/java_scratch
+	test_dir2=$HOME/git/java_scratch
+	if [ -n "$test_env_wipe_first" ]; then
+		echo "rm -rf $test_dir1 $test_dir2"
+		rm	 -rf $test_dir1 $test_dir2
+	fi
+	tf=papa_testing_area/whatever.$$
+	
+	if [ ! -d $test_dir2 ]; then
+		git.clone java_scratch
+		if [ ! -d $test_dir2 ]; then
+			echo "FAIL apparently git.clone $test_dir2 did not work" 1>&2
+			exit 1
+		fi
+		mkdir -p $test_dir2/`dirname $tf`
+	fi
+	echo "OK $test_dir2"
+	if [ ! -d $test_dir1 ]; then
+		cp	 -pr $test_dir2 $test_dir1
+		if [ ! -d $test_dir1 ]; then
+			echo "FAIL cp to \"$test_dir1\"" 1>&2
+			exit 1
+		fi
+	fi
+	echo "OK $test_dir1"
 }
 
 
 Test_simple_chi()
 {
-        cd $test_dir1
-        branch=`git.branch`
-        
-        echo hi > $tf
-        git.up > $t.git.up1 2>&1
-        
-        cd $test_dir2
-        branch=`git.branch`
-        
-        assert.f.exist -not "test ck $tf not there early" $tf $tf
-        git.up no changes here, but expecting to sync in $tf from $test_dir1
-        assert.f.exist -label "after git.up in $test_dir2, should see change from $test_dir1" $tf
-        git rm $tf
-        git.up "removed $tf for test"
-        cd $test_dir1
-        git.up "no changes, but syncing should rm $tf"
-        assert.f.exist -not "$tf removed in $test_dir2, so should also be removed in $test_dir1" $tf
+	cd $test_dir1
+	branch=`git.branch`
+	
+	echo hi > $tf
+	git.up > $t.git.up1 2>&1
+	
+	cd $test_dir2
+	branch=`git.branch`
+	
+	assert.f.exist -not "test ck $tf not there early" $tf $tf
+	git.up no changes here, but expecting to sync in $tf from $test_dir1
+	assert.f.exist -label "after git.up in $test_dir2, should see change from $test_dir1" $tf
+	git rm $tf
+	git.up "removed $tf for test"
+	cd $test_dir1
+	git.up "no changes, but syncing should rm $tf"
+	assert.f.exist -not "$tf removed in $test_dir2, so should also be removed in $test_dir1" $tf
 }
 
 Test_2_simultaneous_chis()
 {
-        echo Test_2_simultaneous_chis
+	echo Test_2_simultaneous_chis
 }
 
 Test_Pull_latest_updates_if_no_local_changes()
 {
-        echo Test_Pull_latest_updates_if_no_local_changes
+	echo Test_Pull_latest_updates_if_no_local_changes
 }
 
 Test()
 {
-        Test_init
-        Test_simple_chi
-        Test_2_simultaneous_chis
-        Test_Pull_latest_updates_if_no_local_changes
+	Test_init
+	Test_simple_chi
+	Test_2_simultaneous_chis
+	Test_Pull_latest_updates_if_no_local_changes
 }
 
 export PATH=$PATH:`dirname $0`
@@ -597,15 +617,16 @@ Init_for_work_in_cwd || exit 1
 comment=`Resolve_comment $*` || echo 1
 Checkin || exit 1
 case `hostname` in
-        lt5|x-mac)
-                case "$repo_name" in
-                        fin_doc_parser)
-                                sshe q git.up ---Sync_git2 dp/git/fin_doc_parser $comment
-                        ;;
-                esac
-        ;;
+	lt5|x-mac)
+		case "$repo_name" in
+			fin_doc_parser)
+                                echo "SKIPPING sshe q git.up ---Sync_git2 dp/git/fin_doc_parser"
+                                #sshe               q git.up ---Sync_git2 dp/git/fin_doc_parser
+			;;
+		esac
+	;;
 esac
-        
+	
 exit
 bx $dp/bin/git.up -dry_run
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git_util/git.up -in_dir dp/git/fin_doc_parser
