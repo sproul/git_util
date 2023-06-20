@@ -620,8 +620,8 @@ case `hostname` in
 	lt5|x-mac)
 		case "$repo_name" in
 			fin_doc_parser)
-                                echo "SKIPPING sshe q git.up ---Sync_git2 dp/git/fin_doc_parser"
-                                #sshe               q git.up ---Sync_git2 dp/git/fin_doc_parser
+                                echo "SKIPPING sshe q git.up ---Sync_git2 dp/git/fin_doc_parser $comment"
+                                #sshe               q git.up ---Sync_git2 dp/git/fin_doc_parser $comment
 			;;
 		esac
 	;;
