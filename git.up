@@ -189,6 +189,26 @@ Change_set_consists_entirely_of_deletions()
 	fi
 }
 
+Change_set_looks_like_sample_invocation_update()
+{
+        git.d > $t.git.d
+        lines=`wc -l   $t.git.d | sed -e 's/ .*//'`
+        if [ "$lines" -lt 20 ]; then
+                echo OK minor change detected in Change_set_looks_like_sample_invocation_update
+                if grep "^[-+]exit" $t.git.d > /dev/null 2>&1; then
+                        sample_invocation_change=yes
+                elif grep "^[-+]\$d[px]" $t.git.d > /dev/null 2>&1; then
+                        sample_invocation_change=yes
+                elif grep "^[-+]bash " $t.git.d > /dev/null 2>&1; then
+                        sample_invocation_change=yes
+                fi
+                if [ -n "$sample_invocation_change" ]; then
+                        return 0
+                fi
+        fi
+        return 1
+}
+
 Checkin()
 {
 	z=`pwd`
@@ -239,6 +259,8 @@ Checkin()
 			comment="add $new_file_list"
 		elif Change_set_consists_entirely_of_deletions; then
 			comment="remove superfluous file(s)"
+                elif Change_set_looks_like_sample_invocation_update; then
+                        comment="update sample invocations"
 		else
 			case "$repo_name" in
 				data)
