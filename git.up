@@ -4,6 +4,10 @@
 
 Init_for_work_in_cwd()
 {
+        if [ ! -d .git ]; then
+                echo "FAIL could not find directory .git in `pwd`"
+                return 1
+        fi
 	. git_util.inc
 	branch=`git.branch`
 }
