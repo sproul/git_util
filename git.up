@@ -196,7 +196,7 @@ Change_set_consists_entirely_of_deletions()
 Change_set_looks_like_sample_invocation_update()
 {
         git.d > $t.git.d
-        lines=`wc -l   $t.git.d | sed -e 's/ .*//'`
+        lines=`wc -l $t.git.d | sed -e 's/^ *//' -e 's/ .*//'`
         if [ "$lines" -lt 20 ]; then
                 echo OK minor change detected in Change_set_looks_like_sample_invocation_update
                 if grep "^[-+]exit" $t.git.d > /dev/null 2>&1; then
