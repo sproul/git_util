@@ -350,5 +350,7 @@ git.clone git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paascicd/authz 'OCI_deployment'
 git.clone             git@orahub.oci.oraclecorp.com:paascicd/authz 'OCI_deployment'
 git.clone             git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
+git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git
+git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 exit
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
