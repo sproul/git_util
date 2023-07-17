@@ -555,6 +555,11 @@ while [ -n "$1" ]; do
                         done
                         exit
                 ;;
+                -dir)
+                        echo "WARN: should use -in_dir, not -dir"
+                        shift
+                        cd "$1"
+                ;;
                 -dry|-dry_run)
                         dry_mode=-dry
                 ;;
