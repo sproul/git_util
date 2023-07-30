@@ -203,10 +203,18 @@ Change_set_looks_like_sample_invocation_update()
                         sample_invocation_change=yes
                 elif grep "^[-+]\$d[px]" $t.git.d > /dev/null 2>&1; then
                         sample_invocation_change=yes
+                elif grep "^bx " $t.git.d > /dev/null 2>&1; then
+                        sample_invocation_change=yes
                 elif grep "^[-+]bash " $t.git.d > /dev/null 2>&1; then
                         sample_invocation_change=yes
+                else
+                        fn=`grep ^--- $t.git.d | sed -e 's;--- .*/;;'`
+                        if grep "^[-+]$fn " > /dev/null 2>&1; then
+                                sample_invocation_change=yes
+                        fi
                 fi
                 if [ -n "$sample_invocation_change" ]; then
+                        comment="sample invocation change"
                         return 0
                 fi
         fi
