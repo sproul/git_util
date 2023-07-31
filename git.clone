@@ -354,5 +354,6 @@ git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 git.clone https://nsproul97@bitbucket.org/qwickrate/qagpt.git
 git.clone https://nsproul97@bitbucket.org/qwickrate/qagpt.git
+git.clone -dp -new_branch https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git 'lowerstack'
 exit
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
