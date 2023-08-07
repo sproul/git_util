@@ -589,6 +589,13 @@ while [ -n "$1" ]; do
                         shift
                         new_branch="$1"
                 ;;
+                -project_of_file)
+                        shift
+                        fn=$1
+                        proj_dir=`ls.up -find_parent_of_dir .git $fn`
+                        echo "cd $proj_dir"
+                        cd       $proj_dir
+                ;;
                 -Pull_latest_updates_if_no_local_changes)
                         shift
                         Pull_latest_updates_if_no_local_changes       $*
@@ -644,6 +651,9 @@ while [ -n "$1" ]; do
                 ;;
                 -v|-verbose)
                         verbose_mode=-verbose
+                ;;
+                -x)
+                        set -x
                 ;;
                 *)
                         break
