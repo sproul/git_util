@@ -42,11 +42,12 @@ strait $t
 
 . modified_repos.inc
 git status --short > $t
+git_proj_dir=`ls.up -find_parent_of_dir .git`
 if [ -s "$t" ]; then
-        git_util__modified_repos__Add_to_list `pwd`
+        git_util__modified_repos__Add_to_list $git_proj_dir
         rc=0
 else
-        git_util__modified_repos__Remove_from_list `pwd`
+        git_util__modified_repos__Remove_from_list $git_proj_dir
         rc=1
 fi
 cat $t
