@@ -282,7 +282,7 @@ Checkin()
 					comment="shortcut update"
 				;;
 				home)
-					comment="IP updates"
+                                        comment="minor env update"
 				;;
 			esac
 		fi
