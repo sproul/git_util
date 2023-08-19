@@ -268,7 +268,7 @@ Checkin()
 	fi
 	if [ -z "$comment" ]; then
 		if Change_set_consists_entirely_of_new_files; then
-			comment="add $new_file_list"
+                        comment="add `sed -e  's/  */ /g' <<< $new_file_list`"
 		elif Change_set_consists_entirely_of_deletions; then
 			comment="remove superfluous file(s)"
                 elif Change_set_looks_like_sample_invocation_update; then
