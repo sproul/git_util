@@ -1,0 +1,45 @@
+:
+case "$1" in
+        diff)
+                # e.g., diff --git a/server/src/ai.py b/server/src/ai.py
+                shift
+                shift
+                shift
+                fn=`sed -e 's;[ab]/;;' <<< $1`
+        ;;
+        ---|+++)
+                # e.g., --- a/server/src/ai.py
+                echo "Called on top of git diff output: strip away the chaff to get the file name:"
+                shift   # advance past --- or +++
+                fn=`sed -e 's;[ab]/;;' <<< $1`
+        ;;
+        D)
+                shift
+                fn="$1"
+                default_comment="remove $fn"
+        ;;
+        M)
+                shift
+                fn="$1"
+        ;;
+        *)
+                fn="$1"
+        ;;
+esac
+shift
+case "$fn" in
+        ui/src/data/scoring/scores*)
+                default_comment="scoring updates"
+        ;;
+        *)
+                default_comment="miscellaneous fix(es)"
+        ;;
+esac
+if [ -n "$1" ]; then
+        echo "git commit \"$fn\" -m \"$*\""
+        git       commit "$fn" -m "$*"
+else
+        echo "git       commit \"$fn\" -m \"$default_comment\""
+        git             commit "$fn" -m "$default_comment"
+fi
+
