@@ -418,8 +418,12 @@ Pull_latest_updates_if_no_local_changes()
 	)
 }
 
-Synchronize_high_traffic_shared_projects_if_no_local_changes()
+Synchronize_high_traffic_shared_projects()
 {
+        # For most projects, synchronize only if there are no local changes.
+        #
+        # For the following exceptions, just assume we can synchronize even if there are local changes:
+        projects_to_sync_regardless_of_local_changes="t data home"
 	if [ ! -f $dp/emacs/bin/migrate.sh ]; then
 		echo "pre-migration, need to migrate"
 		Pull_latest_updates_if_no_local_changes emacs
@@ -447,7 +451,10 @@ Synchronize_high_traffic_shared_projects_if_no_local_changes()
 			fi
 		;;
 	esac
-
+        git.add_links_to_make_all_source_controlled_projects
+        for proj in $projects_to_sync_regardless_of_local_changes; do
+                git.up -in_dir $dp/git/$proj
+        done
 }
 
 
@@ -639,8 +646,8 @@ while [ -n "$1" ]; do
                         _Sync_git2
                         exit
                 ;;
-                -Synchronize_high_traffic_shared_projects_if_no_local_changes)
-                        Synchronize_high_traffic_shared_projects_if_no_local_changes
+                -Synchronize_high_traffic_shared_projects)
+                        Synchronize_high_traffic_shared_projects
                         exit
                 ;;
                 -test)
@@ -681,6 +688,6 @@ exit
 bx $dp/bin/git.up -dry_run
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git_util/git.up -in_dir dp/git/fin_doc_parser
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $aip git.up -in_dir dp/git/fin_doc_parser
-bx $dp/git_util/git.up -Synchronize_high_traffic_shared_projects_if_no_local_changes
+bx $dp/git_util/git.up -Synchronize_high_traffic_shared_projects
 bx $dp/git_util/git.up -Pull_latest_updates_if_no_local_changes emacs
 exit 0
