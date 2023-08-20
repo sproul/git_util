@@ -77,28 +77,37 @@ Prep_auth()
         safe_gc=$gc.$$
         if grep "url = https://.*sproul:" $gc > /dev/null 2>&1; then
                 # left over from a previous run, but we don't want the gc value to sit here indefinitely
-                #cat $gc | sed -e "s;^\turl = https://sproul:.*;\turl = git@github.com:sproul/$xrepo_name.git;" > $safe_gc
+                if [ -n "$verbose_mode" ]; then
+                        echo "Prep_auth sees https"
+                        cat $gc
+                        echo EOF
+                fi
                 cat  $gc | sed -e "s;^\turl = https://\\(.*sproul\\):.*;\turl = git@github.com:\\1/$xrepo_name.git;" > $safe_gc
                 echo $safe_gc >> $end_of_process_safe_gc_list
                 #trap "Restore_clean_configs" EXIT
         elif grep "url = git@github.com:.*sproul/" $gc > $t 2>&1; then
-                gh_user=`cat $t | sed -e 's/.*github.com://' -e 's;/.*;;'`
-                email=`grep 'email =' $HOME/.gitconfig | sed -e 's/.* = //'`
-                if [ -f $HOME/.gh.$email ]; then
-                        hgh=$HOME/.gh.$email
-                elif [ -f $HOME/.gh ]; then
-                        hgh=$HOME/.gh
-                else
-                        hgh=''
-                fi
-                if [ -n "$hgh" ]; then
-                        # the normal case: temporarily insert gc value for this transaction
-                        mv $gc $safe_gc
-                        echo $safe_gc >> $end_of_process_safe_gc_list
-                        #trap "Restore_clean_configs" EXIT
-                        cat $safe_gc | sed -e "s;^\turl =.*;\turl = https://$gh_user:`cat $hgh`@github.com/$gh_user/$xrepo_name.git;" > $gc
-                        grep @github.com $gc
-                fi
+                cp $gc $safe_gc
+        fi
+        gh_user=`grep 'url = ' $gc | sed -e 's;.*github.com/;;' -e 's;/.*;;'`
+        email=`grep 'email =' $HOME/.gitconfig | sed -e 's/.* = //'`
+        if [ -f $HOME/.gh.$email ]; then
+                hgh=$HOME/.gh.$email
+        elif [ -f $HOME/.gh ]; then
+                hgh=$HOME/.gh
+        else
+                hgh=''
+        fi
+        if [ -n "$verbose_mode" ]; then
+                echo "Prep_auth saw ssh"
+                cat $gc
+                echo EOF
+        fi
+        if [ -n "$hgh" ]; then
+                # the normal case: temporarily insert gc value for this transaction
+                mv $gc $safe_gc
+                echo $safe_gc >> $end_of_process_safe_gc_list
+                #trap "Restore_clean_configs" EXIT
+                cat $safe_gc | sed -e "s;^\turl =.*;\turl = https://$gh_user:`cat $hgh`@github.com/$gh_user/$xrepo_name.git;" > $gc
         fi
         if [ -f $safe_gc ]; then
                 if [ -n "$verbose_mode" ]; then

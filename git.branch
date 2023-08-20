@@ -1,5 +1,5 @@
 :
-git branch | sed -e 's/^\* //'
+git branch | tail -1 | sed -e 's/^\* //' -e 's/^ *//'
 #branch=`git symbolic-ref --short HEAD`
 #if [ -z "$branch" ]; then
 #        #branch=master
