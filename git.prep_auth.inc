@@ -102,12 +102,24 @@ Prep_auth()
                 cat $gc
                 echo EOF
         fi
-        if [ -n "$hgh" ]; then
-                # the normal case: temporarily insert gc value for this transaction
-                mv $gc $safe_gc
-                echo $safe_gc >> $end_of_process_safe_gc_list
-                #trap "Restore_clean_configs" EXIT
-                cat $safe_gc | sed -e "s;^\turl =.*;\turl = https://$gh_user:`cat $hgh`@github.com/$gh_user/$xrepo_name.git;" > $gc
+        if grep 'url = .*@github.com/sproul' $gc > /dev/null 2>&1; then
+                # sproul/github -> use gh...
+                gh_user=`grep 'url = ' $gc | sed -e 's;.*github.com/;;' -e 's;/.*;;'`
+                email=`grep 'email =' $HOME/.gitconfig | sed -e 's/.* = //'`
+                if [ -f $HOME/.gh.$email ]; then
+                        hgh=$HOME/.gh.$email
+                elif [ -f $HOME/.gh ]; then
+                        hgh=$HOME/.gh
+                else
+                        hgh=''
+                fi
+                if [ -n "$hgh" ]; then
+                        # the normal case: temporarily insert gc value for this transaction
+                        mv $gc $safe_gc
+                        echo $safe_gc >> $end_of_process_safe_gc_list
+                        #trap "Restore_clean_configs" EXIT
+                        cat $safe_gc | sed -e "s;^\turl =.*;\turl = https://$gh_user:`cat $hgh`@github.com/$gh_user/$xrepo_name.git;" > $gc
+                fi
         fi
         if [ -f $safe_gc ]; then
                 if [ -n "$verbose_mode" ]; then
