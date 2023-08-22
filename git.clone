@@ -201,7 +201,9 @@ if [ -n "$dry_mode" ]; then
         exit
 fi
 if [ ! -s $HOME/.ssh/config ]; then
-        ssh.init        #       to stop host checking, which potentially leads to an interactive prompt from ssh caused by git clone call
+        #ssh.init        #       to stop host checking, which potentially leads to an interactive prompt from ssh caused by git clone call
+        echo "FAIL empty .ssh/config seen; used to call ssh.init to address this, but that was making a bigger mess" 1>&2
+        exit 1
 fi
 if ! git clone $branch_args $remote_repo; then
         echo "$0: git clone $branch_args $remote_repo failed, exiting..." 1>&2
