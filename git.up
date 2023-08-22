@@ -238,13 +238,24 @@ Checkin()
 	repo_name=$current_dir
 	echo gu $repo_name in $z...
 	git.changed_or_added_files.ls > $t.changed_or_added
-	patt="EARLY"
-	patt="$patt.*exit"
-	if [ -s $t.changed_or_added ]; then
-		if grep -n "$patt" `cat $t.changed_or_added`; then
-			echo FAILED early exit indicates debugging
-			exit 1
-		fi
+        if [ -z "$force_mode" ]; then
+                case "$proj" in
+                        data)
+                                if [ -n "$verbose_mode" ]; then
+                                        echo "OK skipping EARLY ck for $proj" 1>&2
+                                fi
+                        ;;
+                        *)
+                                if [ -s $t.changed_or_added ]; then
+                                        patt="EARLY"
+                                        patt="$patt.*exit"
+                                        if grep -n "$patt" `cat $t.changed_or_added`; then
+                                                echo FAILED early exit indicates debugging
+                                                exit 1
+                                        fi
+                                fi
+                        ;;
+                esac
 	fi
 	echo OK no early exit
 	grep '\.sh$'  $t.changed_or_added >  $t.changed_or_added_sh

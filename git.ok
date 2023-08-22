@@ -1,0 +1,22 @@
+:
+t=`mktemp`; trap "rm $t" EXIT
+if [ ! -r .git/config ]; then
+	echo "FAIL [ -r .git/config ]"
+	exit 1
+else
+	echo "OK [ -r .git/config ]"
+fi
+repo_url=`grep url .git/config | sed -e 's/[\t ]*url = //'`
+if git ls-remote $repo_url > $t; then
+        echo .
+        echo .
+        echo .
+        tail $t
+	echo "OK git ls-remote $repo_url"
+else
+	echo "FAIL git ls-remote $repo_url"
+        cat $t
+        exit 1
+fi
+exit
+$dp/git_util/git.ok 
