@@ -456,7 +456,7 @@ Synchronize_high_traffic_shared_projects()
 		lt5|x-mac)
 			Pull_latest_updates_if_no_local_changes doc		$dx
 			Pull_latest_updates_if_no_local_changes fin_doc_parser	$dx
-			Pull_latest_updates_if_no_local_changes monr
+			#Pull_latest_updates_if_no_local_changes monr
 			if orcl.on_vpn; then
 				Pull_latest_updates_if_no_local_changes diagnostic-tool
 			fi
