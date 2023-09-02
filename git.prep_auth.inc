@@ -88,7 +88,9 @@ Prep_auth()
         elif grep "url = git@github.com:.*sproul/" $gc > $t 2>&1; then
                 cp $gc $safe_gc
         fi
-        gh_user=`grep 'url = ' $gc | sed -e 's;.*github.com/;;' -e 's;/.*;;'`
+        # e.g., url = git@github.com:sproul/bin.git
+        gh_user=`grep 'url = ' $gc | sed -e 's;.*github.com[:/];;' -e 's;/.*;;'`
+        
         email=`grep 'email =' $HOME/.gitconfig | sed -e 's/.* = //'`
         if [ -f $HOME/.gh.$email ]; then
                 hgh=$HOME/.gh.$email
@@ -102,9 +104,9 @@ Prep_auth()
                 cat $gc
                 echo EOF
         fi
-        if grep 'url = .*@github.com/sproul' $gc > /dev/null 2>&1; then
+        if grep 'url = .*@github.com[:/]sproul' $gc > /dev/null 2>&1; then
                 # sproul/github -> use gh...
-                gh_user=`grep 'url = ' $gc | sed -e 's;.*github.com/;;' -e 's;/.*;;'`
+                gh_user=`grep 'url = ' $gc | sed -e 's;.*github.com[:/];;' -e 's;/.*;;'`
                 email=`grep 'email =' $HOME/.gitconfig | sed -e 's/.* = //'`
                 if [ -f $HOME/.gh.$email ]; then
                         hgh=$HOME/.gh.$email
