@@ -332,7 +332,7 @@ $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/prom
 $dp/git_util/git.clone             git@orahub.oraclecorp.com:paas-innovationhub-central/misc-utils.git
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_DTE_event_ordering_dependency'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'log_management'
-$dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_process_monitoring'
+bx $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_process_monitoring'
 bx $dp/git_util/git.clone sproul@github.com:sproul/bin.git
 bx $dp/git_util/git.clone sproul@github.com:sproul/git_util.git
 bx $dp/git_util/git.clone sproul@github.com:sproul/emacs.git

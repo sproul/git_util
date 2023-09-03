@@ -116,7 +116,9 @@ Git_status()
 Push()
 {
 	Prep_auth
-	if git push origin $branch > $t 2>&1; then
+	#if git push origin $branch > $t 2>&1; then
+        # needed if the branch doesn't exist remotely. Not sure if the -u is destructive if the branch already exists remotely:
+        if git push -u origin HEAD > $t 2>&1; then
 		Clear_status
 		return 0
 	fi
