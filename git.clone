@@ -202,10 +202,8 @@ if [ -n "$dry_mode" ]; then
 fi
 if [ ! -s $HOME/.ssh/config ]; then
         #ssh.init        #       to stop host checking, which potentially leads to an interactive prompt from ssh caused by git clone call
-        #echo "FAIL empty .ssh/config seen; used to call ssh.init to address this, but that was making a bigger mess" 1>&2
-        #exit 1
-        echo $dp/git_util/git.clone calling ssh.deploy_config to address empty .ssh/config...
-        ssh.deploy_config
+        echo "FAIL empty .ssh/config seen; used to call ssh.init to address this, but that was making a bigger mess" 1>&2
+        exit 1
 fi
 if ! git clone $branch_args $remote_repo; then
         echo "$0: git clone $branch_args $remote_repo failed, exiting..." 1>&2
@@ -336,7 +334,7 @@ $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'no_config_reload_with_each_get'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'dev2oci'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git 'test_blackbox'
-$dp/git_util/git.clone -dp         git@orahub.oraclecorp.com:paas-innovationhub-central/misc-utils.git
+$dp/git_util/git.clone             git@orahub.oraclecorp.com:paas-innovationhub-central/misc-utils.git
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_DTE_event_ordering_dependency'
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'log_management'
 $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_scheduled_task_monitor'
