@@ -466,7 +466,9 @@ Synchronize_high_traffic_shared_projects()
 	esac
         git.add_links_to_make_all_source_controlled_projects
         for proj in $projects_to_sync_regardless_of_local_changes; do
-                git.up -in_dir $dp/git/$proj
+                if [ -d $dp/git/$proj ]; then
+                        git.up -in_dir $dp/git/$proj
+                fi
         done
 }
 
