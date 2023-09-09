@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 . git_util.inc
 . git.prep_auth.inc
 t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
