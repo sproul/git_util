@@ -1,0 +1,70 @@
+:
+# Aug 26 00:00:00 2023 -0700
+date="$1"
+year=`sed -e 's/[A-Z][a-z][a-z] [0-9][0-9]* [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \([0-9][0-9][0-9][0-9]\).*/\1/' <<< $date`
+monthAaa=`sed -e 's/\([A-Z][a-z][a-z]\).*/\1/' <<< $date`
+day=`sed -e 's/[A-Z][a-z][a-z] \([0-9][0-9]*\).*/\1/' <<< $date`
+hour=`sed -e 's/[A-Z][a-z][a-z] [0-9][0-9]* \([0-9][0-9]\).*/\1/' <<< $date`
+minute=`sed -e 's/[A-Z][a-z][a-z] [0-9][0-9]* [0-9][0-9]:\([0-9][0-9]\).*/\1/' <<< $date`
+sec=`sed -e 's/[A-Z][a-z][a-z] [0-9][0-9]* [0-9][0-9]:[0-9][0-9]:\([0-9][0-9]\).*/\1/' <<< $date`
+case "$monthAaa" in
+        Jan)
+                month=01
+        ;;
+        Feb)
+                month=02
+        ;;
+        Mar)
+                month=03
+        ;;
+        Apr)
+                month=04
+        ;;
+        May)
+                month=05
+        ;;
+        Jun)
+                month=06
+        ;;
+        Jul)
+                month=07
+        ;;
+        Aug)
+                month=08
+        ;;
+        Sep)
+                month=09
+        ;;
+        Oct)
+                month=10
+        ;;
+        Nov)
+                month=11
+        ;;
+        Dec)
+                month=12
+        ;;
+        *)
+                echo "FAIL did not recognize monthAaa \"$monthAaa\"" 1>&2
+                exit 1
+        ;;
+esac
+day=`printf "%02d" $day`
+if [ -z "$day" ]; then
+        echo "FAIL could not get day from $date" 1>&2
+        exit 1
+fi
+case "$OS" in
+        mac)
+                date -jf "%Y-%m-%d %H:%M:%S" "$year-$month-$day $hour:$minute:$sec" +"%s"
+        ;;
+        *)
+                yyyymmddhhmmss="$year-$month-${day}T$hour:$minute:$sec"
+                if ! date -d "$yyyymmddhhmmss" +"%s"; then
+                        echo "FAIL date -d $yyyymmddhhmmss +%s" 1>&2
+                        exit 1
+                fi
+        ;;
+esac
+exit
+bx $dp/git_util/git.date_to_ts "Jan 1 00:00:00 1970"

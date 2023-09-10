@@ -1,0 +1,289 @@
+:
+
+test()
+{
+        test_gen_commands_for_change
+        test_list_changes_since_marker
+}
+
+test_gen_commands_for_change()
+{
+	other_repo=/d/e/f
+        cat <<EOF | gen_commands_for_change -replace_git_show_with_stdin  ba3bb71e91e09499e672071394fbbd9ec865dad9 allow zeros from AI on x-mac > $t.generated_commands
+commit ba3bb71e91e09499e672071394fbbd9ec865dad9
+Author: Nelson Sproul <nelson.sproul@gmail.com>
+Date:	Sun Sep 3 09:55:16 2023 -0700
+	
+allow zeros from AI on x-mac
+	
+diff --git a/server/src/ai.py b/server/src/ai.py
+	index b1370f6..58481e0 100644
+	--- a/server/src/ai.py
+	+++ b/server/src/ai.py
+	@@ -262,8 +262,13 @@ class LLM_runner:
+	{result.group(1): result.group(2)
+		for result in re.finditer('"([^"\n]+)": ([^\n]*[^\n,]),?', raw_llm_json)}
+			
+			-	 llm_kv_nonzeros = {k: llm_kv_pairs[k] for k in llm_kv_pairs.keys()
+			+	 
+			
+			backed_llm_kv_pairs = {Key.code_to_qa_name[k]: LLM_runner.clean_value(llm_kv_nonzeros[k], metric_name=Key.code_to_qa_name[k])
+			for k in llm_kv_nonzeros.keys()
+diff --git a/server/src/grep_fdp_data b/server/src/grep_fdp_data
+				new file mode 100755
+				index 0000000..e796c29
+				--- /dev/null
+				+++ b/server/src/grep_fdp_data
+				@@ -0,0 +1,38 @@
+				+#!/bin/sh -x
+				+metric_val=$1
+				+csv_fn=$2
+				+log_fn=$3
+				+t=`mktemp`; trap "rm $t" EXIT
+EOF
+
+	cat <<EOF | assert.f.is test_gen_commands_for_change $t.generated_commands
+git checkout ba3bb71e91e09499e672071394fbbd9ec865dad9
+tar cfv - server/src/ai.py server/src/grep_fdp_data | ( cd /d/e/f; tar xfv - )
+cd /d/e/f
+git commit server/src/ai.py server/src/grep_fdp_data -m 'allow zeros from AI on x-mac'
+git push
+EOF
+}
+
+set_marker()
+{
+        marker_fn=$1
+        marker_ts=`date -r "$marker_fn" +%s`
+}
+
+
+test_list_changes_since_marker()
+{
+	cat <<EOF > $t.log
+commit ba3bb71e91e09499e672071394fbbd9ec865dad9
+Author: Nelson Sproul <nelson.sproul@gmail.com>
+Date:	Sun Sep 3 09:55:16 2023 -0700
+
+    allow zeros from AI on x-mac
+
+commit 500097e9e7e2cadb71783d7cc9d2ce52fe5c119c
+Author: Nelson Sproul <nelson.sproul@gmail.com>
+Date:	Wed Aug 30 21:57:42 2023 -0700
+
+    ai integration on x-mac
+
+commit 234c061d1d7d6c3121675e5ee45442b722df31d2
+Author: Nelson Sproul <nelson.sproul@gmail.com>
+Date:	Fri Aug 25 07:33:25 2023 -0700
+
+    remove superfluous file(s) on lt5
+
+EOF
+        touch.date 'Aug 26 00:00:00 2023 -0700' $t.marker_fn
+        set_marker $t.marker_fn
+
+	cat $t.log | list_changes_since_marker $marker > $t.changes_since_marker
+	cat <<EOF | assert.f.is list_changes_since_marker.basic $t.changes_since_marker
+ba3bb71e91e09499e672071394fbbd9ec865dad9 allow zeros from AI on x-mac
+500097e9e7e2cadb71783d7cc9d2ce52fe5c119c ai integration on x-mac
+EOF
+}
+
+read_blank()
+{
+        read z
+        if [ -n "$z" ]; then
+                echo "FAIL expected blank line but saw '$z'" 1>&2
+                exit 1
+        fi
+}
+
+
+list_changes_since_marker()
+{
+        now=`date +%s`
+        cat |
+        while [ 1 ]; do
+                read commit commit_id
+                if [ -z "$commit" ]; then
+                        break
+                fi
+                if [ "commit" != "$commit" ]; then
+                        echo "FAIL expected commit but saw $commit" 1>&2
+                        return 1
+                else
+                        echo "OK saw commit" 1>&2
+                fi
+                read author rest
+                if [ "Author:" != "$author" ]; then
+                        echo "FAIL expected Author: but saw $author" 1>&2
+                        return 1
+                else
+                        echo "OK saw author" 1>&2
+                fi
+                read date dayAaa monthAaa day hhmmss year rest
+                commit_ts=`git.date_to_ts "$monthAaa $day $hhmmss $year"`
+                if [ -z "$commit_ts" ]; then
+                        echo "FAIL: expected a value for \"commit_ts\" but saw nothing" 1>&2
+                        exit 1
+                fi
+                if [ "$commit_ts" -lt "$marker_ts" ]; then
+                        break
+                fi
+                read_blank || exit 1
+                read comment
+                read_blank || exit 1
+                echo "$commit_id $comment"
+        done
+}
+
+gen_commands_for_change()
+{
+        replace_git_show_with_stdin_mode=''
+        while [ -n "$1" ]; do
+                case "$1" in
+                        -replace_git_show_with_stdin)
+                                replace_git_show_with_stdin_mode=-replace_git_show_with_stdin
+                        ;;
+                        *)
+                                break
+                        ;;
+                esac
+                shift
+        done
+        commit_id=$1
+        shift
+        comment="$*"
+        
+        echo "git checkout $commit_id"
+        file_list=''
+        
+        if [ -n "$replace_git_show_with_stdin_mode" ]; then
+                cat
+        else
+                git show $commit_id
+        fi | grep ^diff | sed -e 's;.* b/;;' > $t.file_list
+        if [ ! -s "$t.file_list" ]; then
+                echo "FAIL could not find non-empty file $t.file_list" 1>&2
+                return 1
+        fi
+        file_list=`cat $t.file_list | tr '\n' ' '`
+        cat <<EOF
+tar cfv - $file_list | ( cd $other_repo; tar xfv - )
+cd $other_repo
+git commit $file_list -m '$comment'
+git push
+EOF
+}
+
+install_cron()
+{
+        marker=$HOME/git.marker
+        touch.date 'Jan 01 00:00:00 1970' $marker
+
+	export EDITOR=ed
+	or=$HOME/git/qascraper
+	if [ ! -d "$or" ]; then
+		echo "FAIL: expected directory at \"$or\"" 1>&2
+		exit 1
+	else
+                echo "OK found directory $or" 1>&2
+	fi
+	fdp=$HOME/git/fin_doc_parser
+	if [ -z "$fdp" ]; then
+		echo "FAIL: expected a value for \"fdp\" but saw nothing" 1>&2
+		return 1
+	fi
+	cat <<EOF | crontab -e
+a
+13 * * * * $dp/git/git.propagate -changes_since_marker $marker -in_dir $fdp -other_repo $or
+.
+w
+q
+EOF
+}
+
+
+debug_mode=''
+dry_mode=''
+marker_fn=''
+marker_ts=''
+other_repo=''
+t=`mktemp`; trap "rm $t" EXIT
+verbose_mode=''
+while [ -n "$1" ]; do
+	case "$1" in
+		-changes_since_marker)
+			shift
+                        set_marker "$1"
+		;;
+                -commit_id_and_comment)
+                        shift
+                        commit_id=$1
+                        shift
+                        comment=$*
+                        gen_commands_for_change $commit_id $comment
+                        exit $?
+                ;;
+		-dry)
+			dry_mode=-dry
+		;;
+		-in_dir)
+			shift
+                        if cd $1; then
+                                echo "OK cd $1" 1>&2
+			else
+                                echo "FAIL cd $1" 1>&2
+                                exit 1
+                        fi
+		;;
+		-install_cron)
+			install_cron
+			exit
+		;;
+		-other_repo)
+			shift
+			other_repo="$1"
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-test)
+			test
+			exit
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		-x)
+			set -x
+			debug_mode=-x
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
+done
+if [ -z "$other_repo" ]; then
+	echo "FAIL: expected a value for \"other_repo\" but saw nothing" 1>&2
+	exit 1
+fi
+if [ ! -f "$marker_fn" ]; then
+        echo "FAIL: expected marker file at \"$marker_fn\"" 1>&2
+        exit 1
+fi
+git log | list_changes_since_marker | gen_commands_for_change |
+if [ -n "$dry_mode" ]; then
+        cat
+else
+        cat > $t.script
+        bash -x $t.script
+fi
+
+exit
+bx $dp/git/git_util/git.propagate -dry -other_repo /a/b/c -changes_since_marker /e/f/g
+bx $dp/git/git_util/git.propagate -dry -other_repo /a/b/c -commit_id_and_comment ba3bb71e91e09499e672071394fbbd9ec865dad9 allow zeros from AI on x-mac
+exit
+bx $dp/git/git_util/git.propagate -test
