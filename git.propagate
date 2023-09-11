@@ -2,18 +2,19 @@
 
 test()
 {
-        test_gen_commands_for_change
-        test_list_changes_since_marker
+	test_gen_commands_for_change
+	test_list_changes_since_marker
 }
 
 test_gen_commands_for_change()
 {
-	other_repo=/d/e/f
-        cat <<EOF | gen_commands_for_change -replace_git_show_with_stdin  ba3bb71e91e09499e672071394fbbd9ec865dad9 allow zeros from AI on x-mac > $t.generated_commands
+	dest_repo_dir=/d/e/f
+	src_repo_dir=`pwd`
+	cat <<EOF | gen_commands_for_change -replace_git_show_with_stdin  ba3bb71e91e09499e672071394fbbd9ec865dad9 allow zeros from AI on x-mac > $t.generated_commands
 commit ba3bb71e91e09499e672071394fbbd9ec865dad9
 Author: Nelson Sproul <nelson.sproul@gmail.com>
 Date:	Sun Sep 3 09:55:16 2023 -0700
-	
+
 allow zeros from AI on x-mac
 	
 diff --git a/server/src/ai.py b/server/src/ai.py
@@ -41,22 +42,74 @@ diff --git a/server/src/grep_fdp_data b/server/src/grep_fdp_data
 				+log_fn=$3
 				+t=`mktemp`; trap "rm $t" EXIT
 EOF
-
 	cat <<EOF | assert.f.is test_gen_commands_for_change $t.generated_commands
-git checkout ba3bb71e91e09499e672071394fbbd9ec865dad9
-tar cfv - server/src/ai.py server/src/grep_fdp_data | ( cd /d/e/f; tar xfv - )
-cd /d/e/f
-git commit server/src/ai.py server/src/grep_fdp_data -m 'allow zeros from AI on x-mac'
-git push
+	if cd $src_repo_dir; then
+	echo "OK cd $src_repo_dir"
+else
+	echo "FAIL cd $src_repo_dir"
+	exit 1
+fi
+echo "replaying commit from Sun Sep 3 09:55:16 2023 -0700"
+if git checkout ba3bb71e91e09499e672071394fbbd9ec865dad9; then
+	echo "OK git checkout ba3bb71e91e09499e672071394fbbd9ec865dad9"
+else
+	echo "FAIL git checkout ba3bb71e91e09499e672071394fbbd9ec865dad9"
+	exit 1
+fi
+if tar cfv - server/src/ai.py server/src/grep_fdp_data | ( cd /d/e/f; tar xfv - ); then
+	echo "OK tar cfv - server/src/ai.py server/src/grep_fdp_data | ( cd /d/e/f; tar xfv - )"
+else
+	echo "FAIL tar cfv - server/src/ai.py server/src/grep_fdp_data | ( cd /d/e/f; tar xfv - )"
+	exit 1
+fi
+if cd /d/e/f; then
+	echo "OK cd /d/e/f"
+else
+	echo "FAIL cd /d/e/f"
+	exit 1
+fi
+if git add -f	   server/src/ai.py server/src/grep_fdp_data; then
+	echo "OK git add	   server/src/ai.py server/src/grep_fdp_data"
+else
+	echo "FAIL git add	   server/src/ai.py server/src/grep_fdp_data"
+	exit 1
+fi
+if git commit server/src/ai.py server/src/grep_fdp_data -m 'allow zeros from AI on x-mac'; then
+	echo "OK git commit server/src/ai.py server/src/grep_fdp_data -m 'allow zeros from AI on x-mac'"
+else
+	echo "FAIL git commit server/src/ai.py server/src/grep_fdp_data -m 'allow zeros from AI on x-mac'"
+	exit 1
+fi
+if git push; then
+	echo "OK git push"
+else
+	echo "FAIL git push"
+	exit 1
+fi
 EOF
 }
 
 set_marker()
 {
-        marker_fn=$1
-        marker_ts=`date -r "$marker_fn" +%s`
-}
+	marker_fn=$1
+	case "$marker_fn" in
+		/*)
+			echo "OK marker_fn is full path $marker_fn" 1>&2
 
+		;;
+		*)
+			marker_fn=`pwd`/$marker_fn
+			echo "OK marker_fn converted to full path $marker_fn" 1>&2
+		;;
+	esac
+	if [ ! -f "$marker_fn" ]; then
+		echo "FAIL: expected file at \"$marker_fn\"" 1>&2
+		return 1
+	fi
+	marker_ts=`date -r "$marker_fn" +%s`
+	echo "OK marker_ts=$marker_ts based on `ls -l $marker_fn`" 1>&2
+
+}
 
 test_list_changes_since_marker()
 {
@@ -80,8 +133,8 @@ Date:	Fri Aug 25 07:33:25 2023 -0700
     remove superfluous file(s) on lt5
 
 EOF
-        touch.date 'Aug 26 00:00:00 2023 -0700' $t.marker_fn
-        set_marker $t.marker_fn
+	touch.date 'Aug 26 00:00:00 2023 -0700' $t.marker_fn
+	set_marker $t.marker_fn
 
 	cat $t.log | list_changes_since_marker $marker > $t.changes_since_marker
 	cat <<EOF | assert.f.is list_changes_since_marker.basic $t.changes_since_marker
@@ -92,103 +145,152 @@ EOF
 
 read_blank()
 {
-        read z
-        if [ -n "$z" ]; then
-                echo "FAIL expected blank line but saw '$z'" 1>&2
-                exit 1
-        fi
+	read z
+	if [ -n "$z" ]; then
+		echo "FAIL expected blank line but saw '$z'" 1>&2
+		exit 1
+	fi
 }
 
 
 list_changes_since_marker()
 {
-        now=`date +%s`
-        cat |
-        while [ 1 ]; do
-                read commit commit_id
-                if [ -z "$commit" ]; then
-                        break
-                fi
-                if [ "commit" != "$commit" ]; then
-                        echo "FAIL expected commit but saw $commit" 1>&2
-                        return 1
-                else
-                        echo "OK saw commit" 1>&2
-                fi
-                read author rest
-                if [ "Author:" != "$author" ]; then
-                        echo "FAIL expected Author: but saw $author" 1>&2
-                        return 1
-                else
-                        echo "OK saw author" 1>&2
-                fi
-                read date dayAaa monthAaa day hhmmss year rest
-                commit_ts=`git.date_to_ts "$monthAaa $day $hhmmss $year"`
-                if [ -z "$commit_ts" ]; then
-                        echo "FAIL: expected a value for \"commit_ts\" but saw nothing" 1>&2
-                        exit 1
-                fi
-                if [ "$commit_ts" -lt "$marker_ts" ]; then
-                        break
-                fi
-                read_blank || exit 1
-                read comment
-                read_blank || exit 1
-                echo "$commit_id $comment"
-        done
+	cat |
+	while [ 1 ]; do
+		read commit commit_id
+		if [ -z "$commit" ]; then
+			break
+		fi
+		if [ "commit" != "$commit" ]; then
+			echo "FAIL expected commit but saw $commit" 1>&2
+			return 1
+		else
+			echo "OK saw commit" 1>&2
+		fi
+		read author rest
+		if [ "Author:" != "$author" ]; then
+			echo "FAIL expected Author: but saw $author" 1>&2
+			return 1
+		else
+			echo "OK saw author" 1>&2
+		fi
+		read date dayAaa monthAaa day hhmmss year rest
+		commit_ts=`git.date_to_ts "$monthAaa $day $hhmmss $year"`
+		if [ -z "$commit_ts" ]; then
+			echo "FAIL: expected a value for \"commit_ts\" but saw nothing" 1>&2
+			exit 1
+		fi
+		if [ "$commit_ts" -lt "$marker_ts" ]; then
+			echo "OK found transaction from $monthAaa $day $hhmmss $year $rest older than $marker_ts, so ending processing" 1>&2
+			break
+		fi
+		read_blank || exit 1
+		read comment
+		read_blank || exit 1
+		echo "$commit_id $comment"
+	done
 }
 
 gen_commands_for_change()
 {
-        replace_git_show_with_stdin_mode=''
-        while [ -n "$1" ]; do
-                case "$1" in
-                        -replace_git_show_with_stdin)
-                                replace_git_show_with_stdin_mode=-replace_git_show_with_stdin
-                        ;;
-                        *)
-                                break
-                        ;;
-                esac
-                shift
-        done
-        commit_id=$1
-        shift
-        comment="$*"
-        
-        echo "git checkout $commit_id"
-        file_list=''
-        
-        if [ -n "$replace_git_show_with_stdin_mode" ]; then
-                cat
-        else
-                git show $commit_id
-        fi | grep ^diff | sed -e 's;.* b/;;' > $t.file_list
-        if [ ! -s "$t.file_list" ]; then
-                echo "FAIL could not find non-empty file $t.file_list" 1>&2
-                return 1
+	replace_git_show_with_stdin_mode=''
+	while [ -n "$1" ]; do
+		case "$1" in
+			-replace_git_show_with_stdin)
+				replace_git_show_with_stdin_mode=-replace_git_show_with_stdin
+			;;
+			*)
+				break
+			;;
+		esac
+		shift
+	done
+	commit_id=$1
+	shift
+	comment="$*"
+	
+	file_list=''
+	
+	if [ -n "$replace_git_show_with_stdin_mode" ]; then
+		cat
+	else
+		git show $commit_id
+	fi > $t.git.show
+        grep ^diff  $t.git.show | sed -e 's;.* b/;;' | sed -n -e '/ /d' -e '/public\/.n.xyz/d' -e /bOfA/d -e '/./p' > $t.file_list
+        if [ ! -s $t.file_list ]; then
+                echo "OK empty file $t.file_list indicates all files had embedded blanks, which we are not migrating, so this call's work is done" 1>&2OK
+                return 0
         fi
-        file_list=`cat $t.file_list | tr '\n' ' '`
-        cat <<EOF
-tar cfv - $file_list | ( cd $other_repo; tar xfv - )
-cd $other_repo
-git commit $file_list -m '$comment'
-git push
+	commit_date_line=`grep ^Date: $t.git.show | sed -e 's/Date: *//'`
+	if [ ! -s "$t.file_list" ]; then
+		echo "FAIL could not find non-empty file $t.file_list" 1>&2
+		return 1
+	fi
+	file_list=`cat $t.file_list | tr '\n' ' '`
+	cat <<EOF
+if cd $src_repo_dir; then
+	echo "OK cd $src_repo_dir"
+else
+	echo "FAIL cd $src_repo_dir"
+	exit 1
+fi
+echo "replaying commit from $commit_date_line"
+if git checkout $commit_id; then
+	echo "OK git checkout $commit_id"
+else
+	echo "FAIL git checkout $commit_id"
+	exit 1
+fi
+tar cfv /tmp/k.tar $file_list
+( cd $dest_repo_dir; tar xfv /tmp/k.tar )
+file_list=\`tar tf /tmp/k.tar\`       #       to account for the case where some files are missing
+if cd $dest_repo_dir; then
+	echo "OK cd $dest_repo_dir"
+else
+	echo "FAIL cd $dest_repo_dir"
+	exit 1
+fi
+if git add -f	   \$file_list; then
+	echo "OK git add	   \$file_list"
+else
+	echo "FAIL git add	   \$file_list"
+	exit 1
+fi
+if [ -n "\`git.d | head -1\`" ]; then
+        if git commit \$file_list -m '$comment'; then
+                echo "OK git commit \$file_list -m '$comment'"
+        else
+                echo "FAIL git commit \$file_list -m '$comment'"
+                exit 1
+        fi
+        if git push; then
+                echo "OK git push"
+        else
+                echo "FAIL git push"
+                exit 1
+        fi
+fi
+touch.date "$commit_date_line" $marker_fn
 EOF
 }
 
 install_cron()
 {
-        marker=$HOME/git.marker
-        touch.date 'Jan 01 00:00:00 1970' $marker
-
+	if [ -z "$marker_fn" ]; then
+		echo "FAIL: expected a value for \"marker_fn\" but saw nothing" 1>&2
+		return 1
+	fi
+	if [ ! -f "$marker_fn" ]; then
+		echo "FAIL: expected file at \"$marker_fn\"" 1>&2
+		return 1
+	fi
 	export EDITOR=ed
-	or=$HOME/git/qascraper
+        or=$HOME/git/qwickanalyticsscraper
 	if [ ! -d "$or" ]; then
 		echo "FAIL: expected directory at \"$or\"" 1>&2
 		exit 1
 	else
-                echo "OK found directory $or" 1>&2
+		echo "OK found directory $or" 1>&2
 	fi
 	fdp=$HOME/git/fin_doc_parser
 	if [ -z "$fdp" ]; then
@@ -197,7 +299,7 @@ install_cron()
 	fi
 	cat <<EOF | crontab -e
 a
-13 * * * * $dp/git/git.propagate -changes_since_marker $marker -in_dir $fdp -other_repo $or
+13 6 * * * $dp/git/git.propagate -run1 -in_dir $HOME/git/fin_doc_parser -pull_first -changes_since_marker $marker_fn -in_dir $fdp -dest_repo_dir $or > /tmp/git.propagate.out 2>&1
 .
 w
 q
@@ -207,47 +309,66 @@ EOF
 
 debug_mode=''
 dry_mode=''
-marker_fn=''
+marker_fn=marker
 marker_ts=''
-other_repo=''
+dest_repo_dir=''
+run1_mode=''
+save_scripts_mode=''
+src_repo_dir=`pwd`
 t=`mktemp`; trap "rm $t" EXIT
 verbose_mode=''
 while [ -n "$1" ]; do
 	case "$1" in
 		-changes_since_marker)
 			shift
-                        set_marker "$1"
+			marker_fn="$1"
 		;;
-                -commit_id_and_comment)
-                        shift
-                        commit_id=$1
-                        shift
-                        comment=$*
-                        gen_commands_for_change $commit_id $comment
-                        exit $?
-                ;;
+		-commit_id_and_comment)
+			shift
+			commit_id=$1
+			shift
+			comment=$*
+			gen_commands_for_change $commit_id $comment
+			exit $?
+		;;
 		-dry)
 			dry_mode=-dry
 		;;
 		-in_dir)
 			shift
-                        if cd $1; then
-                                echo "OK cd $1" 1>&2
+			if cd $1; then
+				echo "OK cd $1" 1>&2
+				src_repo_dir=`pwd`
 			else
-                                echo "FAIL cd $1" 1>&2
-                                exit 1
-                        fi
+				echo "FAIL cd $1" 1>&2
+				exit 1
+			fi
 		;;
 		-install_cron)
 			install_cron
 			exit
 		;;
-		-other_repo)
+		-dest_repo_dir)
 			shift
-			other_repo="$1"
+			dest_repo_dir="$1"
+		;;
+		-pull_first)
+			if git pull; then
+				echo "OK git pull"
+			else
+				echo "FAIL git pull"
+				exit 1
+			fi
 		;;
 		-q|-quiet)
 			verbose_mode=''
+		;;
+		-run1)
+			run1_mode=-run1
+		;;
+		-save_scripts)
+			save_scripts_mode=-save_scripts
+			dry_mode=-dry
 		;;
 		-test)
 			test
@@ -266,24 +387,77 @@ while [ -n "$1" ]; do
 	esac
 	shift
 done
-if [ -z "$other_repo" ]; then
-	echo "FAIL: expected a value for \"other_repo\" but saw nothing" 1>&2
+if [ -z "$dest_repo_dir" ]; then
+	echo "FAIL: expected a value for \"dest_repo_dir\" but saw nothing" 1>&2
+	exit 1
+fi
+if [ ! -d "$dest_repo_dir" ]; then
+	echo "FAIL: expected directory at \"$dest_repo_dir\"" 1>&2
+	exit 1
+fi
+if [ ! -d "$src_repo_dir" ]; then
+	echo "FAIL: expected directory at \"$src_repo_dir\"" 1>&2
 	exit 1
 fi
 if [ ! -f "$marker_fn" ]; then
-        echo "FAIL: expected marker file at \"$marker_fn\"" 1>&2
-        exit 1
+	echo "FAIL: expected marker file at \"$marker_fn\" in `pwd`" 1>&2
+	exit 1
 fi
-git log | list_changes_since_marker | gen_commands_for_change |
-if [ -n "$dry_mode" ]; then
-        cat
+
+set_marker $marker_fn || exit 1
+
+if git checkout master; then
+	echo "OK git checkout master"
 else
-        cat > $t.script
-        bash -x $t.script
+	echo "FAIL git checkout master"
+        exit 1
+fi 1>&2
+j=99999		#	so ls will reverse the ordering of execution w/ oldest xactions going first
+git log | list_changes_since_marker |
+while read commit_id comment; do
+	gen_commands_for_change $commit_id $comment > $t.xaction.$j
+	(( j-- ))
+done
+
+rm /tmp/git.propagate.xaction.* > /dev/null 2>&1
+
+ls $t.xaction.* |
+while read fn; do
+	if [ -n "$dry_mode" ]; then
+		if [ -n "$save_scripts_mode" ]; then
+			saved_script_name=`sed -e 's;.*xaction;/tmp/git.propagate.xaction;' <<< $fn`
+			if [ "$fn" = "$saved_script_name" ]; then
+				echo "FAIL [ $fn = $saved_script_name ], could not gen name"
+				exit 1
+			fi
+			mv $fn $saved_script_name
+                        echo $saved_script_name 1>&2
+		else
+			echo "# $fn"
+			cat $fn
+                fi 1>&2
+	else
+		echo "bash -x $fn"
+		bash	   -x $fn
+	fi
+	if [ -n "$run1_mode" ]; then
+		echo "OK run1_mode seen, so ending after processing one xaction" 1>&2
+		exit 0
+	fi
+done
+
+if [ -n "$save_scripts_mode" ]; then
+        for f in /tmp/git.propagate.xaction.*; do
+                echo "# $f"
+                cat $f
+        done
 fi
 
 exit
-bx $dp/git/git_util/git.propagate -dry -other_repo /a/b/c -changes_since_marker /e/f/g
-bx $dp/git/git_util/git.propagate -dry -other_repo /a/b/c -commit_id_and_comment ba3bb71e91e09499e672071394fbbd9ec865dad9 allow zeros from AI on x-mac
-exit
+bx $dp/git/git_util/git.propagate -dry -dest_repo_dir $HOME/git/qwickanalyticsscraper -commit_id_and_comment ba3bb71e91e09499e672071394fbbd9ec865dad9 allow zeros from AI on x-mac
 bx $dp/git/git_util/git.propagate -test
+bx $dp/git/git_util/git.propagate -in_dir $HOME/git/fin_doc_parser -run1 -dry -dest_repo_dir $HOME/git/qwickanalyticsscraper
+bx $dp/git/git_util/git.propagate -in_dir $HOME/git/fin_doc_parser -run1 -dry -dest_repo_dir $HOME/git/qwickanalyticsscraper -save_scripts > $t 2>&1
+bx $dp/git/git_util/git.propagate -in_dir $HOME/git/fin_doc_parser	 -dry -dest_repo_dir $HOME/git/qwickanalyticsscraper > $t 2>&1
+exit
+bx $dp/git_util/git.propagate -in_dir $HOME/git/fin_doc_parser -dest_repo_dir $HOME/git/qwickanalyticsscraper -install_cron
