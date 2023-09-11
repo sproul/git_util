@@ -12,88 +12,6 @@ Init_for_work_in_cwd()
 	branch=`git.branch`
 }
 
-Set_git2()
-{
-	git2=''
-	case `hostname` in
-		qascraper)
-			case $repo_name in
-				fin_doc_parser)
-					git2=$HOME/git/fin_doc_parser
-					return 0
-				;;
-			esac
-		;;
-	esac
-	return 1
-}
-
-_Sync_git2()
-{
-	if git.d; then
-		echo "FAIL git.d showed changes, but we expect none if we are running _Sync_git2"
-		exit 1
-	fi
-	Set_git2 || ( echo "FAIL Set_git2" 1>&2; exit 1 )
-	if [ ! -d $git2/.git ]; then
-		echo "WARN could not find directory $git2/.git"
-		return
-	else
-		echo "OK found directory $git2/.git"
-	fi
-        # step 1: get git2 up-to-date:
-	(
-	echo cd $git2
-	cd $git2
-        if git pull --rebase; then
-		echo "OK git pull --rebase"
-	else
-		echo "FAIL git pull --rebase"
-                echo "WARN are there unstaged changes perhaps in $git2?"
-                exit 1
-        fi
-        )
-        # step 2: get git over to git2, and request latest checkin w/ $comment:
-        echo "mv $git2/.git `dirname $git2`"
-	mv	 $git2/.git `dirname $git2`
-	echo "mv `pwd`/.git $git2"
-        mv       `pwd`/.git $git2
-        (
-        cd $git2
-        git.ac
-	git commit . -m "$comment"
-        )
-        # step 3: put everything back, then do a git revert to make it so the freshly updated .git dir's views are reflected on disk:
-        echo "mv $git2/.git ."
-        mv       $git2/.git .
-        echo "mv `dirname $git2`/.git $git2"
-        mv       `dirname $git2`/.git $git2
-        
-        git reset --hard        #       to get into sync with the freshly updated .git files
-        git.rm_untracked_and_unignored_files
-}
-
-Possibly_propagate_update()
-{
-	Set_git2 || return
-	if [ ! -d $git2/.git ]; then
-		echo "WARN could not find directory $git2/.git"
-		return
-	else
-		echo "OK found directory $git2/.git"
-	fi
-	echo "mv .git .."
-	mv	 .git ..
-	echo "mv $git2/.git ."
-	mv	 $git2/.git .
-	git.d
-	git.up $*
-	echo "mv .git $git2"
-	mv	 .git $git2
-	echo "mv ../.git ."
-	mv	 ../.git .
-}
-
 Clear_status()
 {
 	if [ -n "$proj" ]; then
@@ -313,7 +231,6 @@ Checkin()
 	echo "git push origin $branch"
 	if [ -z "$dry_mode" ]; then
 		Git_status
-		Possibly_propagate_update $repo_name $t.status
 		# If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
 		#	error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
 		#	hint: Updates were rejected because the remote contains work that you do
