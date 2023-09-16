@@ -42,7 +42,7 @@ strait $t
 
 . modified_repos.inc
 git status --short > $t
-midnight_files=`grep '^ M .*/midnight[^\/]*$' | sed -e 's/^ M / /' | tr '\n' ' '`
+midnight_files=`cat $t | grep '^ M .*/midnight[^\/]*$' | sed -e 's/^ M / /' | tr '\n' ' '`
 if [ -n "$midnight_files" ]; then
         eat_2nd_and_later_lines $midnight_files
 fi
