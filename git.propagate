@@ -180,8 +180,8 @@ list_changes_since_marker()
 			echo "FAIL: expected a value for \"commit_ts\" but saw nothing" 1>&2
 			exit 1
 		fi
-		if [ "$commit_ts" -lt "$marker_ts" ]; then
-			echo "OK found transaction from $monthAaa $day $hhmmss $year $rest older than $marker_ts, so ending processing" 1>&2
+                if [ "$commit_ts" -le "$marker_ts" ]; then
+                        echo "OK found transaction from $monthAaa $day $hhmmss $year $rest older or equal in age to $marker_ts, so ending processing" 1>&2
 			break
 		fi
 		read_blank || exit 1
@@ -216,11 +216,11 @@ gen_commands_for_change()
 	else
 		git show $commit_id
 	fi > $t.git.show
-        grep ^diff  $t.git.show | sed -e 's;.* b/;;' | sed -n -e '/ /d' -e '/public\/.n.xyz/d' -e /bOfA/d -e '/./p' > $t.file_list
-        if [ ! -s $t.file_list ]; then
-                echo "OK empty file $t.file_list indicates all files had embedded blanks, which we are not migrating, so this call's work is done" 1>&2OK
-                return 0
-        fi
+	grep ^diff  $t.git.show | sed -e 's;.* b/;;' | sed -n -e '/ /d' -e '/public\/.n.xyz/d' -e /bOfA/d -e '/./p' > $t.file_list
+	if [ ! -s $t.file_list ]; then
+		echo "OK empty file $t.file_list indicates all files had embedded blanks, which we are not migrating, so this call's work is done" 1>&2
+		return 0
+	fi
 	commit_date_line=`grep ^Date: $t.git.show | sed -e 's/Date: *//'`
 	if [ ! -s "$t.file_list" ]; then
 		echo "FAIL could not find non-empty file $t.file_list" 1>&2
@@ -243,7 +243,7 @@ else
 fi
 tar cfv /tmp/k.tar $file_list
 ( cd $dest_repo_dir; tar xfv /tmp/k.tar )
-file_list=\`tar tf /tmp/k.tar\`       #       to account for the case where some files are missing
+file_list=\`tar tf /tmp/k.tar | tr '\n' ' ' \`	      #	      to account for the case where some files are missing
 if cd $dest_repo_dir; then
 	echo "OK cd $dest_repo_dir"
 else
@@ -257,18 +257,18 @@ else
 	exit 1
 fi
 if [ -n "\`git.d | head -1\`" ]; then
-        if git commit \$file_list -m '$comment'; then
-                echo "OK git commit \$file_list -m '$comment'"
-        else
-                echo "FAIL git commit \$file_list -m '$comment'"
-                exit 1
-        fi
-        if git push; then
-                echo "OK git push"
-        else
-                echo "FAIL git push"
-                exit 1
-        fi
+	if git commit \$file_list -m '$comment'; then
+		echo "OK git commit \$file_list -m '$comment'"
+	else
+		echo "FAIL git commit \$file_list -m '$comment'"
+		exit 1
+	fi
+	if git push; then
+		echo "OK git push"
+	else
+		echo "FAIL git push"
+		exit 1
+	fi
 fi
 touch.date "$commit_date_line" $marker_fn
 EOF
@@ -276,6 +276,7 @@ EOF
 
 install_cron()
 {
+        echo "WARN: Ended up installing by hand because I wasnt getting appropriate var substitution in cron file"; return 1
 	if [ -z "$marker_fn" ]; then
 		echo "FAIL: expected a value for \"marker_fn\" but saw nothing" 1>&2
 		return 1
@@ -285,7 +286,7 @@ install_cron()
 		return 1
 	fi
 	export EDITOR=ed
-        or=$HOME/git/qwickanalyticsscraper
+	or=$HOME/git/qwickanalyticsscraper
 	if [ ! -d "$or" ]; then
 		echo "FAIL: expected directory at \"$or\"" 1>&2
 		exit 1
@@ -297,17 +298,21 @@ install_cron()
 		echo "FAIL: expected a value for \"fdp\" but saw nothing" 1>&2
 		return 1
 	fi
-	cat <<EOF | crontab -e
-a
-13 6 * * * $dp/git/git.propagate -run1 -in_dir $HOME/git/fin_doc_parser -pull_first -changes_since_marker $marker_fn -in_dir $fdp -dest_repo_dir $or > /tmp/git.propagate.out 2>&1
-.
-w
-q
-EOF
+	if [ ! -d "$fdp" ]; then
+		echo "FAIL: expected directory at \"$fdp\"" 1>&2
+		return 1
+	fi 
+(
+echo a
+echo "13 6 * * * $dp/git/git.propagate -run1 -pull_first -changes_since_marker $marker_fn -in_dir $fdp -dest_repo_dir $or > /tmp/git.propagate.out 2>&1"
+echo .
+echo w
+echo q
+) | crontab -e
 }
 
 
-debug_mode=''
+debug_mode='+x'
 dry_mode=''
 marker_fn=marker
 marker_ts=''
@@ -317,6 +322,13 @@ save_scripts_mode=''
 src_repo_dir=`pwd`
 t=`mktemp`; trap "rm $t" EXIT
 verbose_mode=''
+
+if [ -z "$dp" ]; then
+        set +x
+	. .profile
+        set $debug_mode
+fi
+
 while [ -n "$1" ]; do
 	case "$1" in
 		-changes_since_marker)
@@ -353,12 +365,13 @@ while [ -n "$1" ]; do
 			dest_repo_dir="$1"
 		;;
 		-pull_first)
-			if git pull; then
-				echo "OK git pull"
+			
+                        if git pull origin master; then
+				echo "OK git pull origin master"
 			else
-				echo "FAIL git pull"
-				exit 1
-			fi
+                                echo "FAIL git pull origin master in `pwd`"
+                                exit 1
+                        fi
 		;;
 		-q|-quiet)
 			verbose_mode=''
@@ -410,7 +423,7 @@ if git checkout master; then
 	echo "OK git checkout master"
 else
 	echo "FAIL git checkout master"
-        exit 1
+	exit 1
 fi 1>&2
 j=99999		#	so ls will reverse the ordering of execution w/ oldest xactions going first
 git log | list_changes_since_marker |
@@ -431,11 +444,11 @@ while read fn; do
 				exit 1
 			fi
 			mv $fn $saved_script_name
-                        echo $saved_script_name 1>&2
+			echo $saved_script_name 1>&2
 		else
 			echo "# $fn"
 			cat $fn
-                fi 1>&2
+		fi 1>&2
 	else
 		echo "bash -x $fn"
 		bash	   -x $fn
@@ -447,10 +460,10 @@ while read fn; do
 done
 
 if [ -n "$save_scripts_mode" ]; then
-        for f in /tmp/git.propagate.xaction.*; do
-                echo "# $f"
-                cat $f
-        done
+	for f in /tmp/git.propagate.xaction.*; do
+		echo "# $f"
+		cat $f
+	done
 fi
 
 exit
