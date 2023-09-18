@@ -37,15 +37,16 @@ while [ -n "$1" ]; do
         shift
 done
 
+git status --short > $t
+midnight_files=`cat $t | grep '^ M .*/midnight[^\/]*$' | sed -e 's/^ M / /' | tr '\n' ' '`
+if [ -n "$midnight_files" ]; then
+        eat_2nd_and_later_lines $midnight_files > /dev/null 2>&1
+fi
+
 git diff . > $t
 strait $t
 
 . modified_repos.inc
-git status --short > $t
-midnight_files=`cat $t | grep '^ M .*/midnight[^\/]*$' | sed -e 's/^ M / /' | tr '\n' ' '`
-if [ -n "$midnight_files" ]; then
-        eat_2nd_and_later_lines $midnight_files
-fi
 
 git_proj_dir=`ls.up -find_parent_of_dir .git`
 if [ -s "$t" ]; then
