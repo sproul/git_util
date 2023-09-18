@@ -37,8 +37,8 @@ while [ -n "$1" ]; do
         shift
 done
 
-git status --short > $t
-midnight_files=`cat $t | grep '^ M .*/midnight[^\/]*$' | sed -e 's/^ M / /' | tr '\n' ' '`
+git status --short > $t.mid
+midnight_files=`cat $t.mid | grep '^ M .*/midnight[^\/]*$' | sed -e 's/^ M / /' | tr '\n' ' '`
 if [ -n "$midnight_files" ]; then
         eat_2nd_and_later_lines $midnight_files > /dev/null 2>&1
 fi
@@ -57,6 +57,11 @@ else
         rc=1
 fi
 cat $t
+rm  $t
+
+cat $t.mid
+rm  $t.mid
+
 exit $rc
 exit
-bx $dp/git_util/git.d a
+bx $dp/git_util/git.d
