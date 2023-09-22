@@ -284,12 +284,20 @@ Commit_routine_changes()
 		;;
 		emacs)
 			if grep lisp/data/n-data-menu-browse $t.status > /dev/null 2>&1; then
-				fns=`cat $t.carson.cans | sed -e 's/.*lisp/lisp/'`
+				fns=`cat lisp/data/n-data-menu-browse | sed -e 's/.*lisp/lisp/'`
 				Commit 'shortcut updates' $fns
 			else
 				return
 			fi
 		;;
+                fin_doc_parser)
+                        if grep ui/src/data/scoring/scores $t.status > /dev/null 2>&1; then
+				fns=`cat ui/src/data/scoring/scores | sed -e 's/.*lisp/lisp/'`
+                                Commit 'score updates' $fns
+			else
+				return
+			fi
+                ;;
 		*)
 			return
 		;;
