@@ -325,6 +325,7 @@ verbose_mode=''
 
 if [ -z "$dp" ]; then
         set +x
+        cd /home/nelson
 	. .profile
         set $debug_mode
 fi
