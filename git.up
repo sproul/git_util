@@ -146,7 +146,7 @@ Checkin()
 	z=`pwd`
 	if [ -f git.pre_checkin_test.sh ]; then
                 if [ -n "$force_mode" ]; then
-                        echo "$0: bash git.pre_checkin_test.sh failed, forcing anyway..." 1>&2
+                        echo "$0: bash git.pre_checkin_test.sh skipped since we are in force mode..." 1>&2
                 elif ! bash git.pre_checkin_test.sh $force_mode; then
                         echo "$0: bash git.pre_checkin_test.sh failed, exiting..." 1>&2
                         return 1
