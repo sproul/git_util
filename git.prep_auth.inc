@@ -18,6 +18,7 @@ Restore_clean_configs()
 
         if [ -f /tmp/Restore_clean_configs__just_return ]; then
                 rm /tmp/Restore_clean_configs__just_return
+                rm -f $end_of_process_safe_gc_list
                 return
         fi
         if [ -f "$end_of_process_safe_gc_list" ]; then
