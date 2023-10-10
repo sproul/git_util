@@ -1,0 +1,4 @@
+:
+echo Will force the acceptance of the current state:
+echo "git push origin HEAD:master --force"
+git       push origin HEAD:master --force
