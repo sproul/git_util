@@ -1,4 +1,5 @@
 :
+# cf https://stackoverflow.com/questions/30471557/git-push-master-fatal-you-are-not-currently-on-a-branch
 echo Will force the acceptance of the current state:
 echo "git push origin HEAD:master --force"
 git       push origin HEAD:master --force
