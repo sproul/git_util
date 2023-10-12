@@ -37,11 +37,8 @@ while [ -n "$1" ]; do
         shift
 done
 
+prune.midnight_files
 git status --short > $t.mid
-midnight_files=`cat $t.mid | grep '^ M .*/midnight[^\/]*$' | sed -e 's/^ M / /' | tr '\n' ' '`
-if [ -n "$midnight_files" ]; then
-        eat_2nd_and_later_lines $midnight_files > /dev/null 2>&1
-fi
 
 git diff . > $t
 strait $t

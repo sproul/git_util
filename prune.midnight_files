@@ -1,0 +1,39 @@
+:
+debug_mode=''
+dry_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                -x)
+                        set -x
+                        debug_mode=-x
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+t=`mktemp`; trap "rm $t" EXIT
+short_git_status=$t
+git status --short > $short_git_status
+
+if [ ! -f "$short_git_status" ]; then
+        echo "FAIL: expected file at \"$short_git_status\"" 1>&2
+        exit 1
+fi
+
+midnight_files=`cat $short_git_status | grep '^ M .*/midnight[^\/]*$' | sed -e 's/^ M / /' | tr '\n' ' '`
+if [ -n "$midnight_files" ]; then
+        eat_2nd_and_later_lines $midnight_files > /dev/null 2>&1
+fi
