@@ -53,7 +53,6 @@ else
         git_util__modified_repos__Remove_from_list $git_proj_dir
         rc=1
 fi
-cat $t
 rm  $t
 
 cat $t.mid
