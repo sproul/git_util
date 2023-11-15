@@ -1,0 +1,48 @@
+#!/bin/bash
+debug_mode=''
+dry_mode=''
+grep_mode='-G'          #       regex
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -s|-fgrep)
+                        grep_mode=-S    # fixed string
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                -x)
+                        set -x
+                        debug_mode=-x
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+patt="$1"
+shift
+
+target=$1
+if [ -f "$target" ]; then
+        target_dir=`dirname $target`
+elif [ ! -d "$target" ]; then
+        echo "FAIL cannot find $target" 1>&2
+        exit 1
+else
+        target_dir=$target
+fi
+echo "cd $target_dir"
+cd       $target_dir
+
+echo "git log -p $grep_mode \"$patt\""
+git       log -p $grep_mode "$patt"
+exit
+$dp/git_util/git.grep ldap $dp/git/sys-eng/pipeline-shell-scripts/fmwtools/fmwtools.sh
