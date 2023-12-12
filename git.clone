@@ -347,7 +347,7 @@ git.clone -new_branch git@orahub.oci.oraclecorp.com:paascicd/authz 'OCI_deployme
 git.clone             git@orahub.oci.oraclecorp.com:paascicd/authz 'OCI_deployment'
 git.clone             git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
 git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git
-git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
+git.clone     git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 git.clone https://nsproul97@bitbucket.org/qwickrate/qagpt.git
 git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git 'phx-oci'    #       DOES NOT WORK due to ssl cert nonsense
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
