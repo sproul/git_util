@@ -46,7 +46,7 @@ strait $t
 . modified_repos.inc
 
 git_proj_dir=`ls.up -find_parent_of_dir .git`
-if [ -s "$t" ]; then
+if [ -s "$t.mid" ]; then
         git_util__modified_repos__Add_to_list $git_proj_dir
         rc=0
 else
