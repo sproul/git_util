@@ -1,0 +1,10 @@
+:
+. git.find_root
+t=`mktemp`; trap "rm $t" EXIT
+affected_files=`git status . --short | sed -e 's/^..//'`
+proj=`basename $(pwd)`
+tf=$dp/$proj.`date_string.sh sortableWithTime`.tar
+tar cfv $tf $affected_files
+echo "OK saved: `ls -l $tf`"
+exit
+bx $dp/git/git.save_changes
