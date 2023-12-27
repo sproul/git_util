@@ -1,0 +1,10 @@
+while [ 1 ]; do
+        if [ -d .git ]; then
+                break
+        fi
+        if [ `pwd` = '/' ]; then
+                echo "FAIL cannot find a .git directory" 1>&2
+                exit 1
+        fi
+        cd ..
+done
