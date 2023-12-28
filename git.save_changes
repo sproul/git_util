@@ -6,5 +6,23 @@ proj=`basename $(pwd)`
 tf=$dp/$proj.`date_string.sh sortableWithTime`.tar
 tar cfv $tf $affected_files
 echo "OK saved: `ls -l $tf`"
+case `pwd` in
+	*/dp/*)
+		git_base=`pwd | sed -e "s;$dp;$HOME;"`
+		echo "cd $git_base"
+		cd	 $git_base
+                if tar	     xvf $tf; then
+                        echo "OK tar xvf $tf #  so now ready for comparisons to last saved state" 1>&2
+		else
+			echo "FAIL tar	     xvf $tf" 1>&2
+                        exit 1
+                fi
+	;;
+	*)
+		echo "WARNING I am surprised you are in `pwd` instead of dp" 1>&2
+		exit 1
+	;;
+esac
+
 exit
 bx $dp/git/git.save_changes
