@@ -2,241 +2,259 @@
 new_branch_mode=''
 
 case `whoami` in
-        admin.nelson|brace|devel|leighton|nelsonsproul|nelson|nsproul|opc|x)
-        ;;
-        *)
-                echo "$0: error: logged in as wrong user: `whoami`" 1>&2
-                exit 1
-        ;;
+	admin.nelson|brace|devel|leighton|nelsonsproul|nelson|nsproul|opc|x)
+	;;
+	*)
+		echo "$0: error: logged in as wrong user: `whoami`" 1>&2
+		exit 1
+	;;
 esac
 
-src_chi_fns=''
+branch=''
 dp_mode=''
 dry_mode=''
 force_mode=''
+pr=''
+src_chi_fns=''
 to_branch=''
 while [ -n "$1" ]; do
-        case "$1" in
-                -both)
-                        git.clone -dp $*
-                        git.clone     $*
-                        exit
-                ;;
-                -chi)
+	case "$1" in
+		-both)
+			git.clone -dp $*
+			git.clone     $*
+			exit
+		;;
+		-chi)
+			shift
+			if [ ! -f "$1" ]; then
+				echo "$0: error: could not find \"$1\"" 1>&2
+				exit 1
+			fi
+			src_chi_fns="$src_chi_fns $1"
+		;;
+		-dp)
+			dp_mode=yes
+		;;
+		-dry)
+			dry_mode=-dry
+		;;
+		-f|-force)
+			force_mode=-force
+		;;
+		-new_branch)
+			new_branch_mode=yes
+		;;
+		-pr)
                         shift
-                        if [ ! -f "$1" ]; then
-                                echo "$0: error: could not find \"$1\"" 1>&2
-                                exit 1
-                        fi
-                        src_chi_fns="$src_chi_fns $1"
-                ;;
-                -dp)
-                        dp_mode=yes
-                ;;
-                -dry)
-                        dry_mode=-dry
-                ;;
-                -f|-force)
-                        force_mode=-force
-                ;;
-                -new_branch)
-                        new_branch_mode=yes
-                ;;
-                -to|-to_branch)
-                        shift
-                        to_branch="$1"
-                ;;
-                *)
-                        break
-                ;;
-        esac
-        shift
+			pr="$1"
+                        branch=development
+		;;
+		-to|-to_branch)
+			shift
+			to_branch="$1"
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
 done
 
 remote_repo="$1"
-branch="$2"
+if [ -z "$branch" ]; then
+        branch="$2"
+fi
 
 case "$remote_repo" in
-        */*)
-        ;;
-        *)
-                remote_repo=sproul@github.com:sproul/$remote_repo.git
-        ;;
+	*/*)
+	;;
+	*)
+		remote_repo=sproul@github.com:sproul/$remote_repo.git
+	;;
 esac
 project_name=`basename "$remote_repo" | sed -e 's/.git$//'`
 
 case "$project_name" in
-        promotion-config)
-                #branch=port_to_tomcat_10
-                branch=test_blackbox
-                echo "Note that git.clone is automatically setting the branch to be $branch for $project_name"
-        ;;
+	promotion-config)
+		#branch=port_to_tomcat_10
+		branch=test_blackbox
+		echo "Note that git.clone is automatically setting the branch to be $branch for $project_name"
+	;;
 esac
 
 
 save_old_as_backup()
 {
-        old_branch_marker=`ls $git_dir/$project_name.BRANCH=* 2> /dev/null`
-        if [ -z "$old_branch_marker" ]; then
-                return
-        fi
-        if [ ! -f "$old_branch_marker" ]; then
-                echo "$0: error: did not understand old branch marker(s?) \"$old_branch_marker\"; please clean up" 1>&2
-                exit 1
-        fi
-        old_branch_name=`sed -e 's/.*=//' <<< $old_branch_marker`
-        rm $old_branch_marker
-        echo.clean "mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name"
-        mv       $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name
+	old_branch_marker=`ls $git_dir/$project_name.BRANCH=* 2> /dev/null`
+	if [ -z "$old_branch_marker" ]; then
+		return
+	fi
+	if [ ! -f "$old_branch_marker" ]; then
+		echo "$0: error: did not understand old branch marker(s?) \"$old_branch_marker\"; please clean up" 1>&2
+		exit 1
+	fi
+	old_branch_name=`sed -e 's/.*=//' <<< $old_branch_marker`
+	rm $old_branch_marker
+	echo.clean "mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name"
+	mv	 $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name
 }
 
 if [ -n "$to_branch" ]; then
-        cd $HOME/git
-        #project_name=carson
-        current_branch=`git.branch`
-        if [ -n "$current_branch" ]; then
-                echo.clean "mv $project_name $project_name.backup.$current_branch"
-                mv       $project_name $project_name.backup.$current_branch
-        fi
-        saved_branch="$project_name.backup.$to_branch"
-        if [ ! -d "$saved_branch" ]; then
-                echo "$0: error: could not find directory \"$saved_branch\"" 1>&2
-                exit 1
-        fi
-        echo.clean "mv \"$saved_branch\" $project_name"
-        mv       "$saved_branch" $project_name
-        exit
+	cd $HOME/git
+	#project_name=carson
+	current_branch=`git.branch`
+	if [ -n "$current_branch" ]; then
+		echo.clean "mv $project_name $project_name.backup.$current_branch"
+		mv	 $project_name $project_name.backup.$current_branch
+	fi
+	saved_branch="$project_name.backup.$to_branch"
+	if [ ! -d "$saved_branch" ]; then
+		echo "$0: error: could not find directory \"$saved_branch\"" 1>&2
+		exit 1
+	fi
+	echo.clean "mv \"$saved_branch\" $project_name"
+	mv	 "$saved_branch" $project_name
+	exit
 fi
 
 case "$remote_repo" in
-        http*orahub*)
-                # http doesn't work on orahub w/out some kind of setup
-                # convert from
-                #       https://orahub.oraclecorp.com/paas-innovationhub-central/carson.git
-                # to
-                #       git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git
-                # 
-                remote_repo=`sed -e 's;https://orahub.oraclecorp.com/;git@orahub.oraclecorp.com:;' <<< $remote_repo`
-        ;;
-        http*)
-                # ignore, this should work everywhere
-        ;;
-        sproul@github.com:sproul/*.git)
-                # e.g., sproul@github.com:sproul/emacs.git
-                if [ -r "$HOME/.gh" ]; then
-                        g=`cat $HOME/.gh`
-                        remote_repo=`sed -e "s;sproul;sproul:$g;" <<< $remote_repo`
-                fi
-                remote_repo=`git.get_remote_repo $remote_repo`
-                # needed on orcl boxes, and apparently on vms3 also
-                remote_repo=`git.ssh_to_http $remote_repo`
-        ;;
+	http*orahub*)
+		# http doesn't work on orahub w/out some kind of setup
+		# convert from
+		#	https://orahub.oraclecorp.com/paas-innovationhub-central/carson.git
+		# to
+		#	git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git
+		# 
+		remote_repo=`sed -e 's;https://orahub.oraclecorp.com/;git@orahub.oraclecorp.com:;' <<< $remote_repo`
+	;;
+	http*)
+		# ignore, this should work everywhere
+	;;
+	sproul@github.com:sproul/*.git)
+		# e.g., sproul@github.com:sproul/emacs.git
+		if [ -r "$HOME/.gh" ]; then
+			g=`cat $HOME/.gh`
+			remote_repo=`sed -e "s;sproul;sproul:$g;" <<< $remote_repo`
+		fi
+		remote_repo=`git.get_remote_repo $remote_repo`
+		# needed on orcl boxes, and apparently on vms3 also
+		remote_repo=`git.ssh_to_http $remote_repo`
+	;;
 esac
 
 if [ -n "$dp_mode" ]; then
-        git_dir=$dp/git
+	git_dir=$dp/git
 else
-        git_dir=$HOME/git
+	git_dir=$HOME/git
 fi
 if [ ! -d $git_dir ]; then
-        echo.clean "mkdir $git_dir"
-        mkdir       $git_dir
+	echo.clean "mkdir $git_dir"
+	mkdir	    $git_dir
 fi
 if [ ! -d $git_dir ]; then
-        echo "$0: error: could not create directory \"$git_dir\"" 1>&2
-        exit 1
+	echo "$0: error: could not create directory \"$git_dir\"" 1>&2
+	exit 1
 fi
 if [ -n "$dp_mode" ]; then
-        cd $dp
-        case "$project_name" in
-                git_util|data|emacs)
-                        # at some point we will put everything under the 'git' dir
-                ;;
-                *)
-                        cd git
-                ;;
-        esac
+	cd $dp
+	case "$project_name" in
+		git_util|data|emacs)
+			# at some point we will put everything under the 'git' dir
+		;;
+		*)
+			cd git
+		;;
+	esac
 else
-        cd $git_dir
+	cd $git_dir
 fi
 
 save_old_as_backup
 
 if [ -n "$branch" ]; then
-        branch_marker="$git_dir/$project_name.BRANCH=$branch"
+	branch_marker="$git_dir/$project_name.BRANCH=$branch"
 else
-        branch_marker=''
+	branch_marker=''
 fi
 if [ -d $project_name ]; then
-        if [ -z "$force_mode" ]; then
-                echo "$0: error: $git_dir/$project_name already exists (from `pwd`) (use -f to replace)" 1>&2
-                exit 1
-        fi
-        if [ -d /tmp/$project_name ]; then
-                echo.clean "rm -rf /tmp/$project_name"
-                rm       -rf /tmp/$project_name
-        fi
-        echo.clean "mv $project_name /tmp"
-        mv       $project_name /tmp
-        if [ -f "$branch_marker" ]; then
-                echo.clean "rm -f $branch_marker"
-                rm       -f $branch_marker
-        fi
+	if [ -z "$force_mode" ]; then
+		echo "$0: error: $git_dir/$project_name already exists (from `pwd`) (use -f to replace)" 1>&2
+		exit 1
+	fi
+	if [ -d /tmp/$project_name ]; then
+		echo.clean "rm -rf /tmp/$project_name"
+		rm	 -rf /tmp/$project_name
+	fi
+	echo.clean "mv $project_name /tmp"
+	mv	 $project_name /tmp
+	if [ -f "$branch_marker" ]; then
+		echo.clean "rm -f $branch_marker"
+		rm	 -f $branch_marker
+	fi
 fi
 if [ -n "$branch" ]; then
-        if [ -z "$new_branch_mode" ]; then
-                branch_args="-b $branch"
-        fi
-        touch $branch > "$branch_marker"
+	if [ -z "$new_branch_mode" ]; then
+		branch_args="-b $branch"
+	fi
+	touch $branch > "$branch_marker"
 else
-        branch_args=''
+	branch_args=''
 fi
 echo "git clone $branch_args $remote_repo"
 if [ -n "$dry_mode" ]; then
-        exit
+	exit
 fi
 if [ ! -s $HOME/.ssh/config ]; then
-        #ssh.init        #       to stop host checking, which potentially leads to an interactive prompt from ssh caused by git clone call
-        echo "FAIL empty .ssh/config seen; used to call ssh.init to address this, but that was making a bigger mess" 1>&2
-        exit 1
+	echo "FAIL empty .ssh/config seen; used to call ssh.init to address this, but that was making a bigger mess" 1>&2
+	exit 1
 fi
 if ! git clone $branch_args $remote_repo; then
-        echo "$0: git clone $branch_args $remote_repo failed, exiting..." 1>&2
-        exit 1
+	echo "$0: git clone $branch_args $remote_repo failed, exiting..." 1>&2
+	exit 1
 fi
-
 if [ -n "$new_branch_mode" ]; then
-        echo "cd \"$project_name\""
-        cd       "$project_name"
-        if ! git checkout -b "$branch"; then
-                echo "$0: git checkout -b $branch failed, exiting..." 1>&2
+	echo "cd \"$project_name\""
+	cd	 "$project_name"
+	if ! git checkout -b "$branch"; then
+		echo "$0: git checkout -b $branch failed, exiting..." 1>&2
+		exit 1
+	fi
+elif [ -n "$pr" ]; then
+	echo "cd \"$project_name\""
+	cd	 "$project_name"
+        if git checkout -b "$pr"; then
+		echo "OK git checkout -b $pr" 1>&2
+	else
+		echo "FAIL git checkout -b $pr" 1>&2
                 exit 1
         fi
+        echo "git branch"
+        git       branch
 fi
 
 Bring_over_and_check_in_some_files()
 {
-        for src_chi_fn in $src_chi_fns; do
-                dest_chi_fn=`sed -e "s;.*/$project_name/;$git_dir/$project_name/;" <<< $src_chi_fn`
-                if [ ! -f "$dest_chi_fn" ]; then
-                        echo "$0: warning: did not see \"$dest_chi_fn\", so apparently $src_chi_fn is a new file" 1>&2
-                        d=`dirname "$dest_chi_fn"`
-                        if [ ! -d "$d" ]; then
-                                echo "$0: warning: did not see dir \"$d\", so apparently $d is a new dir" 1>&2
-                                echo.clean "mkdir -p \"$d\""
-                                mkdir       -p "$d"
-                        fi
-                fi
-                echo.clean "cp -p \"$src_chi_fn\" \"$dest_chi_fn\""
-                cp       -p "$src_chi_fn" "$dest_chi_fn"
-        done
-        echo Add a comment and send the following to check in:
-        printf "cd $git_dir/$project_name; git.up"
+	for src_chi_fn in $src_chi_fns; do
+		dest_chi_fn=`sed -e "s;.*/$project_name/;$git_dir/$project_name/;" <<< $src_chi_fn`
+		if [ ! -f "$dest_chi_fn" ]; then
+			echo "$0: warning: did not see \"$dest_chi_fn\", so apparently $src_chi_fn is a new file" 1>&2
+			d=`dirname "$dest_chi_fn"`
+			if [ ! -d "$d" ]; then
+				echo "$0: warning: did not see dir \"$d\", so apparently $d is a new dir" 1>&2
+				echo.clean "mkdir -p \"$d\""
+				mkdir	    -p "$d"
+			fi
+		fi
+		echo.clean "cp -p \"$src_chi_fn\" \"$dest_chi_fn\""
+		cp	 -p "$src_chi_fn" "$dest_chi_fn"
+	done
+	echo Add a comment and send the following to check in:
+	printf "cd $git_dir/$project_name; git.up"
 }
 
 
 if [ -n "$src_chi_fns" ]; then
-        Bring_over_and_check_in_some_files
+	Bring_over_and_check_in_some_files
 fi
 
 # don't allow something like https://sproul:oops@github.com/sproul/emacs.git
@@ -262,7 +280,8 @@ git checkout $BRANCH
 exit
 git clone git@bitbucket.org:qwickrate/monroe.biz.git
 git clone git@bitbucket.org:qwickrate/qwickanalyticsscraper.git
-git clone git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
+bx git.clone -pr python_lint_updates git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
+bx git.clone git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git development
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
 bx $dp/git_util/git.clone https://github.com/sproul/weblog_2_tests
@@ -307,14 +326,14 @@ bx $dp/git_util/git.clone -chi $cr/src/clj/mm/vault.clj -chi $cr/clj-vault/src/c
 bx $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'use_carson_users_email_instead_of_rohit'
 bx $dp/git_util/git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/provisioning-ui.git
 bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/cljs/mm/console/views.cljs -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'stop_using_hudson_3.3.2_when_provisioning_new_masters'
-bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/adminops/provision.clj -chi  /scratch/carson/workspace/carson/src/clj/orch/messaging/rabbitmq.clj -chi  /scratch/carson/workspace/carson/src/clj/mm/adminops/orgs.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'add_minor_comments_and_logging'
-bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/adminops/provision.clj -chi  /scratch/carson/workspace/carson/src/clj/orch/messaging/rabbitmq.clj -chi  /scratch/carson/workspace/carson/src/clj/mm/adminops/orgs.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'add_minor_comments_and_logging'
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/adminops/provision.clj -chi	/scratch/carson/workspace/carson/src/clj/orch/messaging/rabbitmq.clj -chi  /scratch/carson/workspace/carson/src/clj/mm/adminops/orgs.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'add_minor_comments_and_logging'
+bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/adminops/provision.clj -chi	/scratch/carson/workspace/carson/src/clj/orch/messaging/rabbitmq.clj -chi  /scratch/carson/workspace/carson/src/clj/mm/adminops/orgs.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'add_minor_comments_and_logging'
 bx $dp/git_util/git.clone -to portable_vault git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git
 bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/orch/actions.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'fix_register-farm-job_vulnerability_to_bad_jobid_parm'
 bx $dp/git_util/git.clone -chi /home/nsproul/workspace/carson/src/clj/mm/hudsonrest.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'show_target_URL_when_fetching_JSON'
 bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/orch/actions.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'remove_invalid_corrid_test'
-bx $dp/git_util/git.clone                                                               -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'show_target_URL_when_fetching_JSON_II'
-bx $dp/git_util/git.clone                                                               -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'wire_in_Jenkins_latest,_latest_plugins'
+bx $dp/git_util/git.clone								-new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'show_target_URL_when_fetching_JSON_II'
+bx $dp/git_util/git.clone								-new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'wire_in_Jenkins_latest,_latest_plugins'
 bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/src/clj/mm/model.clj -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'allow_create_plugin_with_only_URL_different'
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git hub-8049
 bx $dp/git_util/git.clone -chi /scratch/carson/workspace/carson/patches/0000_patch.txt -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'remove_invalid_corrid_test'
@@ -332,6 +351,8 @@ $dp/git_util/git.clone git@orahub.oraclecorp.com:paas-innovationhub-central/cars
 $dp/git_util/git.clone -new_branch git@orahub.oraclecorp.com:faiza.bounetta/promotion-config.git 'test_blackbox'
 $dp/git_util/git.clone             git@orahub.oraclecorp.com:paas-innovationhub-central/misc-utils.git
 $dp/git_util/git.clone -f -dp -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'preserve_ring_log_after_the_build_phase_of_startup'
+$dp/git_util/git.clone		   git@orahub.oraclecorp.com:paas-innovationhub-central/misc-utils.git
+$dp/git_util/git.clone -dp	   git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_process_monitoring'
 bx $dp/git_util/git.clone sproul@github.com:sproul/bin.git
 bx $dp/git_util/git.clone sproul@github.com:sproul/git_util.git
 bx $dp/git_util/git.clone sproul@github.com:sproul/emacs.git
@@ -344,14 +365,14 @@ git.clone git@orahub.oci.oraclecorp.com:mike.gilbode/messageproducer.git
 git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git
 git.clone git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paascicd/authz 'OCI_deployment'
-git.clone             git@orahub.oci.oraclecorp.com:paascicd/authz 'OCI_deployment'
-git.clone             git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
+git.clone	      git@orahub.oci.oraclecorp.com:paascicd/authz 'OCI_deployment'
+git.clone	      git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
 git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git
 git.clone     git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 git.clone https://nsproul97@bitbucket.org/qwickrate/qagpt.git
-git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git 'phx-oci'    #       DOES NOT WORK due to ssl cert nonsense
+git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git 'phx-oci'	#	DOES NOT WORK due to ssl cert nonsense
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'add_idmlcmfa_versions'
 git.clone https://github.com/langchain-ai/langchain.git
 exit
-git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'R
+git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
