@@ -172,6 +172,12 @@ Checkin()
 						echo FAILED early exit indicates debugging
 						exit 1
 					fi
+                                        patt="t=\`mktemp\`"
+                                        patt="$patt *#"
+					if grep -n "$patt" `cat $t.changed_or_added`; then
+                                                echo FAILED disabled cleanup of temporary files indicates debugging
+						exit 1
+					fi
 				fi
 			;;
 		esac
