@@ -78,6 +78,17 @@ while [ -n "$1" ]; do
 done
 
 src_dir="$HOME/git/$repo_name"
+if [ ! -d $src_dir ]; then
+        case $src_dir in
+                */home|*/bin|*/emacs|*/bin_Linux|*/bin_win|*/git_util|*/data)
+                        git.clone `basename $src_dir`
+                ;;
+                *)
+                        echo "FAIL no $src_dir on disk and not sure how to get it" 1>&2
+                        exit 1
+                ;;
+        esac
+fi
 if [ ! -d .git ]; then
         echo "$0 could not find directory \".git\"" 1>&2
         if [ -z "$force_mode" ]; then
