@@ -1,3 +1,8 @@
+if [ "-in_dir" = "$1" ]; then
+        shift
+        cd "$1"
+        shift
+fi
 while [ 1 ]; do
         if [ -d .git ]; then
                 break
