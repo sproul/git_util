@@ -1,7 +1,7 @@
 # important that git_util come first
-$dp/git_util
-$dp/bin
-$dp/data
-$dp/emacs
-$dp/home
-$dx/t
+$dp/git/git_util
+$dp/git/bin
+$dp/git/data
+$dp/git/emacs
+$dp/git/home
+$dx/git/t
