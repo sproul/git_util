@@ -515,7 +515,6 @@ Test()
 }
 
 export PATH=$PATH:`dirname $0`
-. git.sync
 
 t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
 repo_name=''
