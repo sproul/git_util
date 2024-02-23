@@ -527,9 +527,8 @@ verbose_mode=''
 while [ -n "$1" ]; do
 	case "$1" in
 		a|-all)
-			for d in `cat $dp/.modified_repo_statuses`; do
-				git.up -in_dir $d
-			done
+                        cat $dp/.modified_repo_statuses | sed -e 's/^/git.up -in_dir /' > $t
+                        bash -x $t
 			exit
 		;;
 		-dir)
