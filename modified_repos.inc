@@ -23,6 +23,12 @@ git_util__modified_repos__Remove_from_list()
 git_util__modified_repos__Add_to_list()
 {
         proj=$1
+        case "$proj" in
+                qwickanalytics_semi_structured_data)
+                        return
+                ;;
+        esac
+
         if ! grep "^$proj$" $modified_repo_statuses_string_fn > /dev/null 2>&1; then
                 (
                 echo "$proj"

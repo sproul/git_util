@@ -280,7 +280,8 @@ git checkout $BRANCH
 exit
 git clone git@bitbucket.org:qwickrate/monroe.biz.git
 git clone git@bitbucket.org:qwickrate/qwickanalyticsscraper.git
-bx git.clone -pr insider_ownership_percent_rounding git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
+bx git.clone -pr python_lint_updates git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
+bx git.clone -pr LlmInteraction_object git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
 bx git.clone git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git development
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
