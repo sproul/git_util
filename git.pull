@@ -1,0 +1,40 @@
+:
+debug_mode=''
+dry_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -in_dir)
+                        shift
+                        cd $1
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                -x)
+                        set -x
+                        debug_mode=-x
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+branch=`git.branch`
+#git pull --rebase
+if git pull origin $branch; then
+	echo "OK git pull origin $branch" 1>&2
+else
+	echo "FAIL git pull origin $branch" 1>&2
+        exit 1
+fi
+exit
+bx $dp/git_util/git.pull 
