@@ -1,44 +1,95 @@
 :
+debug_mode=''
+dry_mode=''
+force_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+	case "$1" in
+		-dry)
+			dry_mode=-dry
+		;;
+		f|-force)
+			force_mode=-force
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		-x)
+			set -x
+			debug_mode=-x
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
+done
+
 # to use when we have a somehow damaged version of a git branch, which may contain valuable changes
 #
 # This script operates on the assumption that if we just have a fresh and current .git dir, then we can resolve all other difficulties.
 # Also it is nice to have the latest versions of stuff handy and ready to be merged in.
 proj_dir=$1
 if [ -z "$proj_dir" ]; then
-        proj_dir=$(pwd)
+	proj_dir=$(pwd)
 else
-        cd "$proj_dir"
+	cd "$proj_dir"
 fi
 proj=`basename $proj_dir`
 new_dir=/tmp/$proj
 if [ -d $new_dir ]; then
-        echo "$0: error: $new_dir already exists, what is it?" 1>&2
-        exit 1
+	if [ -n "$force_mode" ]; then
+		if rm -rf $new_dir; then
+			echo "OK rm -rf $new_dir" 1>&2
+		else
+			echo "FAIL rm -rf $new_dir" 1>&2
+			exit 1
+		fi
+	else
+		echo "$0: error: $new_dir already exists, what is it?" 1>&2
+		exit 1
+	fi
 fi
-if ! mkdir -p $new_dir; then
-        echo "$0: mkdir -p $new_dir failed, exiting..." 1>&2
-        exit 1
+if mkdir -p $new_dir; then
+	echo "OK mkdir -p $new_dir" 1>&2
+else
+	echo "FAIL mkdir -p $new_dir" 1>&2
+	exit 1
 fi
 . git.prep_auth.inc
 Prep_auth
-url=`grep 'url = ' $proj_dir/.git/config | sed -e 's;^[\t ]*url = ;;'`
+url=`grep 'url = ' $proj_dir/.git/config | sed -e 's;^[	 ]*url = ;;'`
 if ! cd $new_dir/..; then
-        echo "$0: cd $new_dir/.. failed, exiting..." 1>&2
-        exit 1
+	echo "$0: cd $new_dir/.. failed, exiting..." 1>&2
+	exit 1
 fi
 . proxy_configure.sh
-if ! git clone "$url"; then
-        echo "$0: git clone $url failed, exiting..." 1>&2
-        exit 1
+if git clone "$url"; then
+	echo "OK git clone $url" 1>&2
+else
+	echo "FAIL git clone $url" 1>&2
+	exit 1
 fi
 backup_dir=/tmp/.git
-rm -rf $backup_dir
-if ! mv $proj_dir/.git $backup_dir; then
-        echo "$0: mv $proj_dir/.git /tmp/.git failed, exiting..." 1>&2
-        exit 1
+if rm -rf $backup_dir; then
+	echo "OK rm -rf $backup_dir" 1>&2
+else
+	echo "FAIL rm -rf $backup_dir" 1>&2
+	exit 1
 fi
-if ! mv "$new_dir/.git" "$proj_dir/.git"; then
-        echo "$0: mv $new_dir/.git $proj_dir/.git failed, exiting..." 1>&2
+if mv $proj_dir/.git $backup_dir; then
+	echo "OK mv $proj_dir/.git $backup_dir" 1>&2
+else
+	echo "FAIL mv $proj_dir/.git $backup_dir" 1>&2
+	exit 1
+fi
+if mv "$new_dir/.git" "$proj_dir/.git"; then
+	echo "OK mv $new_dir/.git $proj_dir/.git" 1>&2
+else
+	echo "FAIL mv $new_dir/.git $proj_dir/.git" 1>&2
         exit 1
 fi
 difr $proj_dir $new_dir
