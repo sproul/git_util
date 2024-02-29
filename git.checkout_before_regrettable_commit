@@ -1,0 +1,28 @@
+:
+# Check if a commit hash is provided
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <commit-hash>"
+    exit 1
+fi
+
+# The commit hash of the bad commit
+BAD_COMMIT=$1
+
+# List all files affected by the bad commit
+# and checkout each file from the commit immediately before the bad commit
+git diff-tree --no-commit-id --name-only -r $BAD_COMMIT | 
+while read file; do
+        if git checkout $BAD_COMMIT^ -- "$file"; then
+                echo "OK git checkout $BAD_COMMIT^ -- $file" 1>&2
+        else
+                echo "FAIL git checkout $BAD_COMMIT^ -- $file" 1>&2
+                exit 1
+        fi
+done
+echo "OK checked out files preceding $BAD_COMMIT"
+difr
+echo "gu revert to version preceding $BAD_COMMIT"
+
+exit
+BAD_COMMIT=9b93f60
+cd $dp/git/bin/ && bx $dp/git/t/log/git.checkout_before_regrettable_commit 9b93f60
