@@ -8,64 +8,72 @@ new_mode=''
 rev=''
 verbose_mode=''
 while [ -n "$1" ]; do
-        case "$1" in
-                diff)
-                        # user prepended 'gr' to git diff output, e.g.,
-                        #       gr diff --git a/guide1209/canon_found.png b/guide1209/canon_found.png
-                        # strip away the debris to get the underlying file name, to make the command equivalent to
-                        #       gr guide1209/canon_found.png
-                        cmd=`sed -e 's;.* b/;git.revert1 ;' <<< $*`
-                        echo $cmd
-                        eval $cmd
-                        exit
-                ;;
-                -dry)
-                        dry_mode=-dry
-                ;;
-                -new)
-                        new_mode=-new
-                ;;
-                -q|-quiet)
-                        verbose_mode=''
-                ;;
-                -rev)
-                        shift
-                        rev="$1"
-                ;;
-                -v|-verbose)
-                        verbose_mode=-v
-                ;;
-                *)
-                        break
-                ;;
-        esac
-        shift
+	case "$1" in
+		diff)
+			# user prepended 'gr' to git diff output, e.g.,
+			#	gr diff --git a/guide1209/canon_found.png b/guide1209/canon_found.png
+			# strip away the debris to get the underlying file name, to make the command equivalent to
+			#	gr guide1209/canon_found.png
+			cmd=`sed -e 's;.* b/;git.revert1 ;' <<< $*`
+			echo $cmd
+			eval $cmd
+			exit
+		;;
+		-dry)
+			dry_mode=-dry
+		;;
+		-new)
+			new_mode=-new
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-rev)
+			shift
+			rev="$1"
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
 done
 
 
 fn="$1"
 if [ ! -f "$fn" ]; then
-        touch "$fn"
-        zfn=''
+	touch "$fn"
+	zfn=''
 else
-        if [ -n "$new_mode" ]; then
-                zfn="$fn.new"
-        else
-                zfn="/tmp/`basename $fn`"
-        fi
-        echo.clean "cp -p \"$fn\" \"$zfn\""
-        cp       -p "$fn" "$zfn"
+	if [ -n "$new_mode" ]; then
+		zfn="$fn.new"
+	else
+		zfn="/tmp/`basename $fn`"
+	fi
+	echo.clean "cp -p \"$fn\" \"$zfn\""
+	cp	 -p "$fn" "$zfn"
 fi
 if [ $rev ]; then
-        echo "git restore -s $rev \"$fn\""
-        git       restore -s $rev "$fn"
+        if git restore -s $rev "$fn"; then
+		echo "OK git restore -s $rev $fn" 1>&2
+	else
+		echo "FAIL git restore -s $rev $fn" 1>&2
+                exit 1
+        fi
 else
-        echo.clean "git checkout \"$fn\""
-        git       checkout "$fn"
+	if git checkout HEAD -- "$fn"; then
+		echo "OK git checkout HEAD -- $fn" 1>&2
+	else
+		echo "FAIL git checkout HEAD -- $fn" 1>&2
+		exit 1
+	fi
 fi
 if [ $zfn ]; then
-        echo.clean "diff \"$fn\"  \"$zfn\""
-        diff       "$fn"  "$zfn"
+	echo.clean "diff \"$zfn\"  \"$fn\""
+	diff "$zfn"  "$fn"
 fi
 exit
 cksum $dp/home/.profile /tmp/.profile ~/k
