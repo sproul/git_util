@@ -1,0 +1,35 @@
+:
+t=`mktemp`; trap "rm $t*" EXIT
+if [ "$#" -ne 2 ]; then
+        echo "Usage: $0 <file-path> <hash-value>"
+        exit 1
+fi
+fn=$1
+blob_hash="$2"
+if [ ! -f "$fn" ]; then
+        echo "FAIL: expected file at \"$fn\"" 1>&2
+        exit 1
+fi
+if [ -z "$blob_hash" ]; then
+        echo "FAIL: expected a value for \"blob_hash\" but saw nothing" 1>&2
+        exit 1
+fi
+cd `dirname $fn`
+fn=`basename $fn`
+INDEX=0
+
+git.log.SHA.ls $fn > $t.SHAs
+for SHA in `tac $t.SHAs`; do
+        BLOB_HASH=`git rev-parse "$SHA":"$fn"`
+        if [ "$BLOB_HASH" = "$blob_hash" ]; then
+                echo $INDEX
+                exit 0
+        fi
+        INDEX=$((INDEX - 1))  # Decrement the index for each older version
+done
+
+echo "FAIL could not find hash in the file's change history." 1>&2
+exit 1
+
+exit
+bx $dp/git_util/git.hash_value_to_negative_SHA_index_with_newest_version_considered_0 $dp/data/n 633e186fd4e6debb59855b1bfdd35ee05921e654

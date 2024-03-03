@@ -1,0 +1,11 @@
+:
+fn=$1
+if [ ! -f "$fn" ]; then
+        echo "FAIL: expected file at \"$fn\"" 1>&2
+        exit 1
+fi
+cd `dirname $fn`
+sha=`git hash-object "$fn"`
+echo $sha
+exit
+$dp/git_util/git.SHA.for_file $dp/data/n

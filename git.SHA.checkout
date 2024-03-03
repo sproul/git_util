@@ -1,0 +1,11 @@
+:
+SHA=$1
+fn=$2
+cd `dirname $fn`
+if git checkout $SHA -- "$file"; then
+	echo "OK git checkout $SHA -- $file" 1>&2
+else
+	echo "FAIL git checkout $SHA -- $file" 1>&2
+        exit 1
+fi
+exit

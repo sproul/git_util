@@ -1,0 +1,57 @@
+:
+debug_mode=''
+dry_mode=''
+verbose_mode=''
+while [ -n "$1" ]; do
+	case "$1" in
+		-dry)
+			dry_mode=-dry
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		-x)
+			set -x
+			debug_mode=-x
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
+done
+fn=$1
+if [ -z "$fn" ]; then
+	echo "FAIL: expected a value for \"fn\" but saw nothing" 1>&2
+	exit 1
+fi
+if [ ! -f "$fn" ]; then
+	echo "FAIL: expected file at \"$fn\"" 1>&2
+	exit 1
+fi
+# Validate N is an integer
+if ! [[ $N =~ ^[0-9]+$ ]]; then
+	echo "Error: N must be an integer."
+	exit 1
+fi
+
+# Get the commit hash N commits before the current for the specified file
+COMMIT_HASH=$(git log -n $((N+1)) --pretty=format:%H -- $FILE | tail -1)
+
+# Check if COMMIT_HASH has a value
+if [ -z "$COMMIT_HASH" ]; then
+	echo "FAIL could not find a commit for $FILE $N revisions back."
+	exit 1
+fi
+
+if git checkout $COMMIT_HASH -- $FILE; then
+        echo "OK git checkout $COMMIT_HASH -- $FILE: checked out $FILE from $N revisions back." 1>&2
+else
+        echo "FAIL git checkout $COMMIT_HASH -- $FILE: could not check out $FILE from $N revisions back."" 1>&2
+        exit 1
+fi
+exit
+bx $dp/git_util/git.undo.commit.prepare_by_checking_out.file1
