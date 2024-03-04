@@ -1,0 +1,18 @@
+         I am working on a git project where there is a development branch. I made PR based on development, called LlmInteraction_object. In the resulting codeline, when I run 'git branch' I get the following output:
+        * LlmInteraction_object
+          development
+         Now I have finished my feature, but I cannot check it in because of git conflicts. List the steps I should follow to resolve the conflicts.
+        
+        
+cd $gax
+bx git.clone git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git development
+cd $HOME/git/qwickanalytics_semi_structured_data
+git branch
+git checkout development
+git pull origin development
+git checkout LlmInteraction_object
+git merge development
+# merged with my latest
+git add .
+git commit -m 'merge with dev, add debug objects'
+git push origin LlmInteraction_object

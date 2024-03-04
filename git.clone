@@ -279,9 +279,10 @@ git checkout $BRANCH
 
 exit
 git clone git@bitbucket.org:qwickrate/monroe.biz.git
+git.clone https://nsproul97@bitbucket.org/qwickrate/monroe.biz.git
 git clone git@bitbucket.org:qwickrate/qwickanalyticsscraper.git
 bx git.clone -pr python_lint_updates git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
-bx git.clone -pr LlmInteraction_object git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
+bx git.clone -f -pr LlmInteraction_object git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
 bx git.clone git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git development
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/public-maven-repo.git
 bx $dp/git_util/git.clone git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
@@ -361,7 +362,6 @@ bx $dp/git_util/git.clone git@github.com/clj-commons/aleph.git
 git.clone https://github.com/clj-commons/aleph.git
 git.clone https://github.com/clj-commons/aleph.git
 git.clone https://github.com/lsproul/flight_planner.git
-git.clone https://nsproul97@bitbucket.org/qwickrate/monroe.biz.git
 git.clone git@orahub.oci.oraclecorp.com:mike.gilbode/messageproducer.git
 git.clone git@orahub.oci.oraclecorp.com:paas-innovationhub-central/diagnostic-tool.git
 git.clone git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/bugdb-restclient.git
@@ -370,7 +370,6 @@ git.clone	      git@orahub.oci.oraclecorp.com:paascicd/authz 'OCI_deployment'
 git.clone	      git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
 git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git
 git.clone     git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
-git.clone https://nsproul97@bitbucket.org/qwickrate/qagpt.git
 git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git 'phx-oci'	#	DOES NOT WORK due to ssl cert nonsense
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'add_idmlcmfa_versions'
