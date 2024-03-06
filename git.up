@@ -184,6 +184,12 @@ Checkin()
                                                 echo FAILED looks like temporarily disabled python tests, indicates debugging
 						exit 1
 					fi
+                                        patt="#"
+                                        patt="${patt}trap"
+					if grep -n "$patt" `cat $t.changed_or_added`; then
+                                                echo FAILED looks like temporarily disabled tmp file cleanup, indicates debugging
+						exit 1
+					fi
 				fi
 			;;
 		esac
