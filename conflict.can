@@ -16,3 +16,17 @@ git merge development
 git add .
 git commit -m 'merge with dev, add debug objects'
 git push origin LlmInteraction_object
+
+
+
+
+
+
+
+
+Alternatively:
+manually fix merge in file 
+git add                    src/main/resources/python/ai_extractor/llm.py
+git commit                 src/main/resources/python/ai_extractor/llm.py -m 'resolve merge'
+git rebase --continue
+git push origin branch_name
