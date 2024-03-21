@@ -169,7 +169,9 @@ else
 	cd $git_dir
 fi
 
-save_old_as_backup
+if [ -d $git_dir/$project_name ]; then
+        save_old_as_backup
+fi
 
 if [ -n "$branch" ]; then
 	branch_marker="$git_dir/$project_name.BRANCH=$branch"
