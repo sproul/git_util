@@ -183,25 +183,25 @@ Checkin()
 				if [ -s $t.changed_or_added ]; then
 					patt="EARLY"
 					patt="$patt.*exit"
-					if grep -n "$patt" `cat $t.changed_or_added`; then
+                                        if grep -n "$patt" `cat $t.changed_or_added` /dev/null; then
 						echo FAILED early exit indicates debugging
 						exit 1
 					fi
 					patt="t=\`mktemp\`"
 					patt="$patt *#"
-					if grep -n "$patt" `cat $t.changed_or_added`; then
+                                        if grep -n "$patt" `cat $t.changed_or_added` /dev/null; then
 						echo FAILED disabled cleanup of temporary files indicates debugging
 						exit 1
 					fi
 					patt="def"
 					patt="$patt xtest"
-					if grep -n "$patt" `cat $t.changed_or_added`; then
+                                        if grep -n "$patt" `cat $t.changed_or_added` /dev/null; then
 						echo FAILED looks like temporarily disabled python tests, indicates debugging
 						exit 1
 					fi
 					patt="#"
 					patt="${patt}trap"
-					if grep -n "$patt" `cat $t.changed_or_added`; then
+                                        if grep -n "$patt" `cat $t.changed_or_added` /dev/null; then
 						echo FAILED looks like temporarily disabled tmp file cleanup, indicates debugging
 						exit 1
 					fi
