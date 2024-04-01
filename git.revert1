@@ -50,11 +50,11 @@ if [ ! -f "$fn" ]; then
 else
 	if [ -n "$new_mode" ]; then
 		zfn="$fn.new"
+                echo.clean "cp -p \"$fn\" \"$zfn\""
+                cp	 -p "$fn" "$zfn"
 	else
-		zfn="/tmp/`basename $fn`"
+                rm.safe "$fn"
 	fi
-	echo.clean "cp -p \"$fn\" \"$zfn\""
-	cp	 -p "$fn" "$zfn"
 fi
 if [ $rev ]; then
         if git restore -s $rev "$fn"; then
