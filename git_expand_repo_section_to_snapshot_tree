@@ -1,0 +1,23 @@
+#!/bin/bash
+process_file()
+{
+        local file="$1"
+        # Iterate over each commit that modified the file
+        git log --pretty=format:"%H" -- "$file" |
+        while read commit; do
+                # Extract the timestamp for the commit
+                local timestamp=$(git show -s --format=%ci "$commit" | sed 's/[- :]//g' | cut -c1-15)
+                # Construct new filename with timestamp
+                local newfile="$(dirname "$file")/$(basename "$file" .${file##*.})-$timestamp.${file##*.}"
+                # Retrieve and save the file version
+                git show "$commit":"$file" > "$newfile"
+                echo "Saved $newfile"
+        done
+}
+
+export -f process_file
+
+# Find files in the specified directory and process each
+find . -type f ! -name "*.sh" -exec bash -c 'process_file "$0"' {} \;
+exit
+bx $dp/git_util/git_expand_repo_section_to_snapshot_tree 
