@@ -587,7 +587,7 @@ while [ -n "$1" ]; do
 			cd	 $proj_dir
 		;;
                 -pull_all)
-                        for proj_dir in bin bin_$OS data emacs git_util fin_doc_parser; do
+                        for proj_dir in bin bin_$OS data doc emacs git_util fin_doc_parser t; do
                                 echo "git.up -in_dir $dp/$proj_dir"
                                 git.up       -in_dir $dp/$proj_dir
                         done
