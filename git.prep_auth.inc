@@ -50,7 +50,7 @@ Swap_gitconfigs()
         email=`grep 'email =' $HOME/.gitconfig | sed -e 's/.* = //'`
         if [ -f $HOME/.gh.$email ]; then
                 cp $HOME/.gh.$email $HOME/.gh
-        else
+        elif [ -f $HOME/.gh.$email ]; then
                 cp $HOME/.gh.global $HOME/.gh
         fi
         . proxy_configure.sh
@@ -85,7 +85,7 @@ Prep_auth()
                 fi
                 cat  $gc | sed -e "s;^\turl = https://\\(.*sproul\\):.*;\turl = git@github.com:\\1/$xrepo_name.git;" > $safe_gc
                 echo $safe_gc >> $end_of_process_safe_gc_list
-                #trap "Restore_clean_configs" EXIT
+                #t rap "Restore_clean_configs" EXIT
         elif grep "url = git@github.com:.*sproul/" $gc > $t 2>&1; then
                 cp $gc $safe_gc
         fi
@@ -120,7 +120,7 @@ Prep_auth()
                         # the normal case: temporarily insert gc value for this transaction
                         mv $gc $safe_gc
                         echo $safe_gc >> $end_of_process_safe_gc_list
-                        #trap "Restore_clean_configs" EXIT
+                        #t rap "Restore_clean_configs" EXIT
                         cat $safe_gc | sed -e "s;^\turl =.*;\turl = https://$gh_user:`cat $hgh`@github.com/$gh_user/$xrepo_name.git;" > $gc
                 fi
         fi
