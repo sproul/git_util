@@ -205,6 +205,12 @@ Checkin()
 						echo FAILED looks like temporarily disabled tmp file cleanup, indicates debugging
 						exit 1
 					fi
+					patt="#"
+					patt="${patt}answer.merge"
+                                        if grep -n "$patt" `cat $t.changed_or_added` /dev/null; then
+                                                echo FAILED looks like temporarily disabled LLM querying, indicates debugging
+						exit 1
+					fi
 				fi
 			;;
 		esac
