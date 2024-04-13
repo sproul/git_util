@@ -37,6 +37,12 @@ while [ -n "$1" ]; do
         shift
 done
 
+case `pwd` in
+        $dp/git/qwickanalytics_semi_structured_data)
+                echo "WARN not supported for `pwd`" 1>&2
+                exit 1
+        ;;
+esac
 prune.midnight_files
 git status --short > $t.mid
 
