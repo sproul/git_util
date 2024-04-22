@@ -38,7 +38,7 @@ while [ -n "$1" ]; do
 done
 
 case `pwd` in
-        $dp/git/qwickanalytics_semi_structured_data)
+        $dp/git/qwickanalytics_semi_structured_data*)
                 echo "WARN not supported for `pwd`" 1>&2
                 exit 1
         ;;
