@@ -1,0 +1,152 @@
+#!/bin/bash
+
+# Function to save a version of the file from a specific commit
+save_commit_version_to_file()
+{
+	local commit=$1
+	local relative_path=$2
+
+	# Format the commit date for the filename
+	commit_date=$(git show -s --format=%ci "$commit" | awk '{ print $1"-"$2 }' | tr -d '-' | tr ':' '.')
+
+	# Create a versioned filename
+	local filename=$(basename "$relative_path")
+	local dirname=$(dirname "$relative_path")
+	local versioned_filename="$snapshot_root/${dirname}/${filename}.${commit_date}"
+        echo EARLY $versioned_filename;exit
+
+	if [ -f "$versioned_filename" ]; then
+		echo "OK $versioned_filename previously retrieved" 1>&2
+	else
+                if [ -n "$dry_mode" ]; then
+                        echo "git show ${commit}:${relative_path} > $versioned_filename" 1>&2
+                else
+                        if git show "${commit}:${relative_path}" > "${versioned_filename}"; then
+                                echo "OK $versioned_filename retrieved" 1>&2
+                        else
+                                echo "FAIL git show ${commit}:${relative_path}" 1>&2
+                                cat "${versioned_filename}"
+                                return 1
+                        fi
+		fi
+	fi
+}
+
+Find_and_process_files()
+{
+	find "$FOLDER_PATH" $TIME_ARG -type f |
+	while read -r file; do
+		# Extract the relative path of the file from the repo's root
+                if relative_path=$(git ls-files --full-name "$file"); then
+			echo "OK relative_path=$(git ls-files --full-name $file)" 1>&2
+		else
+			echo "FAIL relative_path=$(git ls-files --full-name $file)" 1>&2
+                        return 1
+                fi
+		if [ -z "$relative_path" ]; then
+                        echo "OK apparently $file is gitignored (as evidenced by git ls-files returning no output), so will skip" 1>&2
+			continue
+		fi
+		if git log --pretty=format:"%H" -- "$relative_path" > $t.commits; then
+			echo "OK git log to get all commits affecting $relative_path" 1>&2
+			if [ ! -s $t.commits ]; then
+				echo "FAIL found no commits for $relative_path" 1>&2
+				return 1
+			fi
+		else
+			echo "FAIL git log --pretty=format:%H -- $relative_path" 1>&2
+			cat $t.commits
+			return 1
+		fi
+                if [ ! -s $t.commits ]; then
+                        echo "FAIL no commits from $relative_path" 1>&2
+                        return 1
+                fi
+                for commit in `cat $t.commits`; do
+			if ! save_commit_version_to_file "$commit" "$relative_path"; then
+				return 1
+			fi
+		done
+	done
+}
+
+Usage()
+{
+	echo "Usage: ./git_versions_instantiated_in_snapshot_tree <folder-path>"
+}
+
+Ck_folder()
+{
+        cd $FOLDER_PATH || return 1
+        
+        # Check if folder path is provided
+        if [[ -z "$FOLDER_PATH" ]]; then
+                Usage
+                return 1
+        fi
+        case "$FOLDER_PATH" in
+                $dp/*)
+                        snapshot_root=$dp/.snapshot
+                ;;
+                *)
+                        echo "FAIL not sure what snapshot to populate for\"$FOLDER_PATH\"" 1>&2
+                        return 1
+                ;;
+        esac
+        
+        # Verify if the provided path is within a git repository
+        if ! git -C "$FOLDER_PATH" rev-parse; then
+                echo "Error: The specified folder is not within a Git repository."
+                return 1
+        fi
+        
+        # Navigate to the repo's root directory
+        cd "$(git -C "$FOLDER_PATH" rev-parse --show-toplevel)" || return 1
+}
+
+debug_mode=''
+dry_mode=''
+MARKER_FILE="/tmp/.git_versions_instantiated_in_snapshot_tree_last_run.$USER.marker"
+refresh_mode=''
+t=`mktemp`; trap "rm $t*" EXIT
+verbose_mode=''
+while [ -n "$1" ]; do
+	case "$1" in
+		-dry)
+			dry_mode=-dry
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-r|-refresh)
+			refresh_mode=-refresh
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		-x)
+			set -x
+			debug_mode=-x
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
+done
+FOLDER_PATH=$1
+Ck_folder "$FOLDER_PATH" || exit 1
+
+TIME_ARG=""
+if [ -n "$refresh_mode" ]; then
+	rm -f "$MARKER_FILE"
+elif [[ -f "$MARKER_FILE" ]]; then
+	TIME_ARG="-newer $MARKER_FILE"
+fi
+
+if Find_and_process_files; then
+	touch "$MARKER_FILE"
+fi
+
+exit
+bx $dp/git/bin/git_versions_instantiated_in_snapshot_tree -dry -refresh /Users/x/dp/data/gmail
