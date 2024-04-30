@@ -376,5 +376,6 @@ git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git 'phx-
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'add_idmlcmfa_versions'
 git.clone https://github.com/langchain-ai/langchain.git
+git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
 exit
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
