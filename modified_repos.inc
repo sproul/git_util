@@ -85,4 +85,3 @@ git_util__modified_repos_Ls()
 		fi
 	fi
 }
-export PS1="\d \A \$( git_util__modified_repos_Ls )\h/$ADE_VIEW_NAME/\u \!\$ "
