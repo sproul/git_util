@@ -15,6 +15,7 @@ dp_mode=''
 dry_mode=''
 force_mode=''
 pr=''
+pr_base_branch='development'
 src_chi_fns=''
 to_branch=''
 while [ -n "$1" ]; do
@@ -47,8 +48,12 @@ while [ -n "$1" ]; do
 		-pr)
                         shift
 			pr="$1"
-                        branch=development
+                        branch=$pr_base_branch
 		;;
+                -pr_base_branch)
+                        shift
+                        pr_base_branch="$1"
+                ;;
 		-to|-to_branch)
 			shift
 			to_branch="$1"
