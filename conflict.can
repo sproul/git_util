@@ -1,3 +1,4 @@
+multiple_stock_classes
          I am working on a git project where there is a development branch. I made PR based on development, called LlmInteraction_object. In the resulting codeline, when I run 'git branch' I get the following output:
         * LlmInteraction_object
           development
@@ -11,13 +12,14 @@ cd $HOME/git/qwickanalytics_semi_structured_data
 git branch
 git checkout development
 git pull origin development
-git checkout LlmInteraction_object
+git checkout $pr_name
 git merge development
+git pull origin $pr_name
 # merged with my latest
 git add .
 git commit -m 'merge with dev'
 git commit -m 'merge with dev, add debug objects'
-git push origin LlmInteraction_object
+git push origin $pr_name
 
 
 
