@@ -1,0 +1,44 @@
+:
+debug_mode=''
+dry_mode=''
+t=`mktemp`; trap "rm $t*" EXIT
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                -x)
+                        set -x
+                        debug_mode=-x
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+branch=`git.branch`
+cwd=`pwd`
+case $cwd in
+        *.$branch)
+                dir_incorporating_branch_name=`pwd`
+                dir_not_incorporating_branch_name=`pwd | sed -e "s;\.$branch$;;"`
+                rename.loud $dry_mode $dir_incorporating_branch_name $dir_not_incorporating_branch_name
+        ;;
+        *)
+                dir_incorporating_branch_name=`pwd`.$branch
+                dir_not_incorporating_branch_name=`pwd`
+                rename.loud $dry_mode $dir_not_incorporating_branch_name $dir_incorporating_branch_name
+        ;;
+esac
+exit
+cd $HOME/git/qwickanalytics_semi_structured_data
+bx $dp/git_util/git.branch.name_incorporation.toggle -dry

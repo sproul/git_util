@@ -1,0 +1,46 @@
+:
+debug_mode=''
+dry_mode=''
+t=`mktemp`; trap "rm $t*" EXIT
+verbose_mode=''
+while [ -n "$1" ]; do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                -x)
+                        set -x
+                        debug_mode=-x
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+
+src=$1
+dest=$2
+if [ -d "$dest" ]; then
+	echo "FAIL: directory \"$dest\" already exists" 1>&2
+	exit 1
+fi
+cd ..
+if [ -n "$dry_mode" ]; then
+	echo "rename $src $dest"
+else
+        if mv $src $dest; then
+		echo "OK mv $src $dest" 1>&2
+	else
+		echo "FAIL mv $src $dest" 1>&2
+                exit 1
+        fi
+fi
+exit
+bx $dp/git_util/rename.loud -dry $HOME/git/qwickanalytics_semi_structured_data $HOME/git/qwickanalytics_semi_structured_data.development
