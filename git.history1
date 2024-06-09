@@ -1,0 +1,6 @@
+:
+fn=$1
+cd `dirname $fn`
+git log --pretty=format:"%h %ad | %s%d [%an]" --date=local -- $fn
+exit
+bx $dp/git_util/git.history1 $dp/git/sys-eng/pipeline-shell-scripts/generic/CheckForShiphome.sh
