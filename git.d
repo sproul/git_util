@@ -39,8 +39,9 @@ done
 
 case `pwd` in
         $dp/git/qwickanalytics_semi_structured_data*)
-                echo "WARN not supported for `pwd`" 1>&2
-                exit 1
+                echo "WARN difr, not asking git" 1>&2
+                difr
+                exit 0
         ;;
 esac
 prune.midnight_files
