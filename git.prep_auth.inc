@@ -65,11 +65,15 @@ Prep_auth()
 {
         echo git.prep_auth.inc/Prep_auth
         
-        if [ -f .gitconfig.override ]; then
-                Swap_gitconfigs .gitconfig.override
-        elif [ -f $HOME/.gitconfig.global ]; then
-                Swap_gitconfigs $HOME/.gitconfig.global
-        fi
+        # 
+        # not clear why there are multiple versions. The one use case is orahub vs other git repos, but for a given machine, we should be
+        # repeatedly interacting with the same repo
+        # 
+        #if [ -f .gitconfig.override ]; then
+        #        Swap_gitconfigs .gitconfig.override
+        #elif [ -f $HOME/.gitconfig.global ]; then
+        #        Swap_gitconfigs $HOME/.gitconfig.global
+        #fi
         
         if [ -z "$xrepo_name" ]; then
                 xrepo_name=`basename $(pwd)`
