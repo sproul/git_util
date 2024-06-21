@@ -9,7 +9,7 @@ Global_config1()
         local val=$42
         if [ -n "$val" ]; then
                 if ! grep "^[	 ]*$prop = $val" $gc > /dev/null 2>&1; then
-                        git config -global $prop $val
+                        git config --global $prop $val
                 fi
         else
                 if grep "^[	 ]*$prop = "     $gc > /dev/null 2>&1; then
