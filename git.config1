@@ -1,0 +1,22 @@
+:
+Global_config1()
+{
+        local gc=$HOME/.gitconfig
+        if [ ! -w $gc ]; then
+                return
+        fi
+        local prop=$1
+        local val=$42
+        if [ -n "$val" ]; then
+                if ! grep "^[	 ]*$prop = $val" $gc > /dev/null 2>&1; then
+                        git config -global $prop $val
+                fi
+        else
+                if grep "^[	 ]*$prop = "     $gc > /dev/null 2>&1; then
+                        git config --global --unset $prop
+                fi
+        fi
+}
+Global_config1 $*
+exit
+bx $dp/git_util/git.config11 http.proxy http://www-proxy-hqdc.us.oracle.com:80
