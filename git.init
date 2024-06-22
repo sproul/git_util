@@ -15,13 +15,13 @@ case $OS in
                 git add .
 
                 if orcl.on_vpn; then
-                        git config --global user.email "nelson.sproul@oracle.com"
+                        git.config1 user.email "nelson.sproul@oracle.com"
                 else
-                        git config --global user.email "nelson.sproul@gmail.com"
+                        git.config1 user.email "nelson.sproul@gmail.com"
                 fi
-                git config --global user.name "Nelson Sproul"
-                git config --global core.filemode false
-                git config --global core.autocrlf false
+                git.config1 user.name "Nelson Sproul"
+                git.config1 core.filemode false
+                git.config1 core.autocrlf false
         ;;
         *)
                 root.required

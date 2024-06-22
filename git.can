@@ -4,8 +4,8 @@
 # https://wiki.duraspace.org/display/FCREPO/Git+Quick+Start+Guide
 # http://niczsoft.com/2010/03/git-quick-start/
 # http://apice.unibo.it/xwiki/bin/view/TuCSoN/Git
-git config --global user.email "nelson.sproul@gmail.com"
-git config --global user.name "Nelson Sproul"
+git.config1 user.email "nelson.sproul@gmail.com"
+git.config1 user.name "Nelson Sproul"
 echo done on o10
 cd $DROP
 git init

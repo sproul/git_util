@@ -55,9 +55,9 @@ Swap_gitconfigs()
         fi
         . proxy_configure.sh
         if [ -z "$http_proxy" ]; then
-                git config --global --unset http.proxy
+                git.config1 --unset http.proxy
         else
-                git config --global         http.proxy $http_proxy
+                git.config1         http.proxy $http_proxy
         fi
 }
 

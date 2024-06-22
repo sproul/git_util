@@ -6,7 +6,7 @@ Global_config1()
                 return
         fi
         local prop=$1
-        local val=$42
+        local val=$2
         if [ -n "$val" ]; then
                 if ! grep "^[	 ]*$prop = $val" $gc > /dev/null 2>&1; then
                         git config --global $prop $val

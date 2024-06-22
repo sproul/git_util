@@ -1,7 +1,7 @@
 #!/bin/sh
 git config core.autocrlf false
 # how to make this permanent? ....
-git config --global --unset diff.external
+git.config1 --unset diff.external
 # http://ulf.zeitform.de/en/documents/git-ediff.html
 # http://emacswiki.org/emacs/Git
 # http://alexott.net/en/writings/emacs-vcs/EmacsGit.html
