@@ -1,8 +1,10 @@
 :
+dir=$1
+if [ -n "$dir" ]; then
+        if [ ! -d "$dir" ]; then
+                echo "FAIL could not find directory $dir" 1>&2
+                exit 1
+        fi
+        cd $dir
+fi
 git branch | tail -1 | sed -e 's/^\* //' -e 's/^ *//'
-#branch=`git symbolic-ref --short HEAD`
-#if [ -z "$branch" ]; then
-#        #branch=master
-#        branch=main
-#fi
-#echo $branch
