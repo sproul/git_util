@@ -193,6 +193,12 @@ Checkin()
                                                 echo FAILED X + test indicates disabling tests for debug
 						exit 1
 					fi
+                                        patt="el"
+					patt="${patt}sov"
+                                        if grep -nr "$patt" `cat $t.changed_or_added` /dev/null; then
+                                                echo FAILED X + test indicates sensitivity
+						exit 1
+					fi
 					patt="t=\`mktemp\`"
 					patt="$patt *#"
                                         if grep -nr "$patt" `cat $t.changed_or_added` /dev/null; then
