@@ -1,0 +1,26 @@
+#!/bin/bash
+set -o pipefail
+script_dir=$(dirname $(which $0)|sed -e 's;^/$;;')	# if the containing dir is /, scripting goes better if script_dir is ''
+commit=$1
+if [ -z "$commit" ]; then
+	echo "FAIL: expected a value for \"commit\" but saw nothing" 1>&2
+	exit 1
+fi
+t=`mktemp`; trap "rm $t*" EXIT
+if git show > $t; then
+	echo "OK git show" 1>&2
+else
+	echo "FAIL git show" 1>&2
+	cat $t
+	exit 1
+fi
+echo git.show called in `pwd`
+if ruby -w $script_dir/git.show.rb -commit $commit $t; then
+	echo "OK ruby -w $script_dir/git.show.rb -commit $commit $t" 1>&2
+else
+	echo "FAIL ruby -w $script_dir/git.show.rb -commit $commit $t" 1>&2
+        exit 1
+fi
+ruby -w $script_dir/git.show.rb -commit $commit $t
+exit
+bx $dp/git_util/git.show fdbfa17c39aeea28e4b20825157ce839936e9dc5 > $t ; head $t

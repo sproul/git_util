@@ -1,48 +1,82 @@
 #!/bin/bash
 debug_mode=''
 dry_mode=''
-grep_mode='-G'          #       regex
+grep_mode='-G'		#	regex
 verbose_mode=''
 while [ -n "$1" ]; do
-        case "$1" in
-                -dry)
-                        dry_mode=-dry
-                ;;
-                -q|-quiet)
-                        verbose_mode=''
-                ;;
-                -s|-fgrep)
-                        grep_mode=-S    # fixed string
-                ;;
-                -v|-verbose)
-                        verbose_mode=-v
-                ;;
-                -x)
-                        set -x
-                        debug_mode=-x
-                ;;
-                *)
-                        break
-                ;;
-        esac
-        shift
+	case "$1" in
+		-dry)
+			dry_mode=-dry
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-s|-fgrep)
+			grep_mode=-S	# fixed string
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		-x)
+			set -x
+			debug_mode=-x
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
 done
 patt="$1"
-shift
-
-target=$1
-if [ -f "$target" ]; then
-        target_dir=`dirname $target`
-elif [ ! -d "$target" ]; then
-        echo "FAIL cannot find $target" 1>&2
-        exit 1
-else
-        target_dir=$target
+if [ -z "$patt" ]; then
+	echo "FAIL: expected a value for \"patt\" but saw nothing" 1>&2
+	exit 1
 fi
-echo "cd $target_dir"
-cd       $target_dir
+shift
+if [ -z "$t" ]; then
+	t=/tmp/git.grep.$USER
+fi
+target=$1
+target_arg=""
+if [ -n "$target" ]; then
+	if [ -f "$target" ]; then
+		target_dir=`dirname $target`
+		target_arg="-- $target"
+	elif [ ! -d "$target" ]; then
+		echo "FAIL cannot find $target" 1>&2
+		exit 1
+	else
+		target_dir=$target
+	fi
+fi
+if [ -d "$target_dir" ]; then
+        echo "cd $target_dir"
+        cd	 $target_dir
+fi
 
-echo "git log -p $grep_mode \"$patt\""
-git       log -p $grep_mode "$patt"
+if git               log -S"$patt" --pickaxe-regex -i $target_arg > $t; then
+        echo "OK git log  -S$patt  --pickaxe-regex -i $target_arg" 1>&2
+else
+	echo "FAIL git	     log -S$patt   --pickaxe-regex -i $target_arg" 1>&2
+        cat $t
+        exit 1
+fi
+(
+cat $t | tr '\n' ' ' | perl -pe 's/commit/\ncommit/' | sed -e /^$/d -e 's/ *$//'
+echo ''
+) > $t.commits
+if [ ! -s $t.commits ]; then
+        echo no match
+        exit 1
+fi
+honkat -label commits $t.commits
+git_grep_output=/tmp/git.grep.$USER.tmp
+while read commit sha rest; do
+        git.show $sha
+done < $t.commits > $git_grep_output
+g1 -i "$patt" $git_grep_output
+
 exit
 $dp/git_util/git.grep ldap $dp/git/sys-eng/pipeline-shell-scripts/fmwtools/fmwtools.sh
+exit
+bx $dp/git_util/git.grep Minna

@@ -1,0 +1,14 @@
+#!/bin/bash
+# print the version of the file referenced to stdout
+set -o pipefail
+sha=$1
+relative_fn=$2
+dir=$3
+if [ -n "$dir" ]; then
+        cd $dir
+fi
+. git.find_root
+git show $sha:$relative_fn
+
+exit
+git.show1 fdbfa17c39aeea28e4b20825157ce839936e9dc5 facts/ai.facts $dp/git/doc/facts | head 
