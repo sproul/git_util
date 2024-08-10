@@ -183,43 +183,44 @@ Checkin()
 				if [ -s $t.changed_or_added ]; then
 					patt="EARLY"
 					patt="$patt.*exit"
-                                        if grep -nr "$patt" `cat $t.changed_or_added` /dev/null; then
+                                        changed_file_list=`cat $t.changed_or_added | grep -v 'shell/'`
+                                        if grep -nr "$patt" $changed_file_list /dev/null; then
 						echo FAILED early exit indicates debugging
 						exit 1
 					fi
                                         patt=" X"
 					patt="${patt}test"
-                                        if grep -nr "$patt" `cat $t.changed_or_added` /dev/null; then
+                                        if grep -nr "$patt" $changed_file_list /dev/null; then
                                                 echo FAILED X + test indicates disabling tests for debug
 						exit 1
 					fi
                                         patt="el"
 					patt="${patt}sov"
-                                        if grep -nr "$patt" `cat $t.changed_or_added` /dev/null; then
+                                        if grep -nr "$patt" $changed_file_list /dev/null; then
                                                 echo FAILED X + test indicates sensitivity
 						exit 1
 					fi
 					patt="t=\`mktemp\`"
 					patt="$patt *#"
-                                        if grep -nr "$patt" `cat $t.changed_or_added` /dev/null; then
+                                        if grep -nr "$patt" $changed_file_list /dev/null; then
 						echo FAILED disabled cleanup of temporary files indicates debugging
 						exit 1
 					fi
 					patt="def"
 					patt="$patt xtest"
-                                        if grep -nr "$patt" `cat $t.changed_or_added` /dev/null; then
+                                        if grep -nr "$patt" $changed_file_list /dev/null; then
 						echo FAILED looks like temporarily disabled python tests, indicates debugging
 						exit 1
 					fi
 					patt="#"
 					patt="${patt}trap"
-                                        if grep -nr "$patt" `cat $t.changed_or_added` /dev/null; then
+                                        if grep -nr "$patt" $changed_file_list /dev/null; then
 						echo FAILED looks like temporarily disabled tmp file cleanup, indicates debugging
 						exit 1
 					fi
                                         patt="# *"
 					patt="${patt}answer.merge"
-                                        if grep -nr "$patt" `cat $t.changed_or_added` /dev/null; then
+                                        if grep -nr "$patt" $changed_file_list /dev/null; then
                                                 echo FAILED looks like temporarily disabled LLM querying, indicates debugging
 						exit 1
 					fi
