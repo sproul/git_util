@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Commit SHA
+COMMIT_SHA="$1"
+
+# Directory to save the files
+DEST_DIR="/tmp/git.commit.dif"
+src_dir=`pwd`
+
+rm -rf   "$DEST_DIR"
+mkdir -p "$DEST_DIR"
+
+# Get the list of files affected by the commit
+FILES=$(git diff-tree --no-commit-id --name-only -r "$COMMIT_SHA")
+
+# For each file, checkout the version before the commit and save it
+for FILE in $FILES; do
+    # Ensure the directory structure exists in /tmp
+    mkdir -p "$DEST_DIR/$(dirname "$FILE")"
+    
+    # Checkout the file as it was in the parent commit of X
+    git show "$COMMIT_SHA^:$FILE" > "$DEST_DIR/$FILE"
+done
+difr -sparse $DEST_DIR $src_dir
+exit
+bx $dp/git/git_util/git.commit.dif 1f5c3477882867fad4f94859c227a7f5a325b1d2
