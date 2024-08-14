@@ -58,12 +58,6 @@ while [ -n "$1" ]; do
 done
 
 case `pwd` in
-        $HOME/git/qwickanalytics_semi_structured_data*)
-                echo "WARN difr, not asking git" 1>&2
-		#cd $(pwd | sed -e "s;$HOME;$dp;")
-		difr
-		exit 0
-	;;
 	$dp/git/qwickanalytics_semi_structured_data*)
 		echo "WARN difr, not asking git" 1>&2
 		difr

@@ -107,6 +107,15 @@ Change_set_consists_entirely_of_new_files()
 Change_set_consists_entirely_of_deletions()
 {
 	git status > $t
+        
+        if grep 'deleted:' $t > /dev/null 2>&1; then
+                (
+                echo "Watching out for accidental deletions..."
+                pwd
+                cat $t
+                ) | alert.sh "git deletion(s) seen in $proj"
+	fi
+        
 	if grep modified: $t > /dev/null 2>&1; then
 		return 1
 	fi

@@ -1,0 +1,60 @@
+:
+debug_mode=''
+dry_mode=''
+files_only_mode=''
+t=`mktemp`; trap "rm $t*" EXIT
+verbose_mode=''
+while [ -n "$1" ]; do
+	case "$1" in
+		-dry)
+			dry_mode=-dry
+		;;
+		-files_only)
+			files_only_mode=-files_only
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		-x)
+			set -x
+			debug_mode=-x
+		;;
+		-*)
+			echo "FAIL unrecognized flag $1" 1>&2
+			exit 1
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
+done
+
+sha=$1
+if [ -z "$sha" ]; then
+	echo "FAIL: expected a value for \"sha\" but saw nothing" 1>&2
+	exit 1
+fi
+
+if [ -n "$files_only_mode" ]; then
+	if git diff-tree --no-commit-id --name-only -r $sha; then
+		if [ -n "$verbose_mode" ]; then
+			echo "OK git diff-tree --no-commit-id --name-only -r $sha" 1>&2
+		fi
+	else
+		echo "FAIL git diff-tree --no-commit-id --name-only -r $sha" 1>&2
+		exit 1
+	fi
+else
+        if git diff-tree --no-commit-id --name-status -r $sha; then
+		echo "OK git diff-tree --no-commit-id --name-status -r $sha" 1>&2
+	else
+		echo "FAIL git diff-tree --no-commit-id --name-status -r $sha" 1>&2
+                exit 1
+        fi
+fi
+exit
+cd $dp/git/git_util/; $dp/git/git_util/git.SHA_to_files bb01a6f42e4dd4b1716d997c832ae20f826211f0

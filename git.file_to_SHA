@@ -1,0 +1,58 @@
+:
+debug_mode=''
+diffs_mode=''
+dry_mode=''
+t=`mktemp`; trap "rm $t*" EXIT
+verbose_mode=''
+while [ -n "$1" ]; do
+	case "$1" in
+		-diffs)
+			diffs_mode=-diffs
+		;;
+		-dry)
+			dry_mode=-dry
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		-x)
+			set -x
+			debug_mode=-x
+		;;
+		-*)
+			echo "FAIL unrecognized flag $1" 1>&2
+			exit 1
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
+done
+
+fn=$1
+if [ ! -f "$fn" ]; then
+        echo "FAIL: expected file at \"$fn\"" 1>&2
+        exit 1
+fi
+sha=`git log -n 1 --pretty=format:%H -- $fn` || exit 1
+if [ -z "$sha" ]; then
+        echo "FAIL no match, looking for latest commit touching $fn" 1>&2
+        exit 1
+fi
+if [ -z "$diffs_mode" ]; then
+        echo $sha
+else
+        if git show $sha; then
+		echo "OK git show $sha" 1>&2
+	else
+		echo "FAIL git show $sha" 1>&2
+                exit 1
+        fi
+        echo ========================================================================================================================================================================
+fi
+exit
+$dp/git/git_util/git.file_to_SHA $dp/git/git_util/git.up

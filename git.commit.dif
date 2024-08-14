@@ -1,4 +1,5 @@
 #!/bin/bash
+# if a commit Z is suspect, do git.commit.dif Z to difr the versions of the affected files prior to the change vs. current versions
 
 # Commit SHA
 COMMIT_SHA="$1"
