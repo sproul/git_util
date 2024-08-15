@@ -58,6 +58,7 @@ while [ -n "$1" ]; do
 done
 if [ -n "$1" ]; then
         sha=$1
+        git show -s --format=%B $sha
         git.status--short.for_sha $sha > $t.mid
         git diff $sha^ $sha . > $t
 else
@@ -94,4 +95,4 @@ rm  $t.mid
 exit $rc
 exit
 cd $dp/git/bin/
-bx $dp/git_util/git.d 151398b8cd3446eedf76c16333a9e2f1e2ed891c
+bx $dp/git_util/git.d 514b505484c632e21a617e76fc61d843acc0ac7c
