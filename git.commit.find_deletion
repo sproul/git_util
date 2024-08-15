@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Name of the file you suspect was deleted
+FILE_NAME="$1"
+
+# Use git log to find the commit where the file was deleted
+BAD_COMMIT_SHA=$(git log --diff-filter=D --name-only --pretty=format:"%H" | grep -B 1 "^$FILE_NAME$" | grep -v "^$FILE_NAME$")
+
+# Check if we found a commit
+if [ -z "$BAD_COMMIT_SHA" ]; then
+  echo "No commit found where file '$FILE_NAME' was deleted."
+else
+  echo "File '$FILE_NAME' was deleted in commit SHA: $BAD_COMMIT_SHA"
+fi
+exit
+bx $dp/git/git_util/git.commit.find_deletion k8.deployment.java_opt.add.ldap

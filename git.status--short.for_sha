@@ -1,0 +1,8 @@
+:
+COMMIT_SHA=$1
+if [ -z "$COMMIT_SHA" ]; then
+        echo "FAIL: expected a value for \"COMMIT_SHA\" but saw nothing" 1>&2
+        exit 1
+fi
+echo "git diff-tree --name-status $COMMIT_SHA"
+git       diff-tree --name-status $COMMIT_SHA

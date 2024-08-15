@@ -56,21 +56,25 @@ while [ -n "$1" ]; do
 	esac
 	shift
 done
-
-case `pwd` in
-	$dp/git/qwickanalytics_semi_structured_data*)
-		echo "WARN difr, not asking git" 1>&2
-		difr
-		exit 0
-	;;
-esac
-prune.midnight_files
-git_proj_dir=`ls.up -find_parent_of_dir .git`
-proj=`basename $git_proj_dir`
-Detect_and_maybe_correct_weird_config_disappearance
-git status --short > $t.mid
-
-git diff . > $t
+if [ -n "$1" ]; then
+        sha=$1
+        git.status--short.for_sha $sha > $t.mid
+        git diff $sha^ $sha . > $t
+else
+        case `pwd` in
+                $dp/git/qwickanalytics_semi_structured_data*)
+                        echo "WARN difr, not asking git" 1>&2
+                        difr
+                        exit 0
+                ;;
+        esac
+        prune.midnight_files
+        git_proj_dir=`ls.up -find_parent_of_dir .git`
+        proj=`basename $git_proj_dir`
+        Detect_and_maybe_correct_weird_config_disappearance
+        git status --short > $t.mid        
+        git diff . > $t
+fi
 strait $t
 
 . modified_repos.inc
@@ -89,4 +93,5 @@ rm  $t.mid
 
 exit $rc
 exit
-bx $dp/git_util/git.d
+cd $dp/git/bin/
+bx $dp/git_util/git.d 151398b8cd3446eedf76c16333a9e2f1e2ed891c

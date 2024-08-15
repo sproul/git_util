@@ -34,10 +34,10 @@ while [ -n "$1" ]; do
 done
 
 fn=$1
-if [ ! -f "$fn" ]; then
-        echo "FAIL: expected file at \"$fn\"" 1>&2
-        exit 1
-fi
+#if [ ! -f "$fn" ]; then
+#        echo "FAIL: expected file at \"$fn\"" 1>&2
+#        exit 1
+#fi
 sha=`git log -n 1 --pretty=format:%H -- $fn` || exit 1
 if [ -z "$sha" ]; then
         echo "FAIL no match, looking for latest commit touching $fn" 1>&2
