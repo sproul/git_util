@@ -107,15 +107,15 @@ Change_set_consists_entirely_of_new_files()
 Change_set_consists_entirely_of_deletions()
 {
 	git status > $t
-        
-        if grep 'deleted:' $t > /dev/null 2>&1; then
-                (
-                echo "Watching out for accidental deletions..."
-                pwd
-                cat $t
-                ) | alert.sh "git deletion(s) seen in $proj"
+	
+	if grep 'deleted:' $t > /dev/null 2>&1; then
+		(
+		echo "Watching out for accidental deletions..."
+		pwd
+		cat $t
+		) | alert.sh "git deletion(s) seen in $proj"
 	fi
-        
+	
 	if grep modified: $t > /dev/null 2>&1; then
 		return 1
 	fi
@@ -148,7 +148,6 @@ Change_set_looks_like_sample_invocation_update()
 			fi
 		fi
 		if [ -n "$sample_invocation_change" ]; then
-			comment="sample invocation change"
 			return 0
 		fi
 	fi
@@ -174,13 +173,13 @@ Checkin()
 		case "$proj" in
 			emacs)
 				for updated_menu_file in `grep '\.menu$' $t.changed_or_added`; do
-                                        if [ -n "$verbose_mode" ]; then
-                                                echo Checking $updated_menu_file for bad entries
-                                        fi
-                                        if grep -n '^[ 	]*[^#	 ][^	 ]...' $updated_menu_file /dev/null; then
-                                                echo "FAIL malformed menu code seen" 1>&2
-                                                exit 1
-                                        fi
+					if [ -n "$verbose_mode" ]; then
+						echo Checking $updated_menu_file for bad entries
+					fi
+					if grep -n '^[	]*[^#	 ][^	 ]...' $updated_menu_file /dev/null; then
+						echo "FAIL malformed menu code seen" 1>&2
+						exit 1
+					fi
 				done
 			;;
 			data)
@@ -192,45 +191,45 @@ Checkin()
 				if [ -s $t.changed_or_added ]; then
 					patt="EARLY"
 					patt="$patt.*exit"
-                                        changed_file_list=`cat $t.changed_or_added | grep -v 'shell/'`
-                                        if grep -nr "$patt" $changed_file_list /dev/null; then
+					changed_file_list=`cat $t.changed_or_added | grep -v 'shell/'`
+					if grep -nr "$patt" $changed_file_list /dev/null; then
 						echo FAILED early exit indicates debugging
 						exit 1
 					fi
-                                        patt=" X"
+					patt=" X"
 					patt="${patt}test"
-                                        if grep -nr "$patt" $changed_file_list /dev/null; then
-                                                echo FAILED X + test indicates disabling tests for debug
+					if grep -nr "$patt" $changed_file_list /dev/null; then
+						echo FAILED X + test indicates disabling tests for debug
 						exit 1
 					fi
-                                        patt="el"
+					patt="el"
 					patt="${patt}sov"
-                                        if grep -nr "$patt" $changed_file_list /dev/null; then
-                                                echo FAILED X + test indicates sensitivity
+					if grep -nr "$patt" $changed_file_list /dev/null; then
+						echo FAILED X + test indicates sensitivity
 						exit 1
 					fi
 					patt="t=\`mktemp\`"
 					patt="$patt *#"
-                                        if grep -nr "$patt" $changed_file_list /dev/null; then
+					if grep -nr "$patt" $changed_file_list /dev/null; then
 						echo FAILED disabled cleanup of temporary files indicates debugging
 						exit 1
 					fi
 					patt="def"
 					patt="$patt xtest"
-                                        if grep -nr "$patt" $changed_file_list /dev/null; then
+					if grep -nr "$patt" $changed_file_list /dev/null; then
 						echo FAILED looks like temporarily disabled python tests, indicates debugging
 						exit 1
 					fi
 					patt="#"
 					patt="${patt}trap"
-                                        if grep -nr "$patt" $changed_file_list /dev/null; then
+					if grep -nr "$patt" $changed_file_list /dev/null; then
 						echo FAILED looks like temporarily disabled tmp file cleanup, indicates debugging
 						exit 1
 					fi
-                                        patt="# *"
+					patt="# *"
 					patt="${patt}answer.merge"
-                                        if grep -nr "$patt" $changed_file_list /dev/null; then
-                                                echo FAILED looks like temporarily disabled LLM querying, indicates debugging
+					if grep -nr "$patt" $changed_file_list /dev/null; then
+						echo FAILED looks like temporarily disabled LLM querying, indicates debugging
 						exit 1
 					fi
 				fi
@@ -270,7 +269,6 @@ Checkin()
 			echo OK no suspicious here-doc
 		fi
 	fi
-	Commit_routine_changes
 	if [ -z "$comment" ]; then
 		if Change_set_consists_entirely_of_new_files; then
 			comment="add `sed -e  's/  */ /g' <<< $new_file_list`"
@@ -302,7 +300,7 @@ Checkin()
 	branch=`git.branch`
 	#Prep_auth
 	comment="$comment on `hostname`"
-	git.ac $dry_mode "$comment"
+	Commit
 	echo "git push origin $branch"
 	if [ -z "$dry_mode" ]; then
 		Git_status
@@ -330,51 +328,51 @@ Checkin()
 	fi
 }
 
-Commit()
+Git_add_and_commit()
 {
-	comment="$1"
+	local comment="$1"
 	shift
 	
-	echo.clean "git add $*"
-	git		add $*
-	echo.clean "git commit -m  $comment"
-	git		commit -m "$comment"
+        if git                 commit -a -m "$comment"; then
+                echo   "OK git commit -a -m  $comment" 1>&2
+	else
+                echo "FAIL git commit -a -m  $comment" 1>&2
+                exit 1
+        fi
+	committed=true
 }
 
-Commit_routine_changes()
+Commit()
 {
 	proj=`pwd | sed -e 's;.*/;;'`
 	Git_status
+	committed=''
 	case $proj in
 		bin)
 			if grep Linux/carson.can $t.status > $t.carson.cans 2>&1; then
 				fns=`cat $t.carson.cans | sed -e 's/.*Linux/Linux/'`
-				Commit 'clojure notes' $fns
+				Git_add_and_commit 'clojure notes' $fns
 			fi
 			if Modified g.sh; then
-				Commit 'adjusted project search settings' g.sh
+				Git_add_and_commit 'adjusted project search settings' g.sh
 			fi
 		;;
 		emacs)
 			if grep lisp/data/n-data-menu-browse $t.status > /dev/null 2>&1; then
 				fns=`cat lisp/data/n-data-menu-browse | sed -e 's/.*lisp/lisp/'`
-				Commit 'shortcut updates' $fns
-			else
-				return
+				Git_add_and_commit 'shortcut updates' $fns
 			fi
 		;;
 		fin_doc_parser)
 			if grep ui/src/data/scoring/scores $t.status > /dev/null 2>&1; then
 				fns=`cat ui/src/data/scoring/scores | sed -e 's/.*lisp/lisp/'`
-				Commit 'score updates' $fns
-			else
-				return
+				Git_add_and_commit 'score updates' $fns
 			fi
 		;;
-		*)
-			return
-		;;
 	esac
+        if [ -z "$committed" ]; then
+                Git_add_and_commit "$comment" $fns
+        fi
 	Push || exit 1
 }
 
@@ -417,7 +415,7 @@ Pull_latest_updates_if_no_local_changes()
 	fi
 	cd $d/$proj
 	Init_for_work_in_cwd
-	Commit_routine_changes $proj $d
+	Commit $proj $d
 	if Changes_seen; then
 		return
 	fi
@@ -615,13 +613,13 @@ while [ -n "$1" ]; do
 			echo "cd $proj_dir"
 			cd	 $proj_dir
 		;;
-                -pull_all)
-                        for proj_dir in bin bin_$OS data doc emacs git_util fin_doc_parser t; do
-                                echo "git.up -in_dir $dp/$proj_dir"
-                                git.up       -in_dir $dp/$proj_dir
-                        done
-                        exit
-                ;;
+		-pull_all)
+			for proj_dir in bin bin_$OS data doc emacs git_util fin_doc_parser t; do
+				echo "git.up -in_dir $dp/$proj_dir"
+				git.up	     -in_dir $dp/$proj_dir
+			done
+			exit
+		;;
 		-Pull_latest_updates_if_no_local_changes)
 			shift
 			Pull_latest_updates_if_no_local_changes	      $*
