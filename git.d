@@ -58,7 +58,7 @@ while [ -n "$1" ]; do
 done
 if [ -n "$1" ]; then
         sha=$1
-        git show -s --format=%B $sha
+        git show -s --format="%cd %B" --date=iso $sha
         git.status--short.for_sha $sha > $t.mid
         git diff $sha^ $sha . > $t
 else
