@@ -336,8 +336,7 @@ Git_add_and_commit()
         if git                 commit -a -m "$comment"; then
                 echo   "OK git commit -a -m  $comment" 1>&2
 	else
-                echo "FAIL git commit -a -m  $comment" 1>&2
-                exit 1
+                echo "WARN git commit -a -m  $comment" 1>&2
         fi
 	committed=true
 }
