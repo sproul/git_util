@@ -333,6 +333,8 @@ Git_add_and_commit()
 	local comment="$1"
 	shift
 	
+        echo "git add ."
+        git       add .
         if git                 commit -a -m "$comment"; then
                 echo   "OK git commit -a -m  $comment" 1>&2
 	else
