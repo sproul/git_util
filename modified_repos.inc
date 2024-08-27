@@ -11,16 +11,17 @@ fi
 git_util__modified_repos__Remove_from_list()
 {
 	proj=$1
+        local t=/tmp/modified_repo_statuses_string_fn.$USER.new
 	if [ -s $modified_repo_statuses_string_fn ]; then
 		if grep "^$proj$" $modified_repo_statuses_string_fn > /dev/null 2>&1; then
-			grep -v "^$proj$" $modified_repo_statuses_string_fn > /tmp/modified_repo_statuses_string_fn.new
+			grep -v "^$proj$" $modified_repo_statuses_string_fn > $t
 		elif grep "/$proj$" $modified_repo_statuses_string_fn > /dev/null 2>&1; then
 			# works with basename also
-			grep -v "/$proj$" $modified_repo_statuses_string_fn > /tmp/modified_repo_statuses_string_fn.new
+			grep -v "/$proj$" $modified_repo_statuses_string_fn > $t
 		else
 			return
 		fi
-		mv /tmp/modified_repo_statuses_string_fn.new $modified_repo_statuses_string_fn
+		mv $t $modified_repo_statuses_string_fn
 	fi
 }
 
