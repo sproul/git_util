@@ -585,6 +585,8 @@ while [ -n "$1" ]; do
 			echo "WARN: should use -in_dir, not -dir"
 			shift
 			cd "$1"
+                        . git.find_root
+                        . git.prep_auth.inc
 		;;
 		-dry|-dry_run)
 			dry_mode=-dry

@@ -9,8 +9,7 @@ while [ 1 ]; do
                 break
         fi
         if [ `pwd` = '/' ]; then
-                echo "FAIL cannot find a .git directory above $__git_find_root_initial_pwd" 1>&2
-                exit 1
+                break
         fi
         cd ..
 done
