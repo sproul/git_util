@@ -112,8 +112,8 @@ Change_set_consists_entirely_of_deletions()
 		(
 		echo "Watching out for accidental deletions..."
 		pwd
-		cat $t
-		) | alert.sh "git deletion(s) seen in $proj"
+                cat $t
+                ) | alert.sh "git.up: deletion(s) seen: `grep delete: $t`"
 	fi
 	
 	if grep modified: $t > /dev/null 2>&1; then
