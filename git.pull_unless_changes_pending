@@ -1,0 +1,44 @@
+:
+debug_mode=''
+dry_mode=''
+t=`mktemp`; trap "rm $t*" EXIT
+verbose_mode=''
+while [ -n "$1" ]; do
+	case "$1" in
+		-dir)
+			shift
+			dir="$1"
+			cd $dir
+		;;
+		-dry)
+			dry_mode=-dry
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		-x)
+			set -x
+			debug_mode=-x
+		;;
+		-*)
+			echo "FAIL unrecognized flag $1" 1>&2
+			exit 1
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
+done
+if ! git.d; then
+	echo "OK git.d shows no changes staged, so go ahead and pull" 1>&2
+        if git.up; then
+		echo "OK git.up" 1>&2
+	else
+		echo "FAIL git.up" 1>&2
+                exit 1
+        fi
+fi
