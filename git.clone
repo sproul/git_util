@@ -398,6 +398,8 @@ git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'add_idml
 git.clone -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/fmwpipeline-fa-fmwsuites.git
 git.clone -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/carson-orchestrations.git
 git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/fmwpipeline-fa-fmwsuites.git 'troubleshooting'
+git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:sirish_kumar/cicd_projects.git 'changeiq stage automatically triggered builds'
+git.clone -dp git@orahub.oci.oraclecorp.com:sirish_kumar/cicd_projects.git
 git.clone https://github.com/langchain-ai/langchain.git
 git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
 exit
