@@ -1,155 +1,47 @@
-:
-
-Mv_contents()
-{
-        src="$1"
-        dest="$2"
-
-        mv "$dest_dir"/*        "/tmp/$repo_name"
-        mv "$dest_dir"/.??*     "/tmp/$repo_name"       > /dev/null 2>&1
-        mv "$dest_dir"/.[a-zA-Z0-9]  "/tmp/$repo_name"  > /dev/null 2>&1
-}
-
-dest_dir=`pwd`
-repo_name=`basename $dest_dir`
-
-all_mode=''
-dry_mode=''
-fast_mode=''
-force_mode=''
-t=`mktemp`; trap "rm $t" EXIT
-verbose_mode=''
-while [ -n "$1" ]; do
-        case "$1" in
-                a|-all)
-                        all_mode=-all
-                ;;
-                -dry)
-                        dry_mode=-dry
-                ;;
-                -fast)
-                        fast_mode=-fast
-                ;;
-                -f|-force)
-                        force_mode=-force
-                ;;
-                -in_dir)
-                        shift
-                        echo "cd $1"
-                        cd       $1
-                        
-                        dest_dir=`pwd`
-                        repo_name=`basename $dest_dir`
-                ;;
-                p|put)
-                        case `pwd` in
-                                $HOME/git/*)
-                                ;;
-                                *)
-                                        echo "FAIL expected this op from ~/git, but instead we are in `pwd`"
-                                        exit 1
-                                ;;
-                        esac
-                        dest_dir=$dp/git/$repo_name
-                        if [ -d "$dest_dir" ]; then
-                                if [ -z "$force_mode" ]; then
-                                        echo "FAIL: directory \"$dest_dir\" already exists" 1>&2
-                                        exit 1
-                                fi
-                                rm -rf /tmp/$repo_name
-                                echo "mv $dest_dir /tmp"
-                                mv       $dest_dir /tmp
-                        fi
-                        echo "cp -pr $HOME/git/$repo_name $dp/git"
-                        cp             -pr $HOME/git/$repo_name $dp/git
-                        exit
-                ;;
-                -q|-quiet)
-                        verbose_mode=''
-                ;;
-                -v|-verbose)
-                        verbose_mode=-v
-                ;;
-                *)
-                        break
-                ;;
-        esac
-        shift
-done
-
-src_dir="$HOME/git/$repo_name"
-if [ ! -d $src_dir ]; then
-        case $src_dir in
-                */home|*/bin|*/emacs|*/bin_Linux|*/bin_win|*/git_util|*/data)
-                        git.clone `basename $src_dir`
-                ;;
-                *)
-                        echo "FAIL no $src_dir on disk and not sure how to get it" 1>&2
-                        exit 1
-                ;;
-        esac
-fi
-if [ ! -d .git ]; then
-        echo "$0 could not find directory \".git\"" 1>&2
-        if [ -z "$force_mode" ]; then
-                exit 1
-        fi
-        touch /tmp/Restore_clean_configs__just_return
+if [ "$0" != /bin/bash ]; then
+	echo "FAIL apparently this routine is being called, but it should be sourced" 1>&2
 else
-        backup_dir=../$repo_name.git.bak
-        echo "rm -rf $backup_dir"
-        if ! rm       -rf $backup_dir; then
-                echo "$0: rm       -rf $backup_dir failed, exiting..." 1>&2
-                exit 1
-        fi
-        echo "mv .git ../$repo_name.git.bak"
-        if ! mv       .git ../$repo_name.git.bak; then
-                echo "$0: mv       .git ../$repo_name.git.bak failed, exiting..." 1>&2
-                exit 1
-        fi
+	echo "OK gg getting sourced" 1>&2	
+	cwd=`pwd`
+	if [ -z "$cwd" ]; then
+		echo "FAIL cannot get pwd, has current dir been moved or deleted?" 1>&2
+	else
+		echo "OK pwd=$cwd" 1>&2
+		proj=`basename $cwd`
+		if [ ! -d $HOME/git/$proj ]; then
+			if git.clone $proj; then
+				echo "OK git.clone $proj" 1>&2
+			else
+				echo "FAIL git.clone $proj" 1>&2
+			fi
+		else
+                        echo "git.up -in_dir $HOME/git/$proj"
+                        git.up       -in_dir $HOME/git/$proj
+		fi
+		if [ "$1" = "a" ]; then
+			dir_to_replace=$proj
+			backup_dir=$proj.bak
+		else
+			dir_to_replace=$proj/.git
+			backup_dir=$proj.git.bak
+		fi
+		cd ..
+		if ! rm -rf $proj.bak $proj.git.bak; then
+			echo "FAIL rm -rf $proj.bak" 1>&2
+		else
+			echo "OK rm -rf $proj.bak $proj.git.bak" 1>&2
+			if ! mv $dir_to_replace $backup_dir; then
+				echo "FAIL mv $dir_to_replace $backup_dir" 1>&2
+			else
+				echo "OK mv $dir_to_replace $backup_dir" 1>&2
+                                if cp -r $HOME/git/$dir_to_replace $dir_to_replace; then
+					echo "OK cp -r $HOME/git/$dir_to_replace $dir_to_replace" 1>&2
+                                        echo "cd $proj"
+                                        cd       $proj
+				else
+					echo "FAIL cp -r $HOME/git/$dir_to_replace $dir_to_replace" 1>&2
+				fi
+			fi
+		fi
+	fi
 fi
-
-if [ -z "$fast_mode" ]; then
-        cd "$src_dir"
-        git.d > $t
-        if [ -s $t ]; then
-                echo "FAIL $src_dir has changes:" 1>&2
-                cat $t
-                exit 1
-        fi
-        branch=`git.branch`
-
-        . git.prep_auth.inc
-        Prep_auth
-        git pull origin $branch
-fi
-if [ -n "$all_mode" ]; then
-        rm -rf /tmp/$repo_name
-        echo "mv $dest_dir /tmp"
-        if          mv $dest_dir /tmp; then
-                echo "cp -pr $src_dir $dest_dir"
-                if cp -pr $src_dir $dest_dir; then
-                        exit
-                else
-                        echo "FAIL cp -pr $src_dir $dest_dir, time to clean up"
-                        exit 1
-                fi
-        fi
-fi
-
-if ! cp -pr $src_dir/.git $dest_dir; then
-        echo "$0: cp -pr $src_dir/.git $dest_dir failed, exiting..." 1>&2
-        exit 1
-fi
-if [ -z "$all_mode" ]; then
-        echo "git.d"
-        git.d
-else
-        rm -rf                  "/tmp/$repo_name"
-        mkdir                   "/tmp/$repo_name"
-        Mv_contents "$dest_dir" "/tmp/$repo_name"
-        Mv_contents "$src_dir" "$dest_dir"
-fi
-exit
-cd $dp/monr; bx $dp/git_util/git.cp_git a
-cd $dp/bin; bx $dp/git_util/git.cp_git
