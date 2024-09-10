@@ -8,7 +8,12 @@ while [ 1 ]; do
         if [ -d .git ]; then
                 break
         fi
-        if [ `pwd` = '/' ]; then
+        cwd=`pwd`
+        if [ -z "$cwd" ]; then
+                echo "WARN confirmed no value for cwd = $cwd, perhaps my current dir has been deleted or moved?" 1>&2
+                break
+        fi
+        if [ "$cwd" = '/' ]; then
                 break
         fi
         cd ..
