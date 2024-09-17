@@ -402,5 +402,7 @@ git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:sirish_kumar/cicd_projec
 git.clone  -dp git@orahub.oci.oraclecorp.com:sirish_kumar/cicd_projects.git
 git.clone https://github.com/langchain-ai/langchain.git
 git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
+git.clone -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/carson-orchestrations.git
+git.clone -dp git@orahub.oci.oraclecorp.com:paas-innovationhub-central/provisioning-ui.git
 exit
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
