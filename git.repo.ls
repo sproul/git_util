@@ -1,2 +1,2 @@
 :
-grep -v '^#' $dp/git_util/github.dat | sed -e "s;\$dp;$dp;"
+grep -v '^#' $dp/git/git_util/github.dat | sed -e "s;\$dp;$dp;"

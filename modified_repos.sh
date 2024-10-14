@@ -14,7 +14,7 @@ Test()
         rm -f $modified_repo_statuses_string_fn
         t=`mktemp`
         trap "rm $t*" EXIT
-        
+
         cat /dev/null | Test1 modified_repos.sh.env_clean
         git_util__modified_repos__Add_to_list "abc"
         echo abc | Test1 modified_repos.sh.added1
@@ -83,7 +83,7 @@ while [ -n "$1" ]; do
 done
 
 exit
-bx $dp/git_util/modified_repos.sh -refresh
-bx $dp/git_util/modified_repos.sh -add $dp/emacs/lisp/n-file.el
+bx $dp/git/git_util/modified_repos.sh -refresh
+bx $dp/git/git_util/modified_repos.sh -add $dp/emacs/lisp/n-file.el
 exit
-bx $dp/git_util/modified_repos.sh -test
+bx $dp/git/git_util/modified_repos.sh -test

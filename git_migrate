@@ -62,7 +62,7 @@ Prepare_src_repo()
                 fi
         fi
         src_repo_dir=$tmp_src_repo_dir
-        
+
         if [ ! -d $src_repo_dir/$dir ]; then
                 echo "$0: error: could not find directory \"$src_repo_dir/$dir\"" 1>&2
                 return 1
@@ -99,9 +99,9 @@ Migrate_repo()
                 echo "$0: Rename_overlapping_dirs_in_dest failed, exiting..." 1>&2
                 return 1
         fi
-        
+
         echo "IMPL src_repo_dir stuff, see -some_dirs";exit
-        
+
         # https://gbayer.com/development/moving-files-from-one-git-repository-to-another-preserving-history/
         cd $dest_repo_dir
         repo_A_branch_name=code_from_`basename $src_repo_dir | sed -e 's/[^a-zA-Z0-9]/_/g'`
@@ -159,7 +159,7 @@ Repo_checks()
 if [ ! -s "$t.dirs" ]; then
         echo "$0: error: at least one -dir is required to tell which dirs are being copied" 1>&2
         return 1
-fi 
+fi
 case $op in
         migrate_whole_repo)
                 Migrate_repo
@@ -223,6 +223,6 @@ server
 ui
 EOF
 dir=server
-bx $dp/git_util/git_migrate -dry -skip_tmp_staging -dir server -dir ui -to $HOME/git/qwickanalyticsscraper
+bx $dp/git/git_util/git_migrate -dry -skip_tmp_staging -dir server -dir ui -to $HOME/git/qwickanalyticsscraper
 exit
-bx $dp/git_util/git_migrate -skip_tmp_staging -dir server -dir ui -to $HOME/git/qwickanalyticsscraper
+bx $dp/git/git_util/git_migrate -skip_tmp_staging -dir server -dir ui -to $HOME/git/qwickanalyticsscraper

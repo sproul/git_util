@@ -17,6 +17,6 @@ cd            $dp/git/fin_doc_parser/server/src
 run.sh -tf
 
 exit
-bx $dp/git_util/git.get_ruby_for_SHA 5c6267a105f3829433f39d8c61e57f7d01585c53
+bx $dp/git/git_util/git.get_ruby_for_SHA 5c6267a105f3829433f39d8c61e57f7d01585c53
 exit
-bx $dp/git_util/git.get_ruby_for_SHA 61535c50edc5b6ad298fd007d3d0de3b79fec7ca
+bx $dp/git/git_util/git.get_ruby_for_SHA 61535c50edc5b6ad298fd007d3d0de3b79fec7ca

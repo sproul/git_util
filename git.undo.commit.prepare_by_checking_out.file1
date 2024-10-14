@@ -54,4 +54,4 @@ else
         exit 1
 fi
 exit
-bx $dp/git_util/git.undo.commit.prepare_by_checking_out.file1
+bx $dp/git/git_util/git.undo.commit.prepare_by_checking_out.file1

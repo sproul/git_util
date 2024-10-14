@@ -16,10 +16,10 @@ Test()
         if [ -d "$t2" ]; then
                 echo "$0: tmp test directory t2 already exists at \"$t2\", cannot continue" 1>&2
                 exit 1
-        fi                
+        fi
         rm -rf $t2a
         rm -rf $t2b
-        
+
         echo "git.clone git@github.com:sproul/t2.git"
         if !  git.clone git@github.com:sproul/t2.git; then
                 echo "$0: git.clone git@github.com:sproul/t2.git failed, exiting..." 1>&2
@@ -136,4 +136,4 @@ cd "$original_pwd"
 git.d
 
 exit
-bx $dp/git_util/git.merge_into_clean
+bx $dp/git/git_util/git.merge_into_clean

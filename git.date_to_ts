@@ -67,4 +67,4 @@ case "$OS" in
         ;;
 esac
 exit
-bx $dp/git_util/git.date_to_ts "Jan 1 00:00:00 1970"
+bx $dp/git/git_util/git.date_to_ts "Jan 1 00:00:00 1970"

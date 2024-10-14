@@ -41,4 +41,4 @@ case $cwd in
 esac
 exit
 cd $HOME/git/qwickanalytics_semi_structured_data
-bx $dp/git_util/git.branch.name_incorporation.toggle -dry
+bx $dp/git/git_util/git.branch.name_incorporation.toggle -dry

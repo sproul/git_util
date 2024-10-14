@@ -95,4 +95,4 @@ fi
 difr $proj_dir $new_dir
 exit
 proj_dir=$dp/emacs
-bx $dp/git_util/git.repair $dp/emacs
+bx $dp/git/git_util/git.repair $dp/emacs

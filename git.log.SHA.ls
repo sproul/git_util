@@ -83,6 +83,6 @@ else
 	exit 1
 fi
 exit
-bx $dp/git_util/git.log.SHA.ls $dp/data/nk
+bx $dp/git/git_util/git.log.SHA.ls $dp/data/nk
 exit
-bx $dp/git_util/git.log.SHA.ls -test
+bx $dp/git/git_util/git.log.SHA.ls -test

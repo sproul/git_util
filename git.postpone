@@ -27,4 +27,4 @@ echo "git checkout -- $fn"
 git       checkout -- $fn
 
 exit
-$dp/git_util/git.postpone 
+$dp/git/git_util/git.postpone

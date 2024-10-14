@@ -32,4 +32,4 @@ echo "FAIL could not find hash in the file's change history." 1>&2
 exit 1
 
 exit
-bx $dp/git_util/git.hash_value_to_negative_SHA_index_with_newest_version_considered_0 $dp/data/n 633e186fd4e6debb59855b1bfdd35ee05921e654
+bx $dp/git/git_util/git.hash_value_to_negative_SHA_index_with_newest_version_considered_0 $dp/data/n 633e186fd4e6debb59855b1bfdd35ee05921e654

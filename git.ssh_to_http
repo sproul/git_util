@@ -45,7 +45,7 @@ esac
 extracted_GH22=`sed -e 's/sproul:\(.*\)@github.com.*/\1/' <<< $arg`
 if [ "$extracted_GH22" = "$arg" ]; then
         extracted_GH22=''
-fi 
+fi
 if [ -n "$extracted_GH22" ]; then
         if [ -z "$GH22" ]; then
                 GH22=$extracted_GH22
@@ -70,4 +70,4 @@ echo $http_git_ptr
 exit
 $pd/bin/git.ssh_to_http git@github.com:sproul/fin_doc_parser.git
 exit
-$dp/git_util/git.ssh_to_http -test
+$dp/git/git_util/git.ssh_to_http -test

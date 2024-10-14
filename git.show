@@ -23,4 +23,4 @@ else
 fi
 ruby -w $script_dir/git.show.rb -commit $commit $t
 exit
-bx $dp/git_util/git.show fdbfa17c39aeea28e4b20825157ce839936e9dc5 > $t ; head $t
+bx $dp/git/git_util/git.show fdbfa17c39aeea28e4b20825157ce839936e9dc5 > $t ; head $t

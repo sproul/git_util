@@ -6,4 +6,4 @@ else
         git clean -fxd
 fi
 exit
-bx $dp/git_util/git.discard_local_changes $HOME/git/fin_doc_parser/server/src/u.rb
+bx $dp/git/git_util/git.discard_local_changes $HOME/git/fin_doc_parser/server/src/u.rb

@@ -107,7 +107,7 @@ Change_set_consists_entirely_of_new_files()
 Change_set_consists_entirely_of_deletions()
 {
 	git status > $t
-	
+
 	if grep 'deleted:' $t > /dev/null 2>&1; then
 		(
 		echo "Watching out for accidental deletions..."
@@ -115,7 +115,7 @@ Change_set_consists_entirely_of_deletions()
                 cat $t
                 ) | alert.sh "git.up: deletion(s) seen: `grep deleted: $t`"
 	fi
-	
+
 	if grep modified: $t > /dev/null 2>&1; then
 		return 1
 	fi
@@ -332,7 +332,7 @@ Git_add_and_commit()
 {
 	local comment="$1"
 	shift
-	
+
         echo "git add ."
         git       add .
         if git                 commit -a -m "$comment"; then
@@ -505,7 +505,7 @@ Test_init()
 		rm	 -rf $test_dir1 $test_dir2
 	fi
 	tf=papa_testing_area/whatever.$$
-	
+
 	if [ ! -d $test_dir2 ]; then
 		git.clone java_scratch
 		if [ ! -d $test_dir2 ]; then
@@ -530,13 +530,13 @@ Test_simple_chi()
 {
 	cd $test_dir1
 	branch=`git.branch`
-	
+
 	echo hi > $tf
 	git.up > $t.git.up1 2>&1
-	
+
 	cd $test_dir2
 	branch=`git.branch`
-	
+
 	assert.f.exist -not "test ck $tf not there early" $tf $tf
 	git.up no changes here, but expecting to sync in $tf from $test_dir1
 	assert.f.exist -label "after git.up in $test_dir2, should see change from $test_dir1" $tf
@@ -694,8 +694,8 @@ comment=`Resolve_comment $*` || echo 1
 Checkin || exit 1
 exit
 bx $dp/bin/git.up -dry_run
-ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git_util/git.up -in_dir dp/git/fin_doc_parser
+ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git/git_util/git.up -in_dir dp/git/fin_doc_parser
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0 $aip git.up -in_dir dp/git/fin_doc_parser
-bx $dp/git_util/git.up -Synchronize_high_traffic_shared_projects
-bx $dp/git_util/git.up -Pull_latest_updates_if_no_local_changes emacs
+bx $dp/git/git_util/git.up -Synchronize_high_traffic_shared_projects
+bx $dp/git/git_util/git.up -Pull_latest_updates_if_no_local_changes emacs
 exit 0

@@ -29,4 +29,4 @@ else
         git status --short .
 fi | grep '^ M ' | sed -e 's/^ M //'
 exit
-$dp/git_util/git.changed_files.ls 
+$dp/git/git_util/git.changed_files.ls

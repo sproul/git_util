@@ -4,4 +4,4 @@ git status . --short > $t
 git.changed_files.ls -status_output_fn $t
 git.added_files.ls   -status_output_fn $t
 exit
-$dp/git_util/git.changed_or_added_files.ls
+$dp/git/git_util/git.changed_or_added_files.ls

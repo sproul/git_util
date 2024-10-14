@@ -29,4 +29,4 @@ else
         git status --short .
 fi | sed -n -e 's/^?? //p'
 exit
-bx $dp/git_util/git.added_files.ls
+bx $dp/git/git_util/git.added_files.ls

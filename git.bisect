@@ -43,7 +43,7 @@ while [ 1 ]; do
                 git bisect good > $t
                 git bisect good
         else
-                echo "FAIL $judgment_script on SHA 265029073c1b63772b5706bbff7669bd2952e6fc"                
+                echo "FAIL $judgment_script on SHA 265029073c1b63772b5706bbff7669bd2952e6fc"
                 git bisect bad > $t
         fi
         cat $t
@@ -52,7 +52,7 @@ done
 @@
 echo "When you are finished, do # git bisect reset"
 exit
-# see mac mc-e 
+# see mac mc-e
 good_sha=cda38e8b345c9e6d3996005312eae3ce5572e946
 judgment_script=$dp/bin/qr.bisector.fatal
-bx $dp/git_util/git.bisect
+bx $dp/git/git_util/git.bisect

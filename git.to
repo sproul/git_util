@@ -7,7 +7,7 @@
 #
 #       git.to -src_project SRCDIR -dest_project DESTDIR
 #       git.to -from SRCDIR -to DESTDIR
-#       
+#
 dest_project=''
 dry_mode=''
 src_project=''
@@ -74,7 +74,7 @@ if [ -z "$dry_mode" ]; then
 fi
 
 exit
-$dp/git_util/git.to -dry -src_project $HOME/git/pcaapps $dp/git/pcaapps
-$dp/git_util/git.to -dry $HOME/git/pcaapps $dp/git/pcaapps
+$dp/git/git_util/git.to -dry -src_project $HOME/git/pcaapps $dp/git/pcaapps
+$dp/git/git_util/git.to -dry $HOME/git/pcaapps $dp/git/pcaapps
 exit
-cd $dp/git/pcaapps; $dp/git_util/git.to -dry
+cd $dp/git/pcaapps; $dp/git/git_util/git.to -dry

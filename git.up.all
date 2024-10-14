@@ -57,11 +57,11 @@ if [ ! $host ]; then
         if [ $dry_mode ]; then
                 exit
         fi
-        
+
         bash -x $t.script
 fi
 
 exit
-bx $dp/git_util/git.up.all -dry 
+bx $dp/git/git_util/git.up.all -dry
 exit
-$dp/git_util/git.up.all
+$dp/git/git_util/git.up.all

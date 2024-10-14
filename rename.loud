@@ -43,4 +43,4 @@ else
         fi
 fi
 exit
-bx $dp/git_util/rename.loud -dry $HOME/git/qwickanalytics_semi_structured_data $HOME/git/qwickanalytics_semi_structured_data.development
+bx $dp/git/git_util/rename.loud -dry $HOME/git/qwickanalytics_semi_structured_data $HOME/git/qwickanalytics_semi_structured_data.development

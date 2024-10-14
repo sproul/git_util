@@ -73,7 +73,7 @@ else
         git_proj_dir=`ls.up -find_parent_of_dir .git`
         proj=`basename $git_proj_dir`
         Detect_and_maybe_correct_weird_config_disappearance
-        git status --short > $t.mid        
+        git status --short > $t.mid
         git diff . > $t
 fi
 strait $t
@@ -95,4 +95,4 @@ rm  $t.mid
 exit $rc
 exit
 cd $dp/git/bin/
-bx $dp/git_util/git.d 514b505484c632e21a617e76fc61d843acc0ac7c
+bx $dp/git/git_util/git.d 514b505484c632e21a617e76fc61d843acc0ac7c

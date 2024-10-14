@@ -16,7 +16,7 @@ Author: Nelson Sproul <nelson.sproul@gmail.com>
 Date:	Sun Sep 3 09:55:16 2023 -0700
 
 allow zeros from AI on x-mac
-	
+
 diff --git a/server/src/ai.py b/server/src/ai.py
 	index b1370f6..58481e0 100644
 	--- a/server/src/ai.py
@@ -24,10 +24,10 @@ diff --git a/server/src/ai.py b/server/src/ai.py
 	@@ -262,8 +262,13 @@ class LLM_runner:
 	{result.group(1): result.group(2)
 		for result in re.finditer('"([^"\n]+)": ([^\n]*[^\n,]),?', raw_llm_json)}
-			
+
 			-	 llm_kv_nonzeros = {k: llm_kv_pairs[k] for k in llm_kv_pairs.keys()
-			+	 
-			
+			+
+
 			backed_llm_kv_pairs = {Key.code_to_qa_name[k]: LLM_runner.clean_value(llm_kv_nonzeros[k], metric_name=Key.code_to_qa_name[k])
 			for k in llm_kv_nonzeros.keys()
 diff --git a/server/src/grep_fdp_data b/server/src/grep_fdp_data
@@ -208,9 +208,9 @@ gen_commands_for_change()
 	commit_id=$1
 	shift
 	comment="$*"
-	
+
 	file_list=''
-	
+
 	if [ -n "$replace_git_show_with_stdin_mode" ]; then
 		cat
 	else
@@ -301,7 +301,7 @@ install_cron()
 	if [ ! -d "$fdp" ]; then
 		echo "FAIL: expected directory at \"$fdp\"" 1>&2
 		return 1
-	fi 
+	fi
 (
 echo a
 echo "13 6 * * * $dp/git/git.propagate -run1 -pull_first -changes_since_marker $marker_fn -in_dir $fdp -dest_repo_dir $or > /tmp/git.propagate.out 2>&1"
@@ -366,7 +366,7 @@ while [ -n "$1" ]; do
 			dest_repo_dir="$1"
 		;;
 		-pull_first)
-			
+
                         if git pull origin master; then
 				echo "OK git pull origin master"
 			else
@@ -474,4 +474,4 @@ bx $dp/git/git_util/git.propagate -in_dir $HOME/git/fin_doc_parser -run1 -dry -d
 bx $dp/git/git_util/git.propagate -in_dir $HOME/git/fin_doc_parser -run1 -dry -dest_repo_dir $HOME/git/qwickanalyticsscraper -save_scripts > $t 2>&1
 bx $dp/git/git_util/git.propagate -in_dir $HOME/git/fin_doc_parser	 -dry -dest_repo_dir $HOME/git/qwickanalyticsscraper > $t 2>&1
 exit
-bx $dp/git_util/git.propagate -in_dir $HOME/git/fin_doc_parser -dest_repo_dir $HOME/git/qwickanalyticsscraper -install_cron
+bx $dp/git/git_util/git.propagate -in_dir $HOME/git/fin_doc_parser -dest_repo_dir $HOME/git/qwickanalyticsscraper -install_cron

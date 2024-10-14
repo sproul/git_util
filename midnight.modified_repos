@@ -1,1 +1,1 @@
-$dp/git_util/modified_repos.sh -test
+$dp/git/git_util/modified_repos.sh -test

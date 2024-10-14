@@ -20,4 +20,4 @@ export -f process_file
 # Find files in the specified directory and process each
 find . -type f ! -name "*.sh" -exec bash -c 'process_file "$0"' {} \;
 exit
-bx $dp/git_util/git_expand_repo_section_to_snapshot_tree 
+bx $dp/git/git_util/git_expand_repo_section_to_snapshot_tree

@@ -37,4 +37,4 @@ else
         exit 1
 fi
 exit
-bx $dp/git_util/git.pull 
+bx $dp/git/git_util/git.pull

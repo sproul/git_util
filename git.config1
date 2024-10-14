@@ -19,4 +19,4 @@ Global_config1()
 }
 Global_config1 $*
 exit
-bx $dp/git_util/git.config11 http.proxy http://www-proxy-hqdc.us.oracle.com:80
+bx $dp/git/git_util/git.config11 http.proxy http://www-proxy-hqdc.us.oracle.com:80

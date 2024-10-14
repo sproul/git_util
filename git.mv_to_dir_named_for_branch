@@ -19,4 +19,4 @@ else
         fi
 fi
 exit
-bx $dp/git_util/git.mv_to_dir_named_for_branch -dry
+bx $dp/git/git_util/git.mv_to_dir_named_for_branch -dry

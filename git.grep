@@ -77,6 +77,6 @@ done < $t.commits > $git_grep_output
 g1 -i "$patt" $git_grep_output
 
 exit
-$dp/git_util/git.grep ldap $dp/git/sys-eng/pipeline-shell-scripts/fmwtools/fmwtools.sh
+$dp/git/git_util/git.grep ldap $dp/git/sys-eng/pipeline-shell-scripts/fmwtools/fmwtools.sh
 exit
-bx $dp/git_util/git.grep Minna
+bx $dp/git/git_util/git.grep Minna
