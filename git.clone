@@ -1,6 +1,33 @@
 #!/bin/bash
-new_branch_mode=''
 
+save_old_as_backup()
+{
+	if [ ! -d $git_dir/$project_name ]; then
+		echo "WARNING save_old_as_backup could not find directory $git_dir/$project_name" 1>&2
+		return 1
+	fi
+	old_branch_name=`git.branch $git_dir/$project_name`
+	if [ -n "$old_branch_name" ]; then
+		if mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name; then
+			echo "OK mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name" 1>&2
+		else
+			echo "FAIL mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name" 1>&2
+			return 1
+		fi
+	fi
+}
+
+add_branch_suffix_mode=''
+branch=''
+browse_mode=''
+dp_mode=''
+dry_mode=''
+force_mode=''
+new_branch_mode=''
+pr=''
+pr_base_branch='development'
+src_chi_fns=''
+to_branch=''
 case `whoami` in
 	admin.nelson|brace|devel|leighton|nelsonsproul|nelson|nsproul|opc|x)
 	;;
@@ -9,16 +36,6 @@ case `whoami` in
 		exit 1
 	;;
 esac
-
-add_branch_suffix_mode=''
-branch=''
-dp_mode=''
-dry_mode=''
-force_mode=''
-pr=''
-pr_base_branch='development'
-src_chi_fns=''
-to_branch=''
 while [ -n "$1" ]; do
 	case "$1" in
 		-add_branch_suffix)
@@ -29,6 +46,9 @@ while [ -n "$1" ]; do
 			git.clone     $*
 			exit
 		;;
+                -browse|ui)
+                        browse_mode=-browse
+                ;;
 		-chi)
 			shift
 			if [ ! -f "$1" ]; then
@@ -95,24 +115,17 @@ case "$project_name" in
 	;;
 esac
 
-
-save_old_as_backup()
-{
-	if [ ! -d $git_dir/$project_name ]; then
-		echo "WARNING save_old_as_backup could not find directory $git_dir/$project_name" 1>&2
-		return 1
-	fi
-	old_branch_name=`git.branch $git_dir/$project_name`
-	if [ -n "$old_branch_name" ]; then
-		if mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name; then
-			echo "OK mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name" 1>&2
-		else
-			echo "FAIL mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name" 1>&2
-			return 1
-		fi
-	fi
-}
-
+if [ -n "$browse_mode" ]; then
+        # e.g., if remote_repo=git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git, then we should
+        # browse https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng
+        #
+        # ssh://sirish.kumar%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git ->
+        # https://alm.oraclecorp.com/sirish.kumar/submitconfigfarmjobs
+        url=`sed -e 's;^git@;https://;' <<< $remote_repo`
+        echo "browser $url"
+        browser       $url
+        exit $?
+fi
 if [ -n "$to_branch" ]; then
 	cd $HOME/git
 	#project_name=carson
@@ -314,7 +327,7 @@ bx $dp/git/git_util/git.clone https://github.com/sproul/change_tracker
 bx $dp/git/git_util/git.clone https://github.com/sproul/mutivcs_query
 bx $dp/git/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/syseng_sensu-monitoring-infrastructure_5319/sensu-monitoring-infrastructure.git
 bx $dp/git/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_sensu-monitoring-infrastructure_5319/scm/sensu-monitoring-infrastructure.git
-bx $rdp/git/git_util/git.clone ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
+bx $dp/git/git_util/git.clone ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
 bx $dp/git/git_util/git.clone https://surabhi.pathak%40oracle.com@alm.oraclecorp.com/syseng/s/syseng_cicd-dashboard_5996/scm/cicd-dashboard.git
 git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/mcs/s/mcs_change-tracker_15881/scm/change_tracker.git
 $dp/git/git_util/git.clone https://nelson.sproul%40oracle.com@alm.oraclecorp.com/paasops/s/paasops_oci-reports_17338/scm/oci_reports.git
@@ -328,7 +341,7 @@ cd ~/git
 git clone ssh://git@alm.oraclecorp.com:2222/odocs_desktop/desktop.git
 yes
 $dp/git/git_util/git.clone ssh://git@alm.oraclecorp.com:2222;odocs_desktop/desktop.git
-$dp/git/git_util/git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/syseng_cloud-resource-view_18455/cloud-resource-view.git
+bx git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com:2222/syseng_cloud-resource-view_18455/cloud-resource-view.git
 bx $dp/git/git_util/git.clone  git@orahub.oraclecorp.com:rohit.ro.kumar/sys-eng.git
 bx $dp/git/git_util/git.clone https://github.com/bracesproul/bart_scheduler.git
 bx $dp/git/git_util/git.clone -new_branch git@orahub.oraclecorp.com:james.x.clark/carson.git fix_docker_du
@@ -405,5 +418,8 @@ git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng_submitconfi
 git.clone -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/carson-orchestrations.git
 git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:paas-innovationhub-central/provisioning-ui.git FMWBREL-18262
 git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/fmwpipeline-fa-fmwsuites.git FMWBREL-18259
+git.clone -dp ssh://sirish.kumar%40oracle.com@alm.oraclecorp.com:2222/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
+git.clone -dp ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
+git.clone -browse -dp ssh://sirish.kumar%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
 exit
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
