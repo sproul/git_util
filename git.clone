@@ -421,5 +421,6 @@ git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/fmwpi
 git.clone -dp ssh://sirish.kumar%40oracle.com@alm.oraclecorp.com:2222/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
 git.clone -dp ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
 git.clone -browse -dp ssh://sirish.kumar%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
+git.clone -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/shiphome-comparator-goldfile.git
 exit
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
