@@ -33,7 +33,7 @@ if [ ! -f "$short_git_status" ]; then
         exit 1
 fi
 
-midnight_files=`cat $short_git_status | sed -n -e '/^ M .*midnight\.[^\/]*$/p' -e '/^ M midnight\.[^\/]*$/p' | sed -e 's/^ M / /' | tr '\n' ' '`
+midnight_files=`cat $short_git_status | sed -n -e '/midnight.el$/d' -e '/^ M .*midnight\.[^\/]*$/p' -e '/^ M midnight\.[^\/]*$/p' | sed -e 's/^ M / /' | tr '\n' ' '`
 if [ -n "$midnight_files" ]; then
         eat_2nd_and_later_lines $midnight_files > /dev/null 2>&1
 fi
