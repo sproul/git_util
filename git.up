@@ -433,18 +433,6 @@ Synchronize_high_traffic_shared_projects()
 	#
 	# For the following exceptions, just assume we can synchronize even if there are local changes:
 	projects_to_sync_regardless_of_local_changes="t data home"
-	if [ ! -f $dp/emacs/bin/migrate.sh ]; then
-		echo "pre-migration, need to migrate"
-		Pull_latest_updates_if_no_local_changes emacs
-		if [ ! -f $dp/emacs/bin/migrate.sh ]; then
-			echo "FAIL could not find $dp/emacs/bin/migrate.sh, expected to see it after Pull_latest_updates_if_no_local_changes emacs"
-			exit 1
-		else
-			echo "OK found $dp/emacs/bin/migrate.sh"
-		fi
-		bash -x $dp/emacs/bin/migrate.sh
-		exit
-	fi
 	for proj in bin data emacs git_util home bin_$OS; do
 		echo $proj==========================================================
 		export proj
