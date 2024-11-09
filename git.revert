@@ -1,4 +1,4 @@
 #!/bin/sh
 echo use git.discard_local_changes instead
 exit
-sh -x $DROP/bin/git.revert 
+sh -x $DROP/bin/git.revert

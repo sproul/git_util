@@ -33,7 +33,7 @@ git_util__modified_repos__Add_to_list()
 			return
 		;;
 	esac
-        
+
 	if ! grep "^$proj$" $modified_repo_statuses_string_fn > /dev/null 2>&1; then
 		(
                 echo "OK update (no $proj in $modified_repo_statuses_string_fn)" 1>&2
@@ -55,7 +55,7 @@ git_util__modified_repos__Check_repo()
 		cat $t
 		rm $t
 		return 1
-	fi	  
+	fi
 	rm $t
 	if [ -n "$output" ]; then
 		git_util__modified_repos__Add_to_list `basename "$proj_root_dir"`

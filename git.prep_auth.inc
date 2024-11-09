@@ -10,11 +10,11 @@ Restore_clean_configs()
                 echo Restore_clean_configs disabled
         fi
         return
-        
-        
-        
-        
-        
+
+
+
+
+
 
         if [ -f /tmp/Restore_clean_configs__just_return ]; then
                 rm /tmp/Restore_clean_configs__just_return
@@ -64,17 +64,17 @@ Swap_gitconfigs()
 Prep_auth()
 {
         echo git.prep_auth.inc/Prep_auth
-        
-        # 
+
+        #
         # not clear why there are multiple versions. The one use case is orahub vs other git repos, but for a given machine, we should be
         # repeatedly interacting with the same repo
-        # 
+        #
         #if [ -f .gitconfig.override ]; then
         #        Swap_gitconfigs .gitconfig.override
         #elif [ -f $HOME/.gitconfig.global ]; then
         #        Swap_gitconfigs $HOME/.gitconfig.global
         #fi
-        
+
         if [ -z "$xrepo_name" ]; then
                 xrepo_name=`basename $(pwd)`
         fi
@@ -95,7 +95,7 @@ Prep_auth()
         fi
         # e.g., url = git@github.com:sproul/bin.git
         gh_user=`grep 'url = ' $gc | sed -e 's;.*github.com[:/];;' -e 's;/.*;;'`
-        
+
         email=`grep 'email =' $HOME/.gitconfig | sed -e 's/.* = //'`
         if [ -f $HOME/.gh.$email ]; then
                 hgh=$HOME/.gh.$email

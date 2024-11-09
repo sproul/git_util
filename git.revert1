@@ -48,11 +48,11 @@ if [ ! -f "$fn" ]; then
 	touch "$fn"
 	zfn=''
 else
-        
+
         # if it is an added file, rm the file and do
         # git rm --cached "$fn"
-        
-        
+
+
 	if [ -n "$new_mode" ]; then
 		zfn="$fn.new"
                 echo.clean "cp -p \"$fn\" \"$zfn\""

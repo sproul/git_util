@@ -22,7 +22,7 @@ while [ -n "$1" ]; do
                 ;;
                 *)
                         Add "$1"
-                ;; 
+                ;;
         esac
         shift
 done

@@ -30,6 +30,6 @@ case $OS in
                 else
                         apt-get -y install git
                 fi
-                
+
         ;;
 esac

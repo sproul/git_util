@@ -10,7 +10,7 @@ BAD_COMMIT=$1
 
 # List all files affected by the bad commit
 # and checkout each file from the commit immediately before the bad commit
-git diff-tree --no-commit-id --name-only -r $BAD_COMMIT | 
+git diff-tree --no-commit-id --name-only -r $BAD_COMMIT |
 while read file; do
         if git checkout $BAD_COMMIT^ -- "$file"; then
                 echo "OK git checkout $BAD_COMMIT^ -- $file" 1>&2

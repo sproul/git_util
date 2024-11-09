@@ -17,12 +17,12 @@ while [ -n "$1" ]; do
                 ;;
                 -test)
                         tt=`mktemp`
-                        #trap "rm $tt.*" EXIT
-                        
+                        trap "rm $tt.*" EXIT
+
                         cat <<EOF > $tt.expected
 [full content in $tt.full_output]
 1234567
-abcdefg                        
+abcdefg
 xyz
 ...
 [full content in $tt.full_output]

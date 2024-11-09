@@ -18,7 +18,7 @@ FILES=$(git diff-tree --no-commit-id --name-only -r "$COMMIT_SHA")
 for FILE in $FILES; do
     # Ensure the directory structure exists in /tmp
     mkdir -p "$DEST_DIR/$(dirname "$FILE")"
-    
+
     # Checkout the file as it was in the parent commit of X
     git show "$COMMIT_SHA^:$FILE" > "$DEST_DIR/$FILE"
 done

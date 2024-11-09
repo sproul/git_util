@@ -2,7 +2,7 @@
 dir="$1"
 if [ -z "$dir" ]; then
         dir="`pwd`"
-fi 
+fi
 cd "$dir"/..
 git add "$dir"/\*
 bndir=`basename "$dir"`

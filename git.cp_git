@@ -1,7 +1,7 @@
 if [ "$0" != /bin/bash ]; then
 	echo "FAIL apparently this routine is being called, but it should be sourced" 1>&2
 else
-	echo "OK gg getting sourced" 1>&2	
+	echo "OK gg getting sourced" 1>&2
 	cwd=`pwd`
 	if [ -z "$cwd" ]; then
 		echo "FAIL cannot get pwd, has current dir been moved or deleted?" 1>&2

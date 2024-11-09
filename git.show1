@@ -11,4 +11,4 @@ fi
 git show $sha:$relative_fn
 
 exit
-git.show1 fdbfa17c39aeea28e4b20825157ce839936e9dc5 facts/ai.facts $dp/git/doc/facts | head 
+git.show1 fdbfa17c39aeea28e4b20825157ce839936e9dc5 facts/ai.facts $dp/git/doc/facts | head

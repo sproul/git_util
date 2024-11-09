@@ -16,7 +16,7 @@ G()
         #
         # too slow, too verbose (esp. for teacher):
         #git status .
-        
+
         cmd="git commit -a -m '$comments'"
         eval $cmd
         echo finished commit at `date`

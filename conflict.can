@@ -3,8 +3,8 @@ multiple_stock_classes
         * LlmInteraction_object
           development
          Now I have finished my feature, but I cannot check it in because of git conflicts. List the steps I should follow to resolve the conflicts.
-        
-        
+
+
 # 2 successes:
 cd $gax
 bx git.clone git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git development
@@ -29,7 +29,7 @@ git push origin $pr_name
 
 
 Alternatively:
-manually fix merge in file 
+manually fix merge in file
 git add                    src/main/resources/python/ai_extractor/llm.py
 git commit                 src/main/resources/python/ai_extractor/llm.py -m 'resolve merge'
 git rebase --continue

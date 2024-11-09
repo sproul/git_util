@@ -13,7 +13,13 @@ save_commit_version_to_file()
 	local filename=$(basename "$relative_path")
 	local dirname=$(dirname "$relative_path")
 	local versioned_filename="$snapshot_root/${dirname}/${filename}.${commit_date}"
-        echo EARLY $versioned_filename;exit
+
+
+        
+        printf "check this out: EA"
+        echo RLY $versioned_filename;exit
+
+
 
 	if [ -f "$versioned_filename" ]; then
 		echo "OK $versioned_filename previously retrieved" 1>&2
@@ -78,7 +84,7 @@ Usage()
 Ck_folder()
 {
         cd $FOLDER_PATH || return 1
-        
+
         # Check if folder path is provided
         if [[ -z "$FOLDER_PATH" ]]; then
                 Usage
@@ -93,13 +99,13 @@ Ck_folder()
                         return 1
                 ;;
         esac
-        
+
         # Verify if the provided path is within a git repository
         if ! git -C "$FOLDER_PATH" rev-parse; then
                 echo "Error: The specified folder is not within a Git repository."
                 return 1
         fi
-        
+
         # Navigate to the repo's root directory
         cd "$(git -C "$FOLDER_PATH" rev-parse --show-toplevel)" || return 1
 }
