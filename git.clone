@@ -405,6 +405,10 @@ git.clone	      git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps
 git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci-centralpublishgeneric'
+cd $dp/git/sys-eng
+git checkout -b phx-oci-centralpublishgeneric-HUB-20777
+
+
 git.clone -dp https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng.git 'phx-oci'	#	DOES NOT WORK due to ssl cert nonsense
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'add_idmlcmfa_versions'
