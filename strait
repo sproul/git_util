@@ -7,11 +7,11 @@ dry_mode=''
 verbose_mode=''
 while [ -n "$1" ]; do
         case "$1" in
-                -max_horizontal_line_len)
+                -horizontally_truncate_to|-max_horizontal_line_len)
                         shift
                         max_horizontal_line_len=$1
                 ;;
-                -max_vertical_line_count)
+                -vertically_truncate_to|-max_vertical_line_count)
                         shift
                         max_vertical_line_count=$1
                 ;;
@@ -58,3 +58,5 @@ fi |
 trunc_lines $tmp_for_full_output_arg -vertically_truncate_to $max_vertical_line_count $max_horizontal_line_len
 exit
 bx $dp/bin/strait -test
+exit
+echo abc | bx $dp/bin/strait -vertically_truncate_to 100
