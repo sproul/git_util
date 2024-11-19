@@ -6,15 +6,7 @@ end_of_process_safe_gc_list=/tmp/git.prep_auth.inc.$$
 
 Restore_clean_configs()
 {
-        if [ -n "$verbose_mode" ]; then
-                echo Restore_clean_configs disabled
-        fi
-        return
-
-
-
-
-
+        find /tmp -type f -name 'git.prep_auth.inc*' -mtime +2 -delete > /dev/null 2>&1 &        
 
         if [ -f /tmp/Restore_clean_configs__just_return ]; then
                 rm /tmp/Restore_clean_configs__just_return
@@ -25,7 +17,21 @@ Restore_clean_configs()
                 for safe_gc in `cat $end_of_process_safe_gc_list`; do
                         gc=`sed -e 's/\.[0-9][0-9]*$//' <<< $safe_gc`
                         if [ -f $safe_gc ]; then
-                                mv $safe_gc $gc
+
+
+
+
+
+                                if [ -n "disabled" ]; then
+                                        echo Restore_clean_configs disabled
+                                else
+                                        mv $safe_gc $gc
+                                fi
+
+
+
+
+
                         fi
                 done
                 rm -f $end_of_process_safe_gc_list
