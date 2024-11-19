@@ -1,9 +1,10 @@
 #!/bin/bash
 
+. git.prep_auth.inc
+
 Init_for_work_in_cwd()
 {
         . git.find_root
-        . git.prep_auth.inc
 	if [ ! -d .git ]; then
 		echo "FAIL could not find directory .git in `pwd`"
 		return 1
