@@ -14,7 +14,7 @@ Restore_clean_configs()
 		return
 	fi
 	if [ -f "$end_of_process_safe_gc_list" ]; then
-		for safe_gc in `cat $end_of_process_safe_gc_list`; do
+                for safe_gc in `sort -u $end_of_process_safe_gc_list`; do
 			gc=`sed -e 's/\.[0-9][0-9]*$//' <<< $safe_gc`
 			if [ -f $safe_gc ]; then
 
