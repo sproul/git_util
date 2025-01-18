@@ -107,14 +107,6 @@ case "$remote_repo" in
 esac
 project_name=`basename "$remote_repo" | sed -e 's/.git$//'`
 
-case "$project_name" in
-	promotion-config)
-		#branch=port_to_tomcat_10
-		branch=test_blackbox
-		echo "Note that git.clone is automatically setting the branch to be $branch for $project_name"
-	;;
-esac
-
 if [ -n "$browse_mode" ]; then
         # e.g., if remote_repo=git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git, then we should
         # browse https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng
