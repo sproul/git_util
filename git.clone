@@ -36,6 +36,7 @@ case `whoami` in
 		exit 1
 	;;
 esac
+suffix=''
 while [ -n "$1" ]; do
 	case "$1" in
 		-add_branch_suffix)
@@ -82,6 +83,10 @@ while [ -n "$1" ]; do
 			shift
 			to_branch="$1"
 		;;
+                -suffix)
+                        shift
+                        suffix="$1"
+                ;;
 		-*)
 			echo "FAIL unrecognized flag $1" 1>&2
 			exit 1
@@ -220,7 +225,13 @@ if [ -n "$branch" ]; then
 else
 	branch_args=''
 fi
-echo "git clone $branch_args $remote_repo"
+if [ -n "$add_branch_suffix_mode" ]; then
+        if [ -n "$suffix" ]; then
+                echo "FAIL: did not expect a value for \"suffix\" but saw \"$suffix\"" 1>&2
+                exit 1
+        fi
+        suffix=$branch
+fi
 if [ -n "$dry_mode" ]; then
 	exit
 fi
@@ -229,8 +240,8 @@ if [ ! -s $HOME/.ssh/config ]; then
 	exit 1
 fi
 dest_dir=$project_name
-if [ -n "$add_branch_suffix_mode" ]; then
-        dest_dir="$dest_dir.$branch"
+if [ -n "$suffix" ]; then
+        dest_dir="$dest_dir.$suffix"
 fi
 if git clone $branch_args $remote_repo $dest_dir; then
 	echo "OK git clone $branch_args $remote_repo" 1>&2
@@ -381,6 +392,7 @@ $dp/git/git_util/git.clone -dp git@orahub.oraclecorp.com:paas-innovationhub-cent
 $dp/git/git_util/git.clone -f -dp -new_branch git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'preserve_ring_log_after_the_build_phase_of_startup'
 $dp/git/git_util/git.clone -dp	   git@orahub.oraclecorp.com:paas-innovationhub-central/carson.git 'carson_log_search'
 $dp/git/git_util/git.clone -dp	   git@orahub.oci.oraclecorp.com:viraj.purang/patchartifactdefbuilder.git HUB-20507
+bx $dp/git/git_util/git.clone -dp -suffix jdk8 git@orahub.oci.oraclecorp.com:viraj.purang/patchartifactdefbuilder.git
 bx $dp/git/git_util/git.clone sproul@github.com:sproul/bin.git
 bx $dp/git/git_util/git.clone sproul@github.com:sproul/git_util.git
 bx $dp/git/git_util/git.clone sproul@github.com:sproul/emacs.git
