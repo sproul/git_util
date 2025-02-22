@@ -2,19 +2,22 @@
 
 save_old_as_backup()
 {
-	if [ ! -d $git_dir/$project_name ]; then
-		echo "WARNING save_old_as_backup could not find directory $git_dir/$project_name" 1>&2
+	if [ ! -d $dest_dir ]; then
+		echo "WARNING save_old_as_backup could not find directory $dest_dir" 1>&2
 		return 1
 	fi
-	old_branch_name=`git.branch $git_dir/$project_name`
-	if [ -n "$old_branch_name" ]; then
-		if mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name; then
-			echo "OK mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name" 1>&2
-		else
-			echo "FAIL mv $git_dir/$project_name $git_dir/$project_name.backup.$old_branch_name" 1>&2
-			return 1
-		fi
-	fi
+	old_branch_name=`git.branch $dest_dir`
+	bu_dir=$git_dir/$dest_dir.backup.$old_branch_name
+        if [ -d "$bu_dir" ]; then
+                echo "FAIL: save_old_as_backup: directory \"$bu_dir\" already exists" 1>&2
+                return 1
+        fi
+	if mv $dest_dir $bu_dir; then
+		echo "OK mv $dest_dir $bu_dir" 1>&2
+	else
+		echo "FAIL mv $dest_dir $bu_dir" 1>&2
+                return 1
+        fi
 }
 
 add_branch_suffix_mode=''
@@ -47,9 +50,9 @@ while [ -n "$1" ]; do
 			git.clone     $*
 			exit
 		;;
-                -browse|ui)
-                        browse_mode=-browse
-                ;;
+		-browse|ui)
+			browse_mode=-browse
+		;;
 		-chi)
 			shift
 			if [ ! -f "$1" ]; then
@@ -83,10 +86,10 @@ while [ -n "$1" ]; do
 			shift
 			to_branch="$1"
 		;;
-                -suffix)
-                        shift
-                        suffix="$1"
-                ;;
+		-suffix)
+			shift
+			suffix="$1"
+		;;
 		-*)
 			echo "FAIL unrecognized flag $1" 1>&2
 			exit 1
@@ -113,15 +116,15 @@ esac
 project_name=`basename "$remote_repo" | sed -e 's/.git$//'`
 
 if [ -n "$browse_mode" ]; then
-        # e.g., if remote_repo=git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git, then we should
-        # browse https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng
-        #
-        # ssh://sirish.kumar%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git ->
-        # https://alm.oraclecorp.com/sirish.kumar/submitconfigfarmjobs
-        url=`sed -e 's;^git@;https://;' <<< $remote_repo`
-        echo "browser $url"
-        browser       $url
-        exit $?
+	# e.g., if remote_repo=git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git, then we should
+	# browse https://orahub.oci.oraclecorp.com/rohit.ro.kumar/sys-eng
+	#
+	# ssh://sirish.kumar%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git ->
+	# https://alm.oraclecorp.com/sirish.kumar/submitconfigfarmjobs
+	url=`sed -e 's;^git@;https://;' <<< $remote_repo`
+	echo "browser $url"
+	browser	      $url
+	exit $?
 fi
 if [ -n "$to_branch" ]; then
 	cd $HOME/git
@@ -193,10 +196,6 @@ else
 	cd $git_dir
 fi
 
-if [ -d $git_dir/$project_name ]; then
-	save_old_as_backup
-fi
-
 if [ -n "$branch" ]; then
 	branch_marker="$git_dir/$project_name.BRANCH=$branch"
 else
@@ -226,11 +225,11 @@ else
 	branch_args=''
 fi
 if [ -n "$add_branch_suffix_mode" ]; then
-        if [ -n "$suffix" ]; then
-                echo "FAIL: did not expect a value for \"suffix\" but saw \"$suffix\"" 1>&2
-                exit 1
-        fi
-        suffix=$branch
+	if [ -n "$suffix" ]; then
+		echo "FAIL: did not expect a value for \"suffix\" but saw \"$suffix\"" 1>&2
+		exit 1
+	fi
+	suffix=$branch
 fi
 if [ -n "$dry_mode" ]; then
 	exit
@@ -239,15 +238,19 @@ if [ ! -s $HOME/.ssh/config ]; then
 	echo "FAIL empty .ssh/config seen; used to call ssh.init to address this, but that was making a bigger mess" 1>&2
 	exit 1
 fi
-dest_dir=$project_name
 if [ -n "$suffix" ]; then
-        dest_dir="$dest_dir.$suffix" 
+	dest_dir="$project_name.$suffix" 
+else
+	dest_dir=$project_name
+fi
+if [ -d $dest_dir ]; then
+	save_old_as_backup
 fi
 if git clone $branch_args $remote_repo $dest_dir; then
 	echo "OK git clone $branch_args $remote_repo" 1>&2
 else
 	echo "FAIL git clone $branch_args $remote_repo" 1>&2
-        exit 1
+	exit 1
 fi
 if [ -n "$new_branch_mode" ]; then
 	echo "cd \"$project_name\""
@@ -431,7 +434,7 @@ git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/fmwpi
 git.clone -dp ssh://sirish.kumar%40oracle.com@alm.oraclecorp.com:2222/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
 git.clone -dp ssh://surabhi.pathak%40oracle.com@alm.oraclecorp.com:2222/syseng_cicd-dashboard_5996/cicd-dashboard.git
 git.clone -browse -dp ssh://sirish.kumar%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
-git.clone                 git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/shiphome-comparator-goldfile.git
+git.clone		  git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/shiphome-comparator-goldfile.git
 git.clone     -new_branch git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/shiphome-comparator-goldfile.git visual_diff2
 git.clone -dp -new_branch git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/shiphome-comparator-goldfile.git visual_diff2
 git.clone -dp -new_branch git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/docker-pipeline.git stop_jdk17_builds
