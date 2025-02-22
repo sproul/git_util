@@ -7,4 +7,11 @@ if [ -n "$dir" ]; then
         fi
         cd $dir
 fi
-git branch | tail -1 | sed -e 's/^\* //' -e 's/^ *//'
+t=`mktemp`; trap "rm $t*" EXIT
+git branch > $t
+fgrep '*' $t > $t.chosen
+if [ -s $t.chosen ]; then
+        head -1 $t.chosen
+else
+        head -1 $t
+fi | sed -e 's/^\* //' -e 's/^ *//'

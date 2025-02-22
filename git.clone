@@ -241,7 +241,7 @@ if [ ! -s $HOME/.ssh/config ]; then
 fi
 dest_dir=$project_name
 if [ -n "$suffix" ]; then
-        dest_dir="$dest_dir.$suffix"
+        dest_dir="$dest_dir.$suffix" 
 fi
 if git clone $branch_args $remote_repo $dest_dir; then
 	echo "OK git clone $branch_args $remote_repo" 1>&2
