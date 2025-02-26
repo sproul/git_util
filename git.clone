@@ -201,22 +201,6 @@ if [ -n "$branch" ]; then
 else
 	branch_marker=''
 fi
-if [ -d $project_name ]; then
-	if [ -z "$force_mode" ]; then
-		echo "$0: error: $git_dir/$project_name already exists (from `pwd`) (use -f to replace)" 1>&2
-		exit 1
-	fi
-	if [ -d /tmp/$project_name ]; then
-		echo.clean "rm -rf /tmp/$project_name"
-		rm	 -rf /tmp/$project_name
-	fi
-	echo.clean "mv $project_name /tmp"
-	mv	 $project_name /tmp
-	if [ -f "$branch_marker" ]; then
-		echo.clean "rm -f $branch_marker"
-		rm	 -f $branch_marker
-	fi
-fi
 if [ -n "$branch" ]; then
 	if [ -z "$new_branch_mode" ]; then
 		branch_args="-b $branch"
