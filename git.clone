@@ -312,6 +312,7 @@ bx $dp/git/git_util/git.clone git@orahub.oraclecorp.com:fmw-platform-lifecycle/p
 bx $dp/git/git_util/git.clone git@orahub.oraclecorp.com:satyabhanu.dash/changemonitor.git
 bx $dp/git/git_util/git.clone https://github.com/sproul/weblog_2_tests
 bx $dp/git/git_util/git.clone https://github.com/sproul/sgrep
+bx $dp/git/git_util/git.clone -dp https://github.com/sproul/sproul.github.io.git
 bx $dp/git/git_util/git.clone https://github.com/sproul/calculator
 bx $dp/git/git_util/git.clone https://github.com/sproul/change_tracker
 bx $dp/git/git_util/git.clone https://github.com/sproul/mutivcs_query
