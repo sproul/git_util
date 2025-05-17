@@ -1,2 +1,2 @@
 :
-git.postpone $*
+git.pull
