@@ -426,5 +426,6 @@ git.clone		  git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/shiphome-comparato
 git.clone     -new_branch git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/shiphome-comparator-goldfile.git visual_diff2
 git.clone -dp -new_branch git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/shiphome-comparator-goldfile.git visual_diff2
 git.clone -dp -new_branch git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/docker-pipeline.git stop_jdk17_builds
+git.clone -dp -new_branch git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/change-aggregator.git rm_ESE
 exit
 git.clone -new_branch git@orahub.oci.oraclecorp.com:paas-innovationhub-central/pcaapps 'flexcube_cut_2'
