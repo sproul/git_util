@@ -385,7 +385,9 @@ bx $dp/git/git_util/git.clone sproul@github.com:sproul/bin.git
 bx $dp/git/git_util/git.clone sproul@github.com:sproul/git_util.git
 bx $dp/git/git_util/git.clone sproul@github.com:sproul/emacs.git
 bx $dp/git/git_util/git.clone git@github.com/clj-commons/aleph.git
-git.clone https://github.com/clj-commons/aleph.git
+git.clone 'https://alm.oraclecorp.com/syseng/#projects/stage-tagger/scm/stage-tagger.git/tree?revision=master'
+git.clone -dp 'ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng_stage-tagger/stage-tagger.git'
+git.clone     'ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng_stage-tagger/stage-tagger.git'
 git.clone https://github.com/clj-commons/aleph.git
 git.clone https://github.com/lsproul/flight_planner.git
 git.clone git@orahub.oci.oraclecorp.com:mike.gilbode/messageproducer.git
