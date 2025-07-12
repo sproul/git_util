@@ -1,0 +1,4 @@
+:
+git ls-files --others --exclude-standard
+exit
+$dp/git/git_util/git.what_would_be_added_if_I_add_all
