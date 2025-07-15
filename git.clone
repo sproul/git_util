@@ -410,6 +410,7 @@ git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'phx-oci'
 git.clone -dp git@orahub.oci.oraclecorp.com:rohit.ro.kumar/sys-eng.git 'add_idmlcmfa_versions'
 git.clone -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/fmwpipeline-fa-fmwsuites.git
 git.clone -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/carson-orchestrations.git
+git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/carson-orchestrations.git aix_and_sparc_routing_to_SLC2
 git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/fmwpipeline-fa-fmwsuites.git 'troubleshooting'
 git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:sirish_kumar/cicd_projects.git 'changeiq_stage_automatically_triggered_builds'
 git.clone  -dp git@orahub.oci.oraclecorp.com:sirish_kumar/cicd_projects.git
