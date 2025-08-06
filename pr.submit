@@ -1,0 +1,48 @@
+:
+comment="$*"
+if [ -z "$comment" ]; then
+	echo "FAIL: expected a value for \"comment\" but saw nothing" 1>&2
+	exit 1
+fi
+
+
+
+branch_name=`git branch | tail -1 | sed -e 's/^\* //'`
+if [ -z "$branch_name" ]; then
+	echo "FAIL: expected a value for \"branch_name\" but saw nothing" 1>&2
+	exit 1
+fi
+if git commit -m "$comment"; then
+	echo "OK git commit -m $comment" 1>&2
+else
+	echo "FAIL git commit -m $comment" 1>&2
+	exit 1
+fi
+if git push origin "$branch_name"; then
+	echo "OK git push origin $branch_name" 1>&2
+else
+	echo "FAIL git push origin $branch_name" 1>&2
+	exit 1
+fi
+
+if make format; then
+	echo "OK make format" 1>&2
+else
+	echo "FAIL make format" 1>&2
+	exit 1
+fi
+if make lint; then
+	echo "OK make lint" 1>&2
+else
+	echo "FAIL make lint" 1>&2
+	exit 1
+fi
+if make test; then
+	echo "OK make test" 1>&2
+else
+	echo "FAIL make test" 1>&2
+        exit 1
+fi
+
+exit
+$dp/git/git_util/pr.submit -x 

@@ -415,6 +415,7 @@ git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/fmwpi
 git.clone -new_branch -dp git@orahub.oci.oraclecorp.com:sirish_kumar/cicd_projects.git 'changeiq_stage_automatically_triggered_builds'
 git.clone  -dp git@orahub.oci.oraclecorp.com:sirish_kumar/cicd_projects.git
 git.clone https://github.com/langchain-ai/langchain.git
+git.clone -dp https://github.com/sproul/langchain.git
 git.clone git@github.com:langchain-ai/open-agent-platform.git
 git.clone -dp https://github.com/langchain-ai/open-agent-platform.git
 git.clone ssh://nelson.sproul%40oracle.com@alm.oraclecorp.com/syseng_submitconfigfarmjobs/submitconfigfarmjobs.git
