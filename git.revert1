@@ -2,39 +2,38 @@
 
 Undo()
 {
-        tfn=/tmp/`basename $fn`
-        if [ ! -f "$tfn" ]; then
-                echo "FAIL: expected file at \"$tfn\"" 1>&2
-                exit 1
-        fi
-        if [ ! -f "$fn" ]; then
-                if mv $tfn $fn; then
-                        echo "OK mv $tfn $fn" 1>&2
-                else
-                        echo "FAIL mv $tfn $fn" 1>&2
-                        exit 1
-                fi
-        else
-                if mv $tfn $t; then
-                        echo "OK mv $tfn $t" 1>&2
-                else
-                        echo "FAIL mv $tfn $t" 1>&2
-                        exit 1
-                fi
-                if mv $fn $tfn; then
-                        echo "OK mv $fn $tfn" 1>&2
-                else
-                        echo "FAIL mv $fn $tfn" 1>&2
-                        exit 1
-                fi
-                if mv $t $fn; then
-                        echo "OK mv $t $fn" 1>&2
-                else
-                        echo "FAIL mv $t $fn" 1>&2
-                        exit 1
-                fi
-        fi
-        touch $fn       #       provoke incremental build, if that is what we are working with
+	if [ ! -f "$tfn" ]; then
+		echo "FAIL: expected file at \"$tfn\"" 1>&2
+		exit 1
+	fi
+	if [ ! -f "$fn" ]; then
+		if mv $tfn $fn; then
+			echo "OK mv $tfn $fn" 1>&2
+		else
+			echo "FAIL mv $tfn $fn" 1>&2
+			exit 1
+		fi
+	else
+		if mv $tfn $t; then
+			echo "OK mv $tfn $t" 1>&2
+		else
+			echo "FAIL mv $tfn $t" 1>&2
+			exit 1
+		fi
+		if mv $fn $tfn; then
+			echo "OK mv $fn $tfn" 1>&2
+		else
+			echo "FAIL mv $fn $tfn" 1>&2
+			exit 1
+		fi
+		if mv $t $fn; then
+			echo "OK mv $t $fn" 1>&2
+		else
+			echo "FAIL mv $t $fn" 1>&2
+			exit 1
+		fi
+	fi
+	touch $fn	#	provoke incremental build, if that is what we are working with
 }
 
 . git_util.inc
@@ -77,10 +76,10 @@ while [ -n "$1" ]; do
 		-v|-verbose)
 			verbose_mode=-v
 		;;
-                -x)
-                        debug_mode=-x
-                        set -x
-                ;;
+		-x)
+			debug_mode=-x
+			set -x
+		;;
 		*)
 			break
 		;;
@@ -90,11 +89,11 @@ done
 
 
 fn="$1"
+tfn=/tmp/`basename $fn`
 if [ -n "$undo_mode" ]; then
-        Undo
-        exit
+	Undo
+	exit
 fi
-
 if [ ! -f "$fn" ]; then
 	touch "$fn"
 	zfn=''
