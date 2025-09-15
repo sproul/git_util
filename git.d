@@ -72,6 +72,7 @@ else
         prune.midnight_files
         git_proj_dir=`ls.up -find_parent_of_dir .git`
         proj=`basename $git_proj_dir`
+        cd $git_proj_dir
         Detect_and_maybe_correct_weird_config_disappearance
         git status --short > $t.mid
         git diff . > $t
