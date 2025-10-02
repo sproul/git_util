@@ -32,7 +32,7 @@ pr_base_branch='development'
 src_chi_fns=''
 to_branch=''
 case `whoami` in
-	admin.nelson|brace|devel|leighton|nelsonsproul|nelson|nsproul|opc|x)
+	admin.nelson|brace|devel|leighton|nelsonsproul|nelson|nsproul|opc|ubuntu|x)
 	;;
 	*)
 		echo "$0: error: logged in as wrong user: `whoami`" 1>&2
