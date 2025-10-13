@@ -241,11 +241,20 @@ Checkin()
 		fi
 		grep "\.json$" $t.changed_or_added |
 		while read json_fn; do
-			if json.ok $json_fn; then
-				echo "OK json.ok $json_fn"
-			else
-				echo "FAIL json.ok $json_fn"
-			fi
+                        case "$json_fn" in
+                                prompt_*json)
+                                        if [ -n "$verbose_mode" ]; then
+                                                echo "OK ignore these prompt files, they are too plentiful to reformat" 1>&2
+                                        fi
+                                ;;
+                                *)
+                                        if json.ok $json_fn; then
+                                                echo "OK json.ok $json_fn"
+                                        else
+                                                echo "FAIL json.ok $json_fn"
+                                        fi
+                                ;;
+                        esac
 		done > $t.result
 		if grep FAIL $t.result > /dev/null 2>&1; then
 			cat $t.result
