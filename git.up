@@ -242,7 +242,7 @@ Checkin()
 		grep "\.json$" $t.changed_or_added |
 		while read json_fn; do
                         case "$json_fn" in
-                                prompt_*json)
+                                *prompt_*json)
                                         if [ -n "$verbose_mode" ]; then
                                                 echo "OK ignore these prompt files, they are too plentiful to reformat" 1>&2
                                         fi
