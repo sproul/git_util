@@ -4,6 +4,12 @@
 
 Init_for_work_in_cwd()
 {
+        case `whoami` in
+                root)
+                        echo "FAIL do not use root for interactions with git" 1>&2
+                        return 0
+                ;;
+        esac
         . git.find_root
 	if [ ! -d .git ]; then
 		echo "FAIL could not find directory .git in `pwd`"
@@ -424,7 +430,7 @@ Pull_latest_updates_if_no_local_changes()
 		fi
 	fi
 	cd $d/$proj
-	Init_for_work_in_cwd
+	Init_for_work_in_cwd || exit 1
 	Commit $proj $d
 	if Changes_seen; then
 		return
