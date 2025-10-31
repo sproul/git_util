@@ -23,9 +23,13 @@ Detect_and_maybe_correct_weird_config_disappearance()
 
 all_mode=''
 dry_mode=''
+terse_mode=''
 verbose_mode=''
 while [ -n "$1" ]; do
 	case "$1" in
+                -|-terse)
+                        terse_mode=-terse
+                ;;
 		a|-all)
 			for d in `cat $dp/.modified_repo_statuses`; do
 				git.d -in_dir $d
@@ -75,7 +79,11 @@ else
         cd $git_proj_dir
         Detect_and_maybe_correct_weird_config_disappearance
         git status --short > $t.mid
-        git diff . > $t
+        if [ -n "$terse_mode" ]; then
+                cat /dev/null > $t
+        else
+                git diff . > $t
+        fi
 fi
 strait $t
 
