@@ -1,0 +1,19 @@
+:
+exit
+
+git checkout -b feature/breaking-change
+.
+.
+.
+git fetch origin
+git checkout main
+git pull
+git checkout -b hotfix/some-prod-fix
+.
+.
+.
+git checkout feature/breaking-change
+git pull origin main   # or rebase if you prefer cleaner history
+
+
+You can't have outstanding changes in between these transitions. So even if there is a breaking change, thinking in terms of quick updates and commits so that there are no untracked files which will poison the context switch.
