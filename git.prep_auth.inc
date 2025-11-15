@@ -88,7 +88,7 @@ Prep_auth()
 	safe_gc=$gc.$$
 	if grep "url = https://:" $gc > /dev/null 2>&1; then
                 gc_replacement=`sed -e "s;$dp;$HOME;" <<< $(full_path $gc)`
-		if [ !-f "$gc_replacement" ]; then
+                if [ ! -f "$gc_replacement" ]; then
 			echo "FAIL $gc corruption seen: url = https://:, could not find a replacement in HOME" 1>&2
 			exit 1
 		fi
