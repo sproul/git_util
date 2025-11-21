@@ -89,8 +89,11 @@ Prep_auth()
 	if grep "url = https://:" $gc > /dev/null 2>&1; then
                 gc_replacement=`sed -e "s;$dp;$HOME;" <<< $(full_path $gc)`
                 if [ ! -f "$gc_replacement" ]; then
-			echo "FAIL $gc corruption seen: url = https://:, could not find a replacement in HOME" 1>&2
-			exit 1
+                        gc_replacement=$gc.bak
+                        if [ ! -f $gc_replacement ]; then
+                                echo "FAIL $gc corruption seen: url = https://:, could not find a replacement in HOME" 1>&2
+                                exit 1
+                        fi
 		fi
 		cmd="cp $gc_replacement $gc"
 		echo "$cmd" 1>&2
@@ -101,6 +104,9 @@ Prep_auth()
                         exit 1
                 fi
 	fi
+        if [ ! -f $gc.bak ]; then
+                cp $gc $gc.bak  #       to help the search for an uncorrupt replacement above
+        fi
 	if grep "url = https://.*sproul:" $gc > /dev/null 2>&1; then
 		# left over from a previous run, but we don't want the gc value to sit here indefinitely
 		if [ -n "$verbose_mode" ]; then
