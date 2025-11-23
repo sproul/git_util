@@ -1,0 +1,74 @@
+:
+# alias gw=git.workstree
+#
+# Expected sequence:
+#       gw stop the creation of bhcs download spreadsheets for odd-numbered quarters    # create worktree named stop_the_creation_of_bhcs_download_spreadsheets_for_odd-numbered_quarters
+#       gw                      # cycle between git worktrees
+#       gw -                    # gu stop the creation of bhcs download spreadsheets for odd-numbered quarters; store as a backup
+#       
+debug_mode=''
+dry_mode=''
+t=`mktemp`; trap "rm $t*" EXIT
+verbose_mode=''
+while (( $# >= 1 )); do
+        case "$1" in
+                -dry)
+                        dry_mode=-dry
+                ;;
+                -q|-quiet)
+                        verbose_mode=''
+                ;;
+                -v|-verbose)
+                        verbose_mode=-v
+                ;;
+                -x)
+                        set -x
+                        debug_mode=-x
+                ;;
+                -*)
+                        echo "FAIL unrecognized flag $1" 1>&2
+                        exit 1
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
+done
+if [ ! -d .git ]; then
+        echo "FAIL could not find directory .git, need to be at the top of a repo" 1>&2
+        exit 1
+fi
+if [ -z "$1" ]; then
+        git worktree list
+        echo "OK IMPL cycle" 1>&2
+        exit 0
+fi
+
+case "$1" in
+        -)
+                # from the worktree
+                branch_name=`git.branch`
+                echo "OK branch_name=$branch_name" 1>&2
+                git.ac $branch_name
+                git push -u origin $branch_name
+                git worktree remove `pwd`
+                # \\\\\\//////// how to determine the right location?
+                cd $dp/git/a
+                git pull
+                git merge $branch_name
+                git push
+        ;;
+        *)
+                feature_name=`sed -e 's/ /_/g' <<< $*`
+                # -b => "create the branch with this name"
+                git worktree add ../$feature_name -b $feature_name
+        ;;
+esac
+
+exit
+cd $dp/git/a/
+$dp/git/git_util/git.workstree -x add links to QA pages for Bank firms
+# edit
+$dp/git/git_util/git.workstree
+$dp/git/git_util/git.workstree -
