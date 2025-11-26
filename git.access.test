@@ -1,0 +1,46 @@
+:
+#
+debug_mode=''
+dry_mode=''
+t=`mktemp`; trap "rm $t*" EXIT
+verbose_mode=''
+while (( $# >= 1 )); do
+	case "$1" in
+		-dry)
+			dry_mode=-dry
+		;;
+		-q|-quiet)
+			verbose_mode=''
+		;;
+		-v|-verbose)
+			verbose_mode=-v
+		;;
+		-x)
+			set -x
+			debug_mode=-x
+		;;
+		-*)
+			echo "FAIL unrecognized flag $1" 1>&2
+			exit 1
+		;;
+		*)
+			break
+		;;
+	esac
+	shift
+done
+git_urls="${1-git@github.com:sproul/maturin.git git@github.com:sproul/maturin.data.git}"
+for git_url in $git_urls; do
+	echo "git ls-remote $git_url"
+	if [ -z "$dry_mode" ]; then
+                if git ls-remote $git_url; then
+			echo "OK git ls-remote $git_url" 1>&2
+		else
+			echo "FAIL git ls-remote $git_url" 1>&2
+                        exit 1
+                fi
+	fi
+done
+
+exit
+$dp/git/git_util/git.access.test -dry
