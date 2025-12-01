@@ -183,15 +183,7 @@ if [ ! -d $git_dir ]; then
 	exit 1
 fi
 if [ -n "$dp_mode" ]; then
-	cd $dp
-	case "$project_name" in
-		git_util|data|emacs)
-			# at some point we will put everything under the 'git' dir
-		;;
-		*)
-			cd git
-		;;
-	esac
+	cd $dp/git
 else
 	cd $git_dir
 fi
