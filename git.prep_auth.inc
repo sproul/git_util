@@ -14,7 +14,7 @@ Restore_clean_configs()
 		return
 	fi
 	if [ -f "$end_of_process_safe_gc_list" ]; then
-                for safe_gc in `sort -u $end_of_process_safe_gc_list`; do
+		for safe_gc in `sort -u $end_of_process_safe_gc_list`; do
 			gc=`sed -e 's/\.[0-9][0-9]*$//' <<< $safe_gc`
 			if [ -f $safe_gc ]; then
 
@@ -85,28 +85,38 @@ Prep_auth()
 		xrepo_name=`basename $(pwd)`
 	fi
 	gc=.git/config
+	if grep 'url =' $gc > /dev/null 2>&1; then
+		cp $gc $gc.bak
+	elif [ -f $gc.bak ]; then
+                if cp $gc.bak $gc; then
+			echo "OK cp $gc.bak $gc" 1>&2
+		else
+			echo "FAIL cp $gc.bak $gc" 1>&2
+                        exit 1
+                fi
+        fi
 	safe_gc=$gc.$$
 	if grep "url = https://:" $gc > /dev/null 2>&1; then
-                gc_replacement=`sed -e "s;$dp;$HOME;" <<< $(full_path $gc)`
-                if [ ! -f "$gc_replacement" ]; then
-                        gc_replacement=$gc.bak
-                        if [ ! -f $gc_replacement ]; then
-                                echo "FAIL $gc corruption seen: url = https://:, could not find a replacement in HOME" 1>&2
-                                exit 1
-                        fi
+		gc_replacement=`sed -e "s;$dp;$HOME;" <<< $(full_path $gc)`
+		if [ ! -f "$gc_replacement" ]; then
+			gc_replacement=$gc.bak
+			if [ ! -f $gc_replacement ]; then
+				echo "FAIL $gc corruption seen: url = https://:, could not find a replacement in HOME" 1>&2
+				exit 1
+			fi
 		fi
 		cmd="cp $gc_replacement $gc"
 		echo "$cmd" 1>&2
-                if $cmd; then
+		if $cmd; then
 			echo "WARN $gc corruption seen: url = https://:, replacing: $cmd" 1>&2
 		else
-                        echo "FAIL $cmd, trying to correct corruption in $gc" 1>&2
-                        exit 1
-                fi
+			echo "FAIL $cmd, trying to correct corruption in $gc" 1>&2
+			exit 1
+		fi
 	fi
-        if [ ! -f $gc.bak ]; then
-                cp $gc $gc.bak  #       to help the search for an uncorrupt replacement above
-        fi
+	if [ ! -f $gc.bak ]; then
+		cp $gc $gc.bak	#	to help the search for an uncorrupt replacement above
+	fi
 	if grep "url = https://.*sproul:" $gc > /dev/null 2>&1; then
 		# left over from a previous run, but we don't want the gc value to sit here indefinitely
 		if [ -n "$verbose_mode" ]; then
