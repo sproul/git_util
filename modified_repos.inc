@@ -51,7 +51,7 @@ git_util__modified_repos__Check_repo()
 	(
 	cd "$proj_root_dir"
 	if ! output=`git status --short > $t 2>&1`; then
-		echo "$0: output=`git status --short` failed, exiting..." 1>&2
+                echo "$0 looking at $proj_root_dir: output=`git status --short` failed, exiting..." 1>&2
 		cat $t
 		rm $t
 		return 1

@@ -85,5 +85,6 @@ done
 exit
 bx $dp/git/git_util/modified_repos.sh -refresh
 bx $dp/git/git_util/modified_repos.sh -add $dp/git/emacs/lisp/n-file.el
+bx $dp/git/git_util/modified_repos.sh -check_all
 exit
 bx $dp/git/git_util/modified_repos.sh -test
