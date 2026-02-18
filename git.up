@@ -57,7 +57,7 @@ Push()
 		echo "FAIL bring outdated branch up to date and retry"
 		exit 1
 	fi
-	echo $0 saw merge problem...
+        echo $0 saw merge problem >> $t
 	echo ===========================================================================
 	cat $t
 	echo ===========================================================================
@@ -65,8 +65,9 @@ Push()
 	# before pushing, do this, will auto-merge:
 	echo "git pull --rebase"
 	if [ -z "$dry_mode" ]; then
-		if ! git pull --rebase; then
+                if ! git pull --rebase >> $t 2>&1; then
 			Clear_status
+                        cat $t
 			echo "$0: git pull --rebase failed......................" 1>&2
 			echo "git status"
 			Git_status
@@ -77,8 +78,9 @@ Push()
 		fi
 		Clear_status
 	fi
-	if ! git push origin $branch; then
+        if ! git push origin $branch >> $t 2>&1; then
 		Clear_status
+                cat $t
 		echo "$0: error: git push origin failed" 1>&2
 		return 1
 	else
