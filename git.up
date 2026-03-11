@@ -428,20 +428,21 @@ Pull_latest_updates_if_no_local_changes()
 			if [ -n "$verbose_mode" ]; then
 				echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
 			fi
-			return
+                        return 1
 		fi
 	fi
 	cd $d/$proj
 	Init_for_work_in_cwd || exit 1
 	Commit $proj $d
 	if Changes_seen; then
-		return
+                return 1
 	fi
 	Clear_status
 	Prep_auth
 	echo "git pull origin $branch in `pwd`"
 	git	  pull origin $branch
 	Clear_status
+        return 0
 	)
 }
 
@@ -629,7 +630,7 @@ while [ -n "$1" ]; do
 		-Pull_latest_updates_if_no_local_changes)
 			shift
 			Pull_latest_updates_if_no_local_changes	      $*
-			exit
+                        exit $?
 		;;
 		-repo)
 			shift
