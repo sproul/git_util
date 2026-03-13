@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+. "$script_dir/git.workflow_common.inc"
+
+main() {
+  ensure_inside_repo
+  detect_base_branch
+
+  local branch
+  branch=$(current_branch_name)
+
+  local ahead
+  ahead=$(run_capture git rev-list --count "${BASE_REF}..HEAD")
+
+  printf '%s+%s' "$branch" "$ahead"
+}
+
+main "$@"

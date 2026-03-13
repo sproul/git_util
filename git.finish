@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+. "$script_dir/git.workflow_common.inc"
+
+usage() {
+  cat >&2 <<'EOF'
+Usage:
+  git.finish ["<commit message>"]   # stage, commit, rebase, and push current branch
+  git.finish --cleanup <branch>
+EOF
+  exit 1
+}
+
+prepare_for_pr() {
+  local message
+  message="$1"
+
+  ensure_inside_repo
+  detect_base_branch
+
+  local branch
+  branch=$(current_branch_name)
+  ensure_not_base_branch "$branch"
+
+  if [ -z "$message" ]; then
+    message="$branch"
+  fi
+  if [ -z "$message" ]; then
+    fail "Commit message must not be empty."
+  fi
+
+  local committed="false"
+  if working_tree_has_changes; then
+    run git add -A
+    run git commit -m "$message"
+    committed="true"
+  fi
+
+  ensure_working_tree_clean
+
+  run git fetch origin
+  checkout_base_branch_for_update
+
+  run git checkout "$branch"
+  run git rebase "$BASE_BRANCH"
+
+  if branch_has_upstream "$branch"; then
+    run git push --force-with-lease origin "$branch"
+  else
+    run git push -u origin "$branch"
+  fi
+
+  if [ "$committed" = "true" ]; then
+    ok "Committed pending changes, rebased ${branch} onto ${BASE_BRANCH}, and pushed."
+  else
+    ok "No new changes to commit. Rebasing ${branch} onto ${BASE_BRANCH} and pushing."
+  fi
+}
+
+cleanup_branch() {
+  local branch
+
+  if [ "$#" -eq 0 ]; then
+    if [ "${GIT_AUTOMATIC_BRANCH_DELETION-}" = "yes" ]; then
+      branch=$(current_branch_name)
+      ensure_not_base_branch "$branch"
+      ok "GIT_AUTOMATIC_BRANCH_DELETION=yes detected; cleaning current branch ${branch}."
+    else
+      usage
+    fi
+  else
+    if [ "$#" -ne 1 ]; then
+      usage
+    fi
+    branch="$1"
+  fi
+
+  ensure_inside_repo
+  ensure_working_tree_clean
+  detect_base_branch
+  ensure_not_base_branch "$branch"
+
+  checkout_base_branch_for_update
+
+  if git show-ref --verify --quiet "refs/heads/${branch}"; then
+    run git branch -d "$branch"
+  else
+    ok "Local branch ${branch} already removed."
+  fi
+
+  if remote_branch_exists "$branch"; then
+    run git push origin --delete "$branch"
+  else
+    ok "Remote branch origin/${branch} already removed."
+  fi
+
+  ok "Cleanup complete for ${branch}."
+}
+
+main() {
+  if [ "${1-}" = "--cleanup" ]; then
+    shift
+    cleanup_branch "$@"
+    return
+  fi
+
+  local message
+  message=""
+  if [ "$#" -gt 0 ]; then
+    message="$*"
+  fi
+
+  prepare_for_pr "$message"
+}
+
+main "$@"

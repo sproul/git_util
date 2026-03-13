@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+. "$script_dir/git.workflow_common.inc"
+
+main() {
+  ensure_inside_repo
+  detect_base_branch
+
+  local branch
+  branch=$(current_branch_name)
+
+  if [ "$branch" = "$BASE_BRANCH" ] && working_tree_has_changes; then
+    fail "Refusing to auto-commit on base branch ${BASE_BRANCH}. Run git.start first."
+  fi
+
+  if working_tree_has_changes; then
+    run git add -A
+    local hostname
+    hostname=$(hostname_short)
+    run git commit -m "WIP(sync:${hostname})"
+  fi
+
+  if ! branch_has_upstream "$branch"; then
+    run git push -u origin "$branch"
+  else
+    run git push
+  fi
+
+  run git fetch origin
+  run git pull --ff-only
+
+  ok "Synchronized branch ${branch}."
+}
+
+main "$@"

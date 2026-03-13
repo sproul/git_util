@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+. "$script_dir/git.workflow_common.inc"
+
+usage() {
+  fail "Usage: git.start <branch>"
+}
+
+main() {
+  if [ "$#" -ne 1 ]; then
+    usage
+  fi
+
+  local branch
+  branch="$1"
+
+  if [ -z "$branch" ]; then
+    fail "Branch name must not be empty."
+  fi
+
+  ensure_inside_repo
+  ensure_working_tree_clean
+
+  detect_base_branch
+
+  if [ "$branch" = "$BASE_BRANCH" ]; then
+    fail "Branch name conflicts with base branch ${BASE_BRANCH}."
+  fi
+
+  if git show-ref --verify --quiet "refs/heads/${branch}"; then
+    fail "Local branch ${branch} already exists."
+  fi
+
+  if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+    fail "Remote branch origin/${branch} already exists."
+  fi
+
+  checkout_base_branch_for_update
+
+  run git checkout -b "$branch"
+  run git push -u origin "$branch"
+
+  ok "Created branch ${branch} tracking origin/${branch}."
+}
+
+main "$@"
