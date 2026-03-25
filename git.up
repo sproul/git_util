@@ -200,43 +200,44 @@ Checkin()
 					patt="EARLY"
 					patt="$patt.*exit"
 					changed_file_list=`cat $t.changed_or_added | grep -v 'shell/'`
-                                        if rg --no-heading -Hn "$patt" $changed_file_list /dev/null; then
+                                        . rg_grep.inc
+					if $g "$patt" $changed_file_list /dev/null; then
 						echo FAILED early exit indicates debugging
 						exit 1
 					fi
 					patt=" X"
 					patt="${patt}test"
-					if rg --no-heading -Hn "$patt" $changed_file_list /dev/null; then
+					if $g "$patt" $changed_file_list /dev/null; then
 						echo FAILED X + test indicates disabling tests for debug
 						exit 1
 					fi
 					patt="el"
 					patt="${patt}sov"
-					if rg --no-heading -Hn "$patt" $changed_file_list /dev/null; then
+					if $g "$patt" $changed_file_list /dev/null; then
                                                 echo FAILED X + test indicates sensitivity
 						#exit 1
 					fi
 					patt="t=\`mktemp\`"
 					patt="$patt *#"
-					if rg --no-heading -Hn "$patt" $changed_file_list /dev/null; then
+					if $g "$patt" $changed_file_list /dev/null; then
 						echo FAILED disabled cleanup of temporary files indicates debugging
 						exit 1
 					fi
 					patt="def"
 					patt="$patt xtest"
-					if rg --no-heading -Hn "$patt" $changed_file_list /dev/null; then
+					if $g "$patt" $changed_file_list /dev/null; then
 						echo FAILED looks like temporarily disabled python tests, indicates debugging
 						exit 1
 					fi
 					patt="#"
 					patt="${patt}trap"
-					if rg --no-heading -Hn "$patt" $changed_file_list /dev/null; then
+					if $g "$patt" $changed_file_list /dev/null; then
 						echo FAILED looks like temporarily disabled tmp file cleanup, indicates debugging
 						exit 1
 					fi
 					patt="# *"
 					patt="${patt}answer.merge"
-					if rg --no-heading -Hn "$patt" $changed_file_list /dev/null; then
+					if $g "$patt" $changed_file_list /dev/null; then
 						echo FAILED looks like temporarily disabled LLM querying, indicates debugging
 						exit 1
 					fi

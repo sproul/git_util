@@ -71,7 +71,8 @@ $ git.finish "PR: refresh parser"
    message if any modifications exist.
 2. Fetch `origin` and fast-forward the base branch locally.
 3. Rebase the feature branch onto the refreshed base.
-4. Push with `--force-with-lease` (or `-u` for new branches).
+4. Push with `--force-with-lease` (or `-u` for new branches) and print a ready-to-open
+   compare URL for GitHub-style remotes.
 
 `git.finish --cleanup <branch>`
 : Remove a feature branch after it has been merged.

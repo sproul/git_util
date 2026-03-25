@@ -146,3 +146,30 @@ remote_branch_exists() {
   fi
   return 1
 }
+
+# origin_compare_url builds a browser URL for comparing base..head on GitHub-style remotes.
+origin_compare_url() {
+  local base_branch head_branch raw_url repo_url host path scheme
+  base_branch="$1"
+  head_branch="$2"
+
+  raw_url=$(run_capture git remote get-url origin)
+
+  case "$raw_url" in
+    git@*:* )
+      host=${raw_url#git@}
+      path=${host#*:}
+      host=${host%%:*}
+      path=${path%.git}
+      repo_url="https://${host}/${path}"
+      ;;
+    https://*|http://* )
+      repo_url=${raw_url%.git}
+      ;;
+    * )
+      return 1
+      ;;
+  esac
+
+  printf '%s/compare/%s...%s?expand=1\n' "$repo_url" "$base_branch" "$head_branch"
+}

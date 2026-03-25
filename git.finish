@@ -57,6 +57,13 @@ prepare_for_pr() {
   else
     ok "No new changes to commit. Rebasing ${branch} onto ${BASE_BRANCH} and pushing."
   fi
+
+  local pr_url
+  if pr_url=$(origin_compare_url "$BASE_BRANCH" "$branch" 2>/dev/null); then
+    ok "Open PR at: ${pr_url}"
+  else
+    ok "PR URL unavailable (origin remote not recognized)."
+  fi
 }
 
 cleanup_branch() {
