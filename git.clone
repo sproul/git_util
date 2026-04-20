@@ -296,7 +296,10 @@ git checkout $BRANCH
 exit
 git clone git@bitbucket.org:qwickrate/monroe.biz.git
 git.clone https://nsproul97@bitbucket.org/qwickrate/monroe.biz.git
-git clone git@bitbucket.org:qwickrate/qwickanalyticsscraper.git
+
+bx git.clone git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git development
+bx git.clone git@bitbucket.org:qwickrate/qwickanalyticsscraper.git development
+
 bx git.clone -pr python_lint_updates git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
 bx git.clone -f -pr LlmInteraction_object git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git
 bx git.clone git@bitbucket.org:qwickrate/qwickanalytics_semi_structured_data.git development
