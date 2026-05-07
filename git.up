@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. git.prep_auth.inc
-
 Init_for_work_in_cwd()
 {
         case `whoami` in
@@ -40,7 +38,6 @@ Git_status()
 
 Push()
 {
-	Prep_auth
 	#if git push origin $branch > $t 2>&1; then
 	# needed if the branch doesn't exist remotely. Not sure if the -u is destructive if the branch already exists remotely:
 	if git push -u origin HEAD > $t 2>&1; then
@@ -316,7 +313,6 @@ Checkin()
 		;;
 	esac
 	branch=`git.branch`
-	#Prep_auth
 	comment="$comment on `hostname`"
 	Commit
 	echo "git push origin $branch"
@@ -439,7 +435,6 @@ Pull_latest_updates_if_no_local_changes()
                 return 1
 	fi
 	Clear_status
-	Prep_auth
 	echo "git pull origin $branch in `pwd`"
 	git	  pull origin $branch
 	Clear_status
@@ -574,7 +569,7 @@ Test()
 
 export PATH=$PATH:`dirname $0`
 
-t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
+t=`mktemp`; trap "rm -f $t*" EXIT
 repo_name=''
 dry_mode=''
 force_mode=''

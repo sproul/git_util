@@ -37,8 +37,7 @@ Undo()
 }
 
 . git_util.inc
-. git.prep_auth.inc
-t=`mktemp`; trap "rm -f $t*; Restore_clean_configs" EXIT
+t=`mktemp`; trap "rm -f $t*" EXIT
 
 dry_mode=''
 new_mode=''
