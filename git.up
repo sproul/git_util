@@ -17,6 +17,19 @@ Init_for_work_in_cwd()
 	branch=`git.branch`
 }
 
+Possibly_add_where_note()
+{
+        where_note="on `hostname`"
+        case "$comment" in
+                *$where_note)
+                        echo "OK location already noted" 1>&2
+                ;;
+                *)
+                        comment="$comment $where_note"
+                ;;
+        esac
+}
+
 Clear_status()
 {
 	if [ -n "$proj" ]; then
@@ -313,7 +326,7 @@ Checkin()
 		;;
 	esac
 	branch=`git.branch`
-	comment="$comment on `hostname`"
+        Possibly_add_where_note
 	Commit
 	echo "git push origin $branch"
 	if [ -z "$dry_mode" ]; then
