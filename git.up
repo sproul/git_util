@@ -176,6 +176,7 @@ Checkin()
 {
 	z=`pwd`
 	if [ -f git.pre_checkin_test.sh ]; then
+		echo "WARN git.pre_checkin_test.sh is deprecated; use the normal git pre-commit hook (.git/hooks/pre-commit) instead" 1>&2
 		if [ -n "$force_mode" ]; then
 			echo "$0: bash git.pre_checkin_test.sh skipped since we are in force mode..." 1>&2
 		elif ! bash git.pre_checkin_test.sh $force_mode; then
