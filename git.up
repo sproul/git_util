@@ -177,23 +177,7 @@ Checkin()
 	z=`pwd`
 	if [ -f git.pre_checkin_test.sh ]; then
 		if [ ! -f .git/hooks/pre-commit ]; then
-                        if cp git.pre_checkin_test .git/hooks/pre-commit; then
-				echo "OK cp git.pre_checkin_test .git/hooks/pre-commit" 1>&2
-                                echo "NOTE"
-                                echo "NOTE"
-                                echo "NOTE"
-                                echo "NOTE"
-                                echo "NOTE"
-                                echo "NOTE"
-                                echo "NOTE"
-                                echo "NOTE"
-                                echo "NOTE"
-                                echo "re-run to execute"
-                                exit 0
-			else
-				echo "FAIL cp git.pre_checkin_test .git/hooks/pre-commit" 1>&2
-                                exit 1
-                        fi
+                        echo "WARN no .git/hooks/pre-commit, consider cp git.pre_checkin_test .git/hooks/pre-commit" 1>&2
 		fi
 	fi
 	current_dir=`basename "$z"`
