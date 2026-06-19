@@ -177,7 +177,7 @@ Checkin()
 	z=`pwd`
 	if [ -f git.pre_checkin_test.sh ]; then
 		if [ ! -f .git/hooks/pre-commit ]; then
-                        echo "WARN no .git/hooks/pre-commit, consider cp git.pre_checkin_test .git/hooks/pre-commit" 1>&2
+                        echo "WARN no .git/hooks/pre-commit, consider cp git.pre_checkin_test .git/hooks/pre-commit; cx .git/hooks/pre-commit" 1>&2
 		fi
 	fi
 	current_dir=`basename "$z"`
