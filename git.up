@@ -6,14 +6,14 @@ Disable_commit_hook()
 		echo "FAIL: expected file at \"$gpc\"" 1>&2
 		return 1
 	fi
-	if [ ! -f "$gpfn" ]; then
-		echo "FAIL: expected file at \"$gpfn\"" 1>&2
+	if [ ! -f "$ghfn" ]; then
+		echo "FAIL: expected file at \"$ghfn\"" 1>&2
 		return 1
 	fi
-	if diff $gpc $hfn > $t; then
-		echo "OK diff $gpc $hfn" 1>&2
+	if diff $gpc $ghfn > $t; then
+		echo "OK diff $gpc $ghfn" 1>&2
 	else
-		echo "FAIL diff $gpc $hfn # they need to be identical so I can re-seed the hook after we are done" 1>&2
+		echo "FAIL diff $gpc $ghfn # they need to be identical so I can re-seed the hook after we are done" 1>&2
 		cat $t
 		return 1
 	fi
@@ -26,10 +26,10 @@ Restore_commit_hook()
 		echo "FAIL: Restore_commit_hook expected file at \"$gpc\"" 1>&2
 		return 1
 	fi
-        if cp $gpc $hfn; then
-		echo "OK cp $gpc $hfn" 1>&2
+        if cp $gpc $ghfn; then
+		echo "OK cp $gpc $ghfn" 1>&2
 	else
-		echo "FAIL cp $gpc $hfn" 1>&2
+		echo "FAIL cp $gpc $ghfn" 1>&2
                 return 1
         fi
 }
@@ -619,8 +619,8 @@ repo_name=''
 dry_mode=''
 fast_mode=''
 force_mode=''
-ghfn=.git/hooks/pre-commit
-gpc=git.pre_checkin_test.sh
+export ghfn=.git/hooks/pre-commit
+export gpc=git.pre_checkin_test.sh
 new_branch=''
 new_file_list=''
 verbose_mode=''
