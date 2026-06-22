@@ -746,7 +746,15 @@ done
 
 Init_for_work_in_cwd || exit 1
 comment=`Resolve_comment $*` || echo 1
-Checkin || exit 1
+proj=`pwd | sed -e 's;.*/;;'`
+Clear_status
+if Changes_seen; then
+    Checkin || exit 1
+else
+    echo "No changes seen, pulling latest..."
+    git pull origin $branch
+    Clear_status
+fi
 exit
 bx $dp/bin/git.up -dry_run
 ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0  $ip dp/git/git_util/git.up -in_dir dp/git/fin_doc_parser
