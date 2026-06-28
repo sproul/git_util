@@ -2,619 +2,637 @@
 
 Disable_commit_hook()
 {
-	if [ ! -f "$gpc" ]; then
-		echo "FAIL: expected file at \"$gpc\"" 1>&2
-		return 1
-	fi
-	if [ ! -f "$ghfn" ]; then
-		echo "FAIL: expected file at \"$ghfn\"" 1>&2
-		return 1
-	fi
-	if diff $gpc $ghfn > $t; then
-		echo "OK diff $gpc $ghfn" 1>&2
-	else
-		echo "FAIL diff $gpc $ghfn # they need to be identical so I can re-seed the hook after we are done" 1>&2
-		cat $t
-		return 1
-	fi
+        if [ ! -f "$gpc" ]; then
+                echo "FAIL: expected file at \"$gpc\"" 1>&2
+                return 1
+        fi
+        if [ ! -f "$ghfn" ]; then
+                echo "FAIL: expected file at \"$ghfn\"" 1>&2
+                return 1
+        fi
+        if diff $gpc $ghfn > $t; then
+                echo "OK diff $gpc $ghfn" 1>&2
+                # Actually disable the hook so the commit skips it; Restore_commit_hook
+                # re-seeds it from $gpc afterward. (Previously this only verified the
+                # two files were identical and never removed the hook, so fast mode
+                # never bypassed anything.)
+                if rm -f "$ghfn"; then
+                        echo "OK disabled commit hook ($ghfn)" 1>&2
+                else
+                        echo "FAIL could not remove $ghfn to disable hook" 1>&2
+                        return 1
+                fi
+        else
+                echo "FAIL diff $gpc $ghfn # they need to be identical so I can re-seed the hook after we are done" 1>&2
+                cat $t
+                return 1
+        fi
         if mv $ghfn /tmp; then
-		echo "OK mv $ghfn /tmp" 1>&2
-	else
-		echo "FAIL mv $ghfn /tmp" 1>&2
+                echo "OK mv $ghfn /tmp" 1>&2
+        else
+                echo "FAIL mv $ghfn /tmp" 1>&2
                 exit 1
         fi
 }
 
 Restore_commit_hook()
 {
-	if [ ! -f "$gpc" ]; then
-		echo "FAIL: Restore_commit_hook expected file at \"$gpc\"" 1>&2
-		return 1
-	fi
-	if cp $gpc $ghfn; then
-		echo "OK cp $gpc $ghfn" 1>&2
-	else
-		echo "FAIL cp $gpc $ghfn" 1>&2
-		return 1
-	fi
+        if [ ! -f "$gpc" ]; then
+                echo "FAIL: Restore_commit_hook expected file at \"$gpc\"" 1>&2
+                return 1
+        fi
+        if cp -p $gpc $ghfn; then
+                echo "OK cp $gpc $ghfn" 1>&2
+        else
+                echo "FAIL cp $gpc $ghfn" 1>&2
+                return 1
+        fi
 }
 
 
 Init_for_work_in_cwd()
 {
-	case `whoami` in
-		root)
-			echo "FAIL do not use root for interactions with git" 1>&2
-			return 0
-		;;
-	esac
-	. git.find_root
-	if [ ! -d .git ]; then
-		echo "FAIL could not find directory .git in `pwd`"
-		return 1
-	fi
-	. git_util.inc
-	branch=`git.branch`
+        case `whoami` in
+                root)
+                        echo "FAIL do not use root for interactions with git" 1>&2
+                        return 0
+                ;;
+        esac
+        . git.find_root
+        if [ ! -d .git ]; then
+                echo "FAIL could not find directory .git in `pwd`"
+                return 1
+        fi
+        . git_util.inc
+        branch=`git.branch`
 }
 
 Possibly_add_where_note()
 {
-	where_note="on `hostname`"
-	case "$comment" in
-		*$where_note)
-			echo "OK location already noted" 1>&2
-		;;
-		*)
-			comment="$comment $where_note"
-		;;
-	esac
+        where_note="on `hostname`"
+        case "$comment" in
+                *$where_note)
+                        echo "OK location already noted" 1>&2
+                ;;
+                *)
+                        comment="$comment $where_note"
+                ;;
+        esac
 }
 
 Clear_status()
 {
-	if [ -n "$proj" ]; then
-		rm -f $t.$proj.status
-	fi
+        if [ -n "$proj" ]; then
+                rm -f $t.$proj.status
+        fi
 }
 
 Git_status()
 {
-	if [ -z "$proj" ]; then
-		echo "FAIL: Git_status expected a value for \"proj\" but saw nothing" 1>&2
-		exit 1
-	fi
-	if [ ! -f $t.$proj.status ]; then
-		git status --short > $t.$proj.status
-	fi
-	cat $t.$proj.status
+        if [ -z "$proj" ]; then
+                echo "FAIL: Git_status expected a value for \"proj\" but saw nothing" 1>&2
+                exit 1
+        fi
+        if [ ! -f $t.$proj.status ]; then
+                git status --short > $t.$proj.status
+        fi
+        cat $t.$proj.status
 }
 
 Push()
 {
-	#if git push origin $branch > $t 2>&1; then
-	# needed if the branch doesn't exist remotely. Not sure if the -u is destructive if the branch already exists remotely:
-	if git push -u origin HEAD > $t 2>&1; then
-		Clear_status
-		return 0
-	fi
-	if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
-		if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
-			cat $t
-			return 1
-		fi
-	fi
-	if grep 'Updates were rejected because the tip of your current branch is behind' $t > /dev/null 2>&1; then
-		echo "FAIL bring outdated branch up to date and retry"
-		exit 1
-	fi
-	echo $0 saw merge problem >> $t
-	echo ===========================================================================
-	cat $t
-	echo ===========================================================================
-	echo will try to rectify by rebasing, which will auto-merge if practical:
-	# before pushing, do this, will auto-merge:
-	echo "git pull --rebase"
-	if [ -z "$dry_mode" ]; then
-		if ! git pull --rebase >> $t 2>&1; then
-			Clear_status
-			cat $t
-			echo "$0: git pull --rebase failed......................" 1>&2
-			echo "git status"
-			Git_status
-			echo EOD
-			echo a way to resolve this:
-			echo git.repair
-			return 1
-		fi
-		Clear_status
-	fi
-	if ! git push origin $branch >> $t 2>&1; then
-		Clear_status
-		cat $t
-		echo "$0: error: git push origin failed" 1>&2
-		return 1
-	else
-		. modified_repos.inc
-		git_util__modified_repos__Remove_from_list $repo_name
-		Clear_status
-	fi
+        #if git push origin $branch > $t 2>&1; then
+        # needed if the branch doesn't exist remotely. Not sure if the -u is destructive if the branch already exists remotely:
+        if git push -u origin HEAD > $t 2>&1; then
+                Clear_status
+                return 0
+        fi
+        if ! grep 'merge the remote changes' $t > /dev/null 2>&1; then
+                if ! grep 'integrate the remote changes' $t > /dev/null 2>&1; then
+                        cat $t
+                        return 1
+                fi
+        fi
+        if grep 'Updates were rejected because the tip of your current branch is behind' $t > /dev/null 2>&1; then
+                echo "FAIL bring outdated branch up to date and retry"
+                exit 1
+        fi
+        echo $0 saw merge problem >> $t
+        echo ===========================================================================
+        cat $t
+        echo ===========================================================================
+        echo will try to rectify by rebasing, which will auto-merge if practical:
+        # before pushing, do this, will auto-merge:
+        echo "git pull --rebase"
+        if [ -z "$dry_mode" ]; then
+                if ! git pull --rebase >> $t 2>&1; then
+                        Clear_status
+                        cat $t
+                        echo "$0: git pull --rebase failed......................" 1>&2
+                        echo "git status"
+                        Git_status
+                        echo EOD
+                        echo a way to resolve this:
+                        echo git.repair
+                        return 1
+                fi
+                Clear_status
+        fi
+        if ! git push origin $branch >> $t 2>&1; then
+                Clear_status
+                cat $t
+                echo "$0: error: git push origin failed" 1>&2
+                return 1
+        else
+                . modified_repos.inc
+                git_util__modified_repos__Remove_from_list $repo_name
+                Clear_status
+        fi
 }
 
 Modified()
 {
-	fn="$1"
-	if Git_status | grep " M $fn$" > /dev/null 2>&1; then
-		return 0
-	else
-		return 1
-	fi
+        fn="$1"
+        if Git_status | grep " M $fn$" > /dev/null 2>&1; then
+                return 0
+        else
+                return 1
+        fi
 }
 
 Change_set_consists_entirely_of_new_files()
 {
-	git status > $t
-	if grep modified: $t > /dev/null 2>&1; then
-		return 1
-	fi
-	if ! grep 'untracked files' $t > /dev/null 2>&1; then
-		return 1
-	fi
-	new_file_list=`grep '^#*	' $t | sed -e 's/#	//' | tr '\n' ' '`
+        git status > $t
+        if grep modified: $t > /dev/null 2>&1; then
+                return 1
+        fi
+        if ! grep -i 'untracked files' $t > /dev/null 2>&1; then
+                return 1
+        fi
+        new_file_list=`grep '^#*        ' $t | sed -e 's/^#*    //' | tr '\n' ' '`
 }
 
 Change_set_consists_entirely_of_deletions()
 {
-	git status > $t
+        git status > $t
 
-	if grep 'deleted:' $t > /dev/null 2>&1; then
-		(
-		echo "Watching out for accidental deletions..."
-		pwd
-		cat $t
-		) | alert.sh "git.up: deletion(s) seen in `pwd`: `grep deleted: $t`"
-	fi
+        if grep 'deleted:' $t > /dev/null 2>&1; then
+                (
+                echo "Watching out for accidental deletions..."
+                pwd
+                cat $t
+                ) | alert.sh "git.up: deletion(s) seen in `pwd`: `grep deleted: $t`"
+        fi
 
-	if grep modified: $t > /dev/null 2>&1; then
-		return 1
-	fi
-	if grep 'untracked files' $t > /dev/null 2>&1; then
-		return 1
-	fi
-	if grep 'deleted:' $t > /dev/null 2>&1; then
-		return 0
-	fi
+        if grep modified: $t > /dev/null 2>&1; then
+                return 1
+        fi
+        if grep -i 'untracked files' $t > /dev/null 2>&1; then
+                return 1
+        fi
+        if grep 'deleted:' $t > /dev/null 2>&1; then
+                return 0
+        fi
 }
 
 Change_set_looks_like_sample_invocation_update()
 {
-	git.d > $t.git.d
-	lines=`wc -l $t.git.d | sed -e 's/^ *//' -e 's/ .*//'`
-	if [ "$lines" -lt 20 ]; then
-		echo OK minor change detected in Change_set_looks_like_sample_invocation_update
-		if grep "^[-+]exit" $t.git.d > /dev/null 2>&1; then
-			sample_invocation_change=yes
-		elif grep "^[-+]\$d[px]" $t.git.d > /dev/null 2>&1; then
-			sample_invocation_change=yes
-		elif grep "^bx " $t.git.d > /dev/null 2>&1; then
-			sample_invocation_change=yes
-		elif grep "^[-+]bash " $t.git.d > /dev/null 2>&1; then
-			sample_invocation_change=yes
-		else
-			fn=`grep ^--- $t.git.d | sed -e 's;--- .*/;;'`
-			if grep "^[-+]$fn " $t.git.d > /dev/null 2>&1; then
-				sample_invocation_change=yes
-			fi
-		fi
-		if [ -n "$sample_invocation_change" ]; then
-			return 0
-		fi
-	fi
-	return 1
+        git.d > $t.git.d
+        lines=`wc -l $t.git.d | sed -e 's/^ *//' -e 's/ .*//'`
+        if [ "$lines" -lt 20 ]; then
+                echo OK minor change detected in Change_set_looks_like_sample_invocation_update
+                if grep "^[-+]exit" $t.git.d > /dev/null 2>&1; then
+                        sample_invocation_change=yes
+                elif grep "^[-+]\$d[px]" $t.git.d > /dev/null 2>&1; then
+                        sample_invocation_change=yes
+                elif grep "^bx " $t.git.d > /dev/null 2>&1; then
+                        sample_invocation_change=yes
+                elif grep "^[-+]bash " $t.git.d > /dev/null 2>&1; then
+                        sample_invocation_change=yes
+                else
+                        fn=`grep ^--- $t.git.d | sed -e 's;--- .*/;;'`
+                        if grep "^[-+]$fn " $t.git.d > /dev/null 2>&1; then
+                                sample_invocation_change=yes
+                        fi
+                fi
+                if [ -n "$sample_invocation_change" ]; then
+                        return 0
+                fi
+        fi
+        return 1
 }
 
 Checkin()
 {
-	z=`pwd`
-	if [ -f git.pre_checkin_test.sh ]; then
-		if [ ! -f .git/hooks/pre-commit ]; then
-			echo "WARN no .git/hooks/pre-commit, consider cp git.pre_checkin_test .git/hooks/pre-commit; cx .git/hooks/pre-commit" 1>&2
-		fi
-	fi
-	current_dir=`basename "$z"`
-	repo_name=$current_dir
-	echo gu $repo_name in $z...
-	git.changed_or_added_files.ls > $t.changed_or_added
-	if [ -z "$force_mode" ]; then
-		case "$proj" in
-			emacs)
-				for updated_menu_file in `grep '\.menu$' $t.changed_or_added`; do
-					if [ -n "$verbose_mode" ]; then
-						echo Checking $updated_menu_file for bad entries
-					fi
-					if grep -n '^[	]*[^#	 ][^	 ]...' $updated_menu_file /dev/null; then
-						echo "FAIL malformed menu code seen" 1>&2
-						exit 1
-					fi
-				done
-			;;
-			data)
-				if [ -n "$verbose_mode" ]; then
-					echo "OK skipping EARLY ck for $proj" 1>&2
-				fi
-			;;
-			*)
-				if [ -s $t.changed_or_added ]; then
-					patt="EARLY"
-					patt="$patt.*exit"
-					changed_file_list=`cat $t.changed_or_added | grep -v 'shell/'`
-					. rg_grep.inc
-					if $g "$patt" $changed_file_list /dev/null; then
-						echo FAILED early exit indicates debugging
-						exit 1
-					fi
-					patt=" X"
-					patt="${patt}test"
-					if $g "$patt" $changed_file_list /dev/null; then
-						echo FAILED X + test indicates disabling tests for debug
-						exit 1
-					fi
-					patt="el"
-					patt="${patt}sov"
-					if $g "$patt" $changed_file_list /dev/null; then
-						echo FAILED X + test indicates sensitivity
-						#exit 1
-					fi
-					patt="t=\`mktemp\`"
-					patt="$patt *#"
-					if $g "$patt" $changed_file_list /dev/null; then
-						echo FAILED disabled cleanup of temporary files indicates debugging
-						exit 1
-					fi
-					patt="def"
-					patt="$patt xtest"
-					if $g "$patt" $changed_file_list /dev/null; then
-						echo FAILED looks like temporarily disabled python tests, indicates debugging
-						exit 1
-					fi
-					patt="#"
-					patt="${patt}trap"
-					if $g "$patt" $changed_file_list /dev/null; then
-						echo FAILED looks like temporarily disabled tmp file cleanup, indicates debugging
-						exit 1
-					fi
-					patt="# *"
-					patt="${patt}answer.merge"
-					if $g "$patt" $changed_file_list /dev/null; then
-						echo FAILED looks like temporarily disabled LLM querying, indicates debugging
-						exit 1
-					fi
-				fi
-			;;
-		esac
-		if grep "\.bak$" $t.changed_or_added; then
-			echo FAILED bak indicates a temporary file for debugging
-			exit 1
-		fi
-		grep "\.json$" $t.changed_or_added |
-		while read json_fn; do
-			case "$json_fn" in
-				*prompt_*json)
-					if [ -n "$verbose_mode" ]; then
-						echo "OK ignore these prompt files, they are too plentiful to reformat" 1>&2
-					fi
-				;;
-				*)
-					if json.ok $json_fn; then
-						echo "OK json.ok $json_fn"
-					else
-						echo "FAIL json.ok $json_fn"
-					fi
-				;;
-			esac
-		done > $t.result
-		if grep FAIL $t.result > /dev/null 2>&1; then
-			cat $t.result
-			exit 1
-		fi
-	fi
-	echo OK no early exit
-	grep '\.sh$'  $t.changed_or_added >  $t.changed_or_added_sh
-	grep '\.inc$' $t.changed_or_added >> $t.changed_or_added_sh
-	if [ -s $t.changed_or_added_sh ]; then
-		if grep -n "^[ \t][ \t]*EOF$" `cat $t.changed_or_added_sh`; then
-			echo FAILED suspiciously indented EOF, possible malformed here-doc
-			if [ -n "$force_mode" ]; then
-				if [ -n "$verbose_mode" ]; then
-					echo OK force mode says we push on no matter what
-				fi
-			else
-				return 1
-			fi
-		else
-			echo OK no suspicious here-doc
-		fi
-	fi
-	if [ -z "$comment" ]; then
-		if Change_set_consists_entirely_of_new_files; then
-			comment="add `sed -e  's/  */ /g' <<< $new_file_list`"
-		elif Change_set_consists_entirely_of_deletions; then
-			comment="remove superfluous file(s)"
-		elif Change_set_looks_like_sample_invocation_update; then
-			comment="update sample invocations"
-		else
-			case "$repo_name" in
-				data)
-					comment="shell records"
-				;;
-				emacs)
-					comment="shortcut update"
-				;;
-				home)
-					comment="minor env update"
-				;;
-			esac
-		fi
-	fi
-	case "$repo_name" in
-		fin_doc_parser)
-			# frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
-			cp ui/src/public/MCBI_Q2_2018_Report.textract0.json.bak ui/src/public/MCBI_Q2_2018_Report.textract0.json
-			cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
-		;;
-	esac
-	branch=`git.branch`
-	Possibly_add_where_note
-	Commit
-	echo "git push origin $branch"
-	if [ -z "$dry_mode" ]; then
-		Git_status
-		# If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
-		#	error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
-		#	hint: Updates were rejected because the remote contains work that you do
-		#	hint: not have locally. This is usually caused by another repository pushing
-		#	hint: to the same ref. You may want to first merge the remote changes (e.g.,
-		#	hint: 'git pull') before pushing again.
-		#	hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-		Push || exit 1
-	fi
-	echo "git pull origin $branch from `pwd`"
-	if ! git pull origin $branch; then
-		Clear_status
-		echo "$0: git pull failed, returning..." 1>&2
-		return 1
-	fi
-	Clear_status
-	. modified_repos.inc
-	git_util__modified_repos__Remove_from_list $repo_name
-	if [ -f git.post_checkin.sh ]; then
-		echo "bash -x git.post_checkin.sh $comment"
-		bash	   -x git.post_checkin.sh $comment
-	fi
+        z=`pwd`
+        if [ -f git.pre_checkin_test.sh ]; then
+                if [ ! -f .git/hooks/pre-commit ]; then
+                        echo "WARN no .git/hooks/pre-commit, consider cp git.pre_checkin_test .git/hooks/pre-commit; cx .git/hooks/pre-commit" 1>&2
+                fi
+        fi
+        current_dir=`basename "$z"`
+        repo_name=$current_dir
+        echo gu $repo_name in $z...
+        git.changed_or_added_files.ls > $t.changed_or_added
+
+        if [ -z "$force_mode" ]; then
+        emacs_tmp_files=`grep '/\.#' $t.changed_or_added`
+            if [ -n "$emacs_tmp_files" ]; then
+                    echo "FAIL emacs editing tmp files seen, commit aborted:" 1>&2
+                    echo "$emacs_tmp_files" 1>&2
+                    exit 1
+            fi
+        case "$proj" in
+                        emacs)
+                                for updated_menu_file in `grep '\.menu$' $t.changed_or_added`; do
+                                        if [ -n "$verbose_mode" ]; then
+                                                echo Checking $updated_menu_file for bad entries
+                                        fi
+                                        if grep -n '^[  ]*[^#    ][^     ]...' $updated_menu_file /dev/null; then
+                                                echo "FAIL malformed menu code seen" 1>&2
+                                                exit 1
+                                        fi
+                                done
+                        ;;
+                        data)
+                                if [ -n "$verbose_mode" ]; then
+                                        echo "OK skipping EARLY ck for $proj" 1>&2
+                                fi
+                        ;;
+                        *)
+                                if [ -s $t.changed_or_added ]; then
+                                        patt="EARLY"
+                                        patt="$patt.*exit"
+                                        changed_file_list=`cat $t.changed_or_added | grep -v 'shell/'`
+                                        . rg_grep.inc
+                                        if $g "$patt" $changed_file_list /dev/null; then
+                                                echo FAILED early exit indicates debugging
+                                                exit 1
+                                        fi
+                                        patt=" X"
+                                        patt="${patt}test"
+                                        if $g "$patt" $changed_file_list /dev/null; then
+                                                echo FAILED X + test indicates disabling tests for debug
+                                                exit 1
+                                        fi
+                                        patt="el"
+                                        patt="${patt}sov"
+                                        if $g "$patt" $changed_file_list /dev/null; then
+                                                echo FAILED X + test indicates sensitivity
+                                                #exit 1
+                                        fi
+                                        patt="t=\`mktemp\`"
+                                        patt="$patt *#"
+                                        if $g "$patt" $changed_file_list /dev/null; then
+                                                echo FAILED disabled cleanup of temporary files indicates debugging
+                                                exit 1
+                                        fi
+                                        patt="def"
+                                        patt="$patt xtest"
+                                        if $g "$patt" $changed_file_list /dev/null; then
+                                                echo FAILED looks like temporarily disabled python tests, indicates debugging
+                                                exit 1
+                                        fi
+                                        patt="#"
+                                        patt="${patt}trap"
+                                        if $g "$patt" $changed_file_list /dev/null; then
+                                                echo FAILED looks like temporarily disabled tmp file cleanup, indicates debugging
+                                                exit 1
+                                        fi
+                                        patt="# *"
+                                        patt="${patt}answer.merge"
+                                        if $g "$patt" $changed_file_list /dev/null; then
+                                                echo FAILED looks like temporarily disabled LLM querying, indicates debugging
+                                                exit 1
+                                        fi
+                                fi
+                        ;;
+                esac
+                if grep "\.bak$" $t.changed_or_added; then
+                        echo FAILED bak indicates a temporary file for debugging
+                        exit 1
+                fi
+                grep "\.json$" $t.changed_or_added |
+                while read json_fn; do
+                        case "$json_fn" in
+                                *prompt_*json)
+                                        if [ -n "$verbose_mode" ]; then
+                                                echo "OK ignore these prompt files, they are too plentiful to reformat" 1>&2
+                                        fi
+                                ;;
+                                *)
+                                        if json.ok $json_fn; then
+                                                echo "OK json.ok $json_fn"
+                                        else
+                                                echo "FAIL json.ok $json_fn"
+                                        fi
+                                ;;
+                        esac
+                done > $t.result
+                if grep FAIL $t.result > /dev/null 2>&1; then
+                        cat $t.result
+                        exit 1
+                fi
+        fi
+        echo OK no early exit
+        grep '\.sh$'  $t.changed_or_added >  $t.changed_or_added_sh
+        grep '\.inc$' $t.changed_or_added >> $t.changed_or_added_sh
+        if [ -s $t.changed_or_added_sh ]; then
+                if grep -n "^[ \t][ \t]*EOF$" `cat $t.changed_or_added_sh`; then
+                        echo FAILED suspiciously indented EOF, possible malformed here-doc
+                        if [ -n "$force_mode" ]; then
+                                if [ -n "$verbose_mode" ]; then
+                                        echo OK force mode says we push on no matter what
+                                fi
+                        else
+                                return 1
+                        fi
+                else
+                        echo OK no suspicious here-doc
+                fi
+        fi
+        if [ -z "$comment" ]; then
+                if Change_set_consists_entirely_of_new_files; then
+                        comment="add `sed -e  's/  */ /g' <<< $new_file_list`"
+                elif Change_set_consists_entirely_of_deletions; then
+                        comment="remove superfluous file(s)"
+                elif Change_set_looks_like_sample_invocation_update; then
+                        comment="update sample invocations"
+                else
+                        case "$repo_name" in
+                                data)
+                                        comment="shell records"
+                                ;;
+                                emacs)
+                                        comment="shortcut update"
+                                ;;
+                                home)
+                                        comment="minor env update"
+                                ;;
+                        esac
+                fi
+        fi
+        case "$repo_name" in
+                fin_doc_parser)
+                        # frequently aborted test case leads to these files being deleted, and a cascade of false updates. Restore them before update:
+                        cp ui/src/public/MCBI_Q2_2018_Report.textract0.json.bak ui/src/public/MCBI_Q2_2018_Report.textract0.json
+                        cp ui/src/public/MCBI_Q2_2018_Report.textract.csv.bak ui/src/public/MCBI_Q2_2018_Report.textract.csv
+                ;;
+        esac
+        branch=`git.branch`
+        Possibly_add_where_note
+        Commit
+        echo "git push origin $branch"
+        if [ -z "$dry_mode" ]; then
+                Git_status
+                # If someone has beaten us to the punch in getting an update in since our pull, we'll get the following:
+                #       error: failed to push some refs to 'https://sproul:...@github.com/sproul/t2.git'
+                #       hint: Updates were rejected because the remote contains work that you do
+                #       hint: not have locally. This is usually caused by another repository pushing
+                #       hint: to the same ref. You may want to first merge the remote changes (e.g.,
+                #       hint: 'git pull') before pushing again.
+                #       hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+                Push || exit 1
+        fi
+        echo "git pull origin $branch from `pwd`"
+        if ! git pull origin $branch; then
+                Clear_status
+                echo "$0: git pull failed, returning..." 1>&2
+                return 1
+        fi
+        Clear_status
+        . modified_repos.inc
+        git_util__modified_repos__Remove_from_list $repo_name
+        if [ -f git.post_checkin.sh ]; then
+                echo "bash -x git.post_checkin.sh $comment"
+                bash       -x git.post_checkin.sh $comment
+        fi
 }
 
 Git_add_and_commit()
 {
-	local comment="$1"
-	shift
+        local comment="$1"
+        shift
 
-	echo "git add ."
-	git	  add .
-	if git		       commit -a -m "$comment"; then
-		echo   "OK git commit -a -m  $comment" 1>&2
-	else
-		echo "WARN git commit -a -m  $comment" 1>&2
-	fi
-	committed=true
+        echo "git add ."
+        git       add .
+        if git                 commit -a -m "$comment"; then
+                echo   "OK git commit -a -m  $comment" 1>&2
+        else
+                echo "FAIL git commit -a -m  $comment (commit rejected -- likely the pre-commit hook failed; aborting)" 1>&2
+                exit 1
+        fi
+        committed=true
 }
 
 Commit()
 {
-	proj=`pwd | sed -e 's;.*/;;'`
-	Git_status
-	committed=''
-	case $proj in
-		bin)
-			if grep Linux/carson.can $t.status > $t.carson.cans 2>&1; then
-				fns=`cat $t.carson.cans | sed -e 's/.*Linux/Linux/'`
-				Git_add_and_commit 'clojure notes' $fns
-			fi
-			if Modified g.sh; then
-				Git_add_and_commit 'adjusted project search settings' g.sh
-			fi
-		;;
-		emacs)
-			if grep lisp/data/n-data-menu-browse $t.status > /dev/null 2>&1; then
-				fns=`cat lisp/data/n-data-menu-browse | sed -e 's/.*lisp/lisp/'`
-				Git_add_and_commit 'shortcut updates' $fns
-			fi
-		;;
-		fin_doc_parser)
-			if grep ui/src/data/scoring/scores $t.status > /dev/null 2>&1; then
-				fns=`cat ui/src/data/scoring/scores | sed -e 's/.*lisp/lisp/'`
-				Git_add_and_commit 'score updates' $fns
-			fi
-		;;
-	esac
-	if [ -z "$committed" ]; then
-		Git_add_and_commit "$comment" $fns
-	fi
-	Push || exit 1
+        proj=`pwd | sed -e 's;.*/;;'`
+        Git_status
+        committed=''
+        case $proj in
+                bin)
+                        if grep Linux/carson.can $t.status > $t.carson.cans 2>&1; then
+                                fns=`cat $t.carson.cans | sed -e 's/.*Linux/Linux/'`
+                                Git_add_and_commit 'clojure notes' $fns
+                        fi
+                        if Modified g.sh; then
+                                Git_add_and_commit 'adjusted project search settings' g.sh
+                        fi
+                ;;
+                emacs)
+                        if grep lisp/data/n-data-menu-browse $t.status > /dev/null 2>&1; then
+                                fns=`cat lisp/data/n-data-menu-browse | sed -e 's/.*lisp/lisp/'`
+                                Git_add_and_commit 'shortcut updates' $fns
+                        fi
+                ;;
+                fin_doc_parser)
+                        if grep ui/src/data/scoring/scores $t.status > /dev/null 2>&1; then
+                                fns=`cat ui/src/data/scoring/scores | sed -e 's/.*lisp/lisp/'`
+                                Git_add_and_commit 'score updates' $fns
+                        fi
+                ;;
+        esac
+        if [ -z "$committed" ]; then
+                Git_add_and_commit "$comment" $fns
+        fi
+        Push || exit 1
 }
 
 Changes_seen()
 {
-	if Git_status | grep '^ [DMA] ' > /dev/null 2>&1; then
-		echo Changes_seen saw DMA
-		return 0
-	elif Git_status | grep '^\?\? ' > /dev/null 2>&1; then
-		# untracked (potentially added) files
-		echo Changes_seen saw new files
-		return 0
-	else
-		echo Changes_seen saw nothing
-		return 1
-	fi
+        # Any line from "git status --short" is a change -- staged, worktree, or
+        # untracked. The old patterns only matched worktree/untracked, so a
+        # staged-only tree ("M ", "MM", "AM") looked empty and git.up pulled
+        # instead of committing.
+        if [ -n "`Git_status`" ]; then
+                echo Changes_seen saw changes
+                return 0
+        else
+                echo Changes_seen saw nothing
+                return 1
+        fi
 }
 
 Pull_latest_updates_if_no_local_changes()
 {
-	# clear caches
-	# some odd interaction occurring between projects when this is called multiple times, so isolating in a separate process for safety
-	(
-	proj=${1-$(basename $(pwd))}
-	Clear_status
-	d=${2-$dp}
-	if [ ! -d $d/$proj ]; then
-		if [ -n "$verbose_mode" ]; then
-			echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
-		fi
-		if [ -d $d/git/$proj ]; then
-			d="$d/git"
-		fi
-		if [ ! -d $d/$proj ]; then
-			if [ -n "$verbose_mode" ]; then
-				echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
-			fi
-			return 1
-		fi
-	fi
-	cd $d/$proj
-	Init_for_work_in_cwd || exit 1
-	Commit $proj $d
-	if Changes_seen; then
-		return 1
-	fi
-	Clear_status
-	echo "git pull origin $branch in `pwd`"
-	git	  pull origin $branch
-	Clear_status
-	return 0
-	)
+        # clear caches
+        # some odd interaction occurring between projects when this is called multiple times, so isolating in a separate process for safety
+        (
+        proj=${1-$(basename $(pwd))}
+        Clear_status
+        d=${2-$dp}
+        if [ ! -d $d/$proj ]; then
+                if [ -n "$verbose_mode" ]; then
+                        echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
+                fi
+                if [ -d $d/git/$proj ]; then
+                        d="$d/git"
+                fi
+                if [ ! -d $d/$proj ]; then
+                        if [ -n "$verbose_mode" ]; then
+                                echo "WARNING: could not find directory \"$d/$proj\"" 1>&2
+                        fi
+                        return 1
+                fi
+        fi
+        cd $d/$proj
+        Init_for_work_in_cwd || exit 1
+        Commit $proj $d
+        if Changes_seen; then
+                return 1
+        fi
+        Clear_status
+        echo "git pull origin $branch in `pwd`"
+        git       pull origin $branch
+        Clear_status
+        return 0
+        )
 }
 
 Synchronize_high_traffic_shared_projects()
 {
-	# For most projects, synchronize only if there are no local changes.
-	#
-	# For the following exceptions, just assume we can synchronize even if there are local changes:
-	projects_to_sync_regardless_of_local_changes="t data home"
-	for proj in bin data emacs git_util home bin_$OS; do
-		echo $proj==========================================================
-		export proj
-		Pull_latest_updates_if_no_local_changes $proj
-	done
-	case "$HOSTNAME" in
-		lt5|x-mac)
-			Pull_latest_updates_if_no_local_changes doc		$dx
-			Pull_latest_updates_if_no_local_changes fin_doc_parser	$dx
-			#Pull_latest_updates_if_no_local_changes monr
-			if orcl.on_vpn; then
-				Pull_latest_updates_if_no_local_changes diagnostic-tool
-			fi
-		;;
-	esac
-	git.add_links_to_make_all_source_controlled_projects
-	for proj in $projects_to_sync_regardless_of_local_changes; do
-		if [ -d $dp/git/$proj ]; then
-			git.up -in_dir $dp/git/$proj
-		fi
-	done
+        # For most projects, synchronize only if there are no local changes.
+        #
+        # For the following exceptions, just assume we can synchronize even if there are local changes:
+        projects_to_sync_regardless_of_local_changes="t data home"
+        for proj in bin data emacs git_util home bin_$OS; do
+                echo $proj==========================================================
+                export proj
+                Pull_latest_updates_if_no_local_changes $proj
+        done
+        case "$HOSTNAME" in
+                lt5|x-mac)
+                        Pull_latest_updates_if_no_local_changes doc             $dx
+                        Pull_latest_updates_if_no_local_changes fin_doc_parser  $dx
+                        #Pull_latest_updates_if_no_local_changes monr
+                        if orcl.on_vpn; then
+                                Pull_latest_updates_if_no_local_changes diagnostic-tool
+                        fi
+                ;;
+        esac
+        git.add_links_to_make_all_source_controlled_projects
+        for proj in $projects_to_sync_regardless_of_local_changes; do
+                if [ -d $dp/git/$proj ]; then
+                        git.up -in_dir $dp/git/$proj
+                fi
+        done
 }
 
 
 Find_comment_in_source_tree()
 {
-	dotc_list=`find . -name '.c'`
-	if [ -n "$dotc_list" ]; then
-		comment=`cat $dotc_list`
-		rm $dotc_list
-		echo $comment
-	fi
+        dotc_list=`find . -name '.c'`
+        if [ -n "$dotc_list" ]; then
+                comment=`cat $dotc_list`
+                rm $dotc_list
+                echo $comment
+        fi
 }
 
 Resolve_comment()
 {
-	comment_from_parms="$*"
-	comment_from_c=`Find_comment_in_source_tree`
-	if [ -n "$comment_from_c" ]; then
-		if [ -n "$comment_from_parms" ]; then
-			echo "$0: error: did not expect $comment_from_c and also a command line comment -- which should I use?" 1>&2
-			return 1
-		fi
-		comment="$comment_from_c"
-	else
-		comment="$comment_from_parms"
-	fi
-	echo $comment
+        comment_from_parms="$*"
+        comment_from_c=`Find_comment_in_source_tree`
+        if [ -n "$comment_from_c" ]; then
+                if [ -n "$comment_from_parms" ]; then
+                        echo "$0: error: did not expect $comment_from_c and also a command line comment -- which should I use?" 1>&2
+                        return 1
+                fi
+                comment="$comment_from_c"
+        else
+                comment="$comment_from_parms"
+        fi
+        echo $comment
 }
 
 Test_init()
 {
-	test_dir1=$dp/git/java_scratch
-	test_dir2=$HOME/git/java_scratch
-	if [ -n "$test_env_wipe_first" ]; then
-		echo "rm -rf $test_dir1 $test_dir2"
-		rm	 -rf $test_dir1 $test_dir2
-	fi
-	tf=papa_testing_area/whatever.$$
+        test_dir1=$dp/git/java_scratch
+        test_dir2=$HOME/git/java_scratch
+        if [ -n "$test_env_wipe_first" ]; then
+                echo "rm -rf $test_dir1 $test_dir2"
+                rm       -rf $test_dir1 $test_dir2
+        fi
+        tf=papa_testing_area/whatever.$$
 
-	if [ ! -d $test_dir2 ]; then
-		git.clone java_scratch
-		if [ ! -d $test_dir2 ]; then
-			echo "FAIL apparently git.clone $test_dir2 did not work" 1>&2
-			exit 1
-		fi
-		mkdir -p $test_dir2/`dirname $tf`
-	fi
-	echo "OK $test_dir2"
-	if [ ! -d $test_dir1 ]; then
-		cp	 -pr $test_dir2 $test_dir1
-		if [ ! -d $test_dir1 ]; then
-			echo "FAIL cp to \"$test_dir1\"" 1>&2
-			exit 1
-		fi
-	fi
-	echo "OK $test_dir1"
+        if [ ! -d $test_dir2 ]; then
+                git.clone java_scratch
+                if [ ! -d $test_dir2 ]; then
+                        echo "FAIL apparently git.clone $test_dir2 did not work" 1>&2
+                        exit 1
+                fi
+                mkdir -p $test_dir2/`dirname $tf`
+        fi
+        echo "OK $test_dir2"
+        if [ ! -d $test_dir1 ]; then
+                cp       -pr $test_dir2 $test_dir1
+                if [ ! -d $test_dir1 ]; then
+                        echo "FAIL cp to \"$test_dir1\"" 1>&2
+                        exit 1
+                fi
+        fi
+        echo "OK $test_dir1"
 }
 
 
 Test_simple_chi()
 {
-	cd $test_dir1
-	branch=`git.branch`
+        cd $test_dir1
+        branch=`git.branch`
 
-	echo hi > $tf
-	git.up > $t.git.up1 2>&1
+        echo hi > $tf
+        git.up > $t.git.up1 2>&1
 
-	cd $test_dir2
-	branch=`git.branch`
+        cd $test_dir2
+        branch=`git.branch`
 
-	assert.f.exist -not "test ck $tf not there early" $tf $tf
-	git.up no changes here, but expecting to sync in $tf from $test_dir1
-	assert.f.exist -label "after git.up in $test_dir2, should see change from $test_dir1" $tf
-	git rm $tf
-	git.up "removed $tf for test"
-	cd $test_dir1
-	git.up "no changes, but syncing should rm $tf"
-	assert.f.exist -not "$tf removed in $test_dir2, so should also be removed in $test_dir1" $tf
+        assert.f.exist -not "test ck $tf not there early" $tf $tf
+        git.up no changes here, but expecting to sync in $tf from $test_dir1
+        assert.f.exist -label "after git.up in $test_dir2, should see change from $test_dir1" $tf
+        git rm $tf
+        git.up "removed $tf for test"
+        cd $test_dir1
+        git.up "no changes, but syncing should rm $tf"
+        assert.f.exist -not "$tf removed in $test_dir2, so should also be removed in $test_dir1" $tf
 }
 
 Test_2_simultaneous_chis()
 {
-	echo Test_2_simultaneous_chis
+        echo Test_2_simultaneous_chis
 }
 
 Test_Pull_latest_updates_if_no_local_changes()
 {
-	echo Test_Pull_latest_updates_if_no_local_changes
+        echo Test_Pull_latest_updates_if_no_local_changes
 }
 
 Test()
 {
-	Test_init
-	Test_simple_chi
-	Test_2_simultaneous_chis
-	Test_Pull_latest_updates_if_no_local_changes
+        Test_init
+        Test_simple_chi
+        Test_2_simultaneous_chis
+        Test_Pull_latest_updates_if_no_local_changes
 }
 
 export PATH=$PATH:`dirname $0`
@@ -630,123 +648,123 @@ new_branch=''
 new_file_list=''
 verbose_mode=''
 while [ -n "$1" ]; do
-	case "$1" in
-		a|-all)
-			cat $dp/.modified_repo_statuses | sed -e 's/^/git.up -in_dir /' > $t
-			bash -x $t
-			exit
-		;;
-		-dir)
-			echo "WARN: should use -in_dir, not -dir"
-			shift
-			cd "$1"
-		;;
-		-dry|-dry_run)
-			dry_mode=-dry
-		;;
-		-f|-force)
-			force_mode=-force
-		;;
-		f|-fast)
-			shift
-			Disable_commit_hook || exit 1
-			git.up $*
-			Restore_commit_hook
-			exit 0
-		;;
-		-if_no_changes)
-			if git.d; then
-				echo Changes seen, so exiting...
-				exit 0
-			fi
-		;;
-		-in_dir)
-			shift
-			cd "$1"
-		;;
-		-new_branch)
-			new_branch_flag="$1"
-			shift
-			new_branch="$1"
-		;;
-		-project_of_file)
-			shift
-			fn=$1
-			proj_dir=`ls.up -find_parent_of_dir .git $fn`
-			echo "cd $proj_dir"
-			cd	 $proj_dir
-		;;
-		-pull_all)
-			for proj_dir in bin bin_$OS data doc emacs git_util fin_doc_parser t; do
-				echo "git.up -in_dir $dp/$proj_dir"
-				git.up	     -in_dir $dp/$proj_dir
-			done
-			exit
-		;;
-		-Pull_latest_updates_if_no_local_changes)
-			shift
-			Pull_latest_updates_if_no_local_changes	      $*
-			exit $?
-		;;
-		-repo)
-			shift
-			repo_name=$1
-			# if we use this option, we can run from any directory, and the appropriate repo dir will be found (and we will cd there)
-			found=''
-			if [ -d $HOME/git/$repo_name ]; then
-				echo "cd $HOME/git/$repo_name"
-				cd	 $HOME/git/$repo_name
-				found=yes
-			else
-				for f in `ls -d $dp/*/$repo_name $dx/*/$repo_name 2> /dev/null`; do
-					if [ -d "$f" ]; then
-						echo "cd $f"
-						cd	 $f
-						found=yes
-						break
-					fi
-				done
-			fi
-			if [ -z "$found" ]; then
-				echo "$0: error: could not find repo named $repo_name" 1>&2
-				exit 1
-			fi
-		;;
-		---Sync_git2)
-			shift
-			dir=$1
-			shift
-			comment="$*"
-			if [ ! -d $dir ]; then
-				echo "FAIL could not find directory $dir"
-				exit 1
-			fi
-			cd $dir
-			_Sync_git2
-			exit
-		;;
-		-Synchronize_high_traffic_shared_projects)
-			Synchronize_high_traffic_shared_projects
-			exit
-		;;
-		-test)
-			Test
-		;;
-		-test0)
-			test_env_wipe_first=yes
-			Test
-		;;
-		-v|-verbose)
-			verbose_mode=-verbose
-		;;
-		-x)
-			set -x
-		;;
-		*)
-			break
-		;;
-	esac
-	shift
+        case "$1" in
+                a|-all)
+                        cat $dp/.modified_repo_statuses | sed -e 's/^/git.up -in_dir /' > $t
+                        bash -x $t
+                        exit
+                ;;
+                -dir)
+                        echo "WARN: should use -in_dir, not -dir"
+                        shift
+                        cd "$1"
+                ;;
+                -dry|-dry_run)
+                        dry_mode=-dry
+                ;;
+                -f|-force)
+                        force_mode=-force
+                ;;
+                f|-fast)
+                        shift
+                        Disable_commit_hook || exit 1
+                        git.up $*
+                        Restore_commit_hook
+                        exit 0
+                ;;
+                -if_no_changes)
+                        if git.d; then
+                                echo Changes seen, so exiting...
+                                exit 0
+                        fi
+                ;;
+                -in_dir)
+                        shift
+                        cd "$1"
+                ;;
+                -new_branch)
+                        new_branch_flag="$1"
+                        shift
+                        new_branch="$1"
+                ;;
+                -project_of_file)
+                        shift
+                        fn=$1
+                        proj_dir=`ls.up -find_parent_of_dir .git $fn`
+                        echo "cd $proj_dir"
+                        cd       $proj_dir
+                ;;
+                -pull_all)
+                        for proj_dir in bin bin_$OS data doc emacs git_util fin_doc_parser t; do
+                                echo "git.up -in_dir $dp/$proj_dir"
+                                git.up       -in_dir $dp/$proj_dir
+                        done
+                        exit
+                ;;
+                -Pull_latest_updates_if_no_local_changes)
+                        shift
+                        Pull_latest_updates_if_no_local_changes       $*
+                        exit $?
+                ;;
+                -repo)
+                        shift
+                        repo_name=$1
+                        # if we use this option, we can run from any directory, and the appropriate repo dir will be found (and we will cd there)
+                        found=''
+                        if [ -d $HOME/git/$repo_name ]; then
+                                echo "cd $HOME/git/$repo_name"
+                                cd       $HOME/git/$repo_name
+                                found=yes
+                        else
+                                for f in `ls -d $dp/*/$repo_name $dx/*/$repo_name 2> /dev/null`; do
+                                        if [ -d "$f" ]; then
+                                                echo "cd $f"
+                                                cd       $f
+                                                found=yes
+                                                break
+                                        fi
+                                done
+                        fi
+                        if [ -z "$found" ]; then
+                                echo "$0: error: could not find repo named $repo_name" 1>&2
+                                exit 1
+                        fi
+                ;;
+                ---Sync_git2)
+                        shift
+                        dir=$1
+                        shift
+                        comment="$*"
+                        if [ ! -d $dir ]; then
+                                echo "FAIL could not find directory $dir"
+                                exit 1
+                        fi
+                        cd $dir
+                        _Sync_git2
+                        exit
+                ;;
+                -Synchronize_high_traffic_shared_projects)
+                        Synchronize_high_traffic_shared_projects
+                        exit
+                ;;
+                -test)
+                        Test
+                ;;
+                -test0)
+                        test_env_wipe_first=yes
+                        Test
+                ;;
+                -v|-verbose)
+                        verbose_mode=-verbose
+                ;;
+                -x)
+                        set -x
+                ;;
+                *)
+                        break
+                ;;
+        esac
+        shift
 done
 
 Init_for_work_in_cwd || exit 1
