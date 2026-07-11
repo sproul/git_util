@@ -125,6 +125,8 @@ else
 		exit 1
 	fi
 fi
+echo "diff \"$fn\" \"/tmp/$(basename \"$fn\")\""
+diff       "$fn" "/tmp/$(basename "$fn")"
 if [ $zfn ]; then
 	echo.clean "diff \"$zfn\"  \"$fn\""
 	diff "$zfn"  "$fn"
