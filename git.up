@@ -492,32 +492,6 @@ Synchronize_high_traffic_shared_projects()
 }
 
 
-Find_comment_in_source_tree()
-{
-        dotc_list=`find . -name '.c'`
-        if [ -n "$dotc_list" ]; then
-                comment=`cat $dotc_list`
-                rm $dotc_list
-                echo $comment
-        fi
-}
-
-Resolve_comment()
-{
-        comment_from_parms="$*"
-        comment_from_c=`Find_comment_in_source_tree`
-        if [ -n "$comment_from_c" ]; then
-                if [ -n "$comment_from_parms" ]; then
-                        echo "$0: error: did not expect $comment_from_c and also a command line comment -- which should I use?" 1>&2
-                        return 1
-                fi
-                comment="$comment_from_c"
-        else
-                comment="$comment_from_parms"
-        fi
-        echo $comment
-}
-
 Test_init()
 {
         test_dir1=$dp/git/java_scratch
@@ -718,7 +692,7 @@ while [ -n "$1" ]; do
 done
 
 Init_for_work_in_cwd || exit 1
-comment=`Resolve_comment $*` || echo 1
+comment=$*
 proj=`pwd | sed -e 's;.*/;;'`
 Clear_status
 if Changes_seen; then
