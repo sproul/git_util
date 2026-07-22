@@ -82,7 +82,7 @@ else
         if [ -n "$terse_mode" ]; then
                 cat /dev/null > $t
         else
-                git diff . > $t
+                git diff HEAD . > $t    # i.e., How do my current files differ from the last commit?
         fi
 fi
 strait $t
