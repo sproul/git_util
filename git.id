@@ -1,0 +1,4 @@
+:
+git fetch origin && git rev-parse origin/main
+exit
+$dp/git/git_util/git.id
