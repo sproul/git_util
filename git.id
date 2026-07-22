@@ -1,4 +1,10 @@
 :
-git fetch origin && git rev-parse origin/main
+local_id=`git rev-parse HEAD`
+remote_id=`git fetch origin && git rev-parse origin/main`
+if [ $local_id = $remote_id ]; then
+        echo LATEST / $remote_id
+else
+        echo $local_id / $remote_id
+fi
 exit
 $dp/git/git_util/git.id
