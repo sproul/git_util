@@ -1,0 +1,42 @@
+git pull --rebase origin main
+git push origin main
+
+
+
+
+
+
+Machine 1
+git add .
+git commit -m "Changes from machine 1"
+git push origin main
+Machine 2
+
+Commit its local changes first:
+
+git add .
+git commit -m "Changes from machine 2"
+
+Then integrate the version pushed by machine 1:
+
+git pull --rebase origin main
+
+If the changes do not overlap, Git will apply both automatically. Then:
+
+git push origin main
+
+You may see output similar to:
+
+Successfully rebased and updated refs/heads/main.
+
+The resulting file contains both sets of changes.
+
+Git can occasionally report a conflict even when the exact lines differ—for example, when the edits are very close together, one side deletes surrounding lines, or formatting changes affect the same region—but ordinary changes to separate parts of a file merge automatically.
+
+Before pushing, inspect the combined result with:
+
+git diff origin/main
+
+or, after fetching:
+
+git diff origin/main..HEAD
