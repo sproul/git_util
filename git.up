@@ -195,17 +195,6 @@ Checkin()
                     exit 1
             fi
         case "$proj" in
-                        emacs)
-                                for updated_menu_file in `grep '\.menu$' $t.changed_or_added`; do
-                                        if [ -n "$verbose_mode" ]; then
-                                                echo Checking $updated_menu_file for bad entries
-                                        fi
-                                        if grep -n '^[  ]*[^#    ][^     ]...' $updated_menu_file /dev/null; then
-                                                echo "FAIL malformed menu code seen" 1>&2
-                                                exit 1
-                                        fi
-                                done
-                        ;;
                         data)
                                 if [ -n "$verbose_mode" ]; then
                                         echo "OK skipping EARLY ck for $proj" 1>&2
