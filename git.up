@@ -16,6 +16,7 @@ Init_for_work_in_cwd()
                 return 1
         fi
         . git_util.inc
+	Sync_osxkeychain_github_credential_from_dot_gh || return 1
         branch=`git.branch`
 }
 
