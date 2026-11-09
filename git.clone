@@ -430,5 +430,6 @@ git.clone -dp -new_branch git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/chang
 git.clone                 git@orahub.oci.oraclecorp.com:fmwsyseng-cicd-dev/change-aggregator.git rm_ESE
 git.clone -dp             git@github.com:langchain-ai/open-swe.git
 git.clone -dp git@github.com:langchain-ai/open_deep_research.git
+git.clone -dp https://github.com/rustsec/rustsec
 exit
 git.clone -dp git@github.com:hwchase17/deepagents.git
