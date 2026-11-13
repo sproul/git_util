@@ -1,0 +1,8 @@
+:
+echo "FAIL just notes" 1>&2
+exit 1
+
+git clone https://github.com/sproul/rustsec.git
+cd $dp/git/rustsec
+git switch fix-via-dependents
+exit
